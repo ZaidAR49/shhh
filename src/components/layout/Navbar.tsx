@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { RiShieldKeyholeLine, RiLockLine, RiMenuLine } from 'react-icons/ri';
+import { RiLockLine, RiMenuLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Image from 'next/image';
 import { ThemeToggle } from './ThemeToggle';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { cn } from '@/lib/utils';
@@ -60,10 +61,13 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
             className="flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full hover:opacity-80 transition-opacity"
           >
             <div className="bg-primary/10 p-2 rounded-xl">
-              <RiShieldKeyholeLine
-                size={26}
-                className="text-primary shrink-0"
-                aria-hidden="true"
+              <Image
+                src="/logo.svg"
+                alt="Shhh Logo"
+                width={26}
+                height={26}
+                className="shrink-0"
+                priority
               />
             </div>
           </Link>

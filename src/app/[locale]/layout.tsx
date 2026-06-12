@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Cairo } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { ThemeProvider } from 'next-themes';
+import { Providers } from '@/components/providers';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import '../globals.css';
 
@@ -42,7 +42,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       className={`${inter.variable} ${cairo.variable}`}
     >
       <body>
-        <ThemeProvider
+        <Providers
           attribute="class"
           defaultTheme="system"
           enableSystem
@@ -53,7 +53,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
               {children}
             </TooltipProvider>
           </NextIntlClientProvider>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

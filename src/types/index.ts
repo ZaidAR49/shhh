@@ -14,6 +14,19 @@ export type SecretType =
   | 'secure_note'
   | 'wifi';
 
+// Types aligned exactly with Postgres `schema.sql`
+export interface DbSecret {
+  id: string;
+  user_id: string;
+  type: SecretType;
+  title: string;
+  encrypted_data: string;
+  encrypted_dek: string;
+  is_sensitive: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface Secret {
   id: string;
   user_id: string;

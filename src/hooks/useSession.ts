@@ -1,14 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSession as useNextAuthSession, signIn, signOut } from 'next-auth/react';
 import type { Session } from '@/types';
-import {
-  getStoredSession,
-  storeSession,
-  clearStoredSession,
-  createMockSession,
-  getMinutesRemaining,
-} from '@/lib/session';
 
 interface UseSessionReturn {
   session: Session | null;
@@ -20,76 +14,68 @@ interface UseSessionReturn {
   updateName: (name: string) => void;
 }
 
-/**
- * Mock session hook.
- * Tracks expiry countdown and persists session in localStorage.
- * In production, replace with real auth provider hook.
- */
 export function useSession(): UseSessionReturn {
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: authSession, status } = useNextAuthSession();
   const [minutesRemaining, setMinutesRemaining] = useState(60);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load session from localStorage on mount
-  useEffect(() => {
-    const stored = getStoredSession();
-    setSession(stored);
-    if (stored) setMinutesRemaining(getMinutesRemaining(stored));
-    setIsLoading(false);
-  }, []);
+  const isLoading = status === 'loading';
 
-  // Countdown tick
+  const mappedSession: Session | null = authSession ? {
+    user: {
+      id: (authSession.user as any)?.id || '',
+      name: authSession.user?.name || '',
+      email: authSession.user?.email || '',
+      image: authSession.user?.image || undefined,
+      provider: 'google'
+    },
+    expires_at: authSession.expires,
+    created_at: new Date(Date.now() - 3600000).toISOString(), // Fallback for UI
+  } : null;
+
   useEffect(() => {
-    if (!session) return;
+    if (!mappedSession) return;
+
+    const calcMins = () => {
+      const expires = new Date(mappedSession.expires_at).getTime();
+      const now = Date.now();
+      return Math.max(0, Math.floor((expires - now) / 60000));
+    };
+
+    setMinutesRemaining(calcMins());
 
     intervalRef.current = setInterval(() => {
-      const mins = getMinutesRemaining(session);
+      const mins = calcMins();
       setMinutesRemaining(mins);
       if (mins <= 0) {
-        clearStoredSession();
-        setSession(null);
         if (intervalRef.current) clearInterval(intervalRef.current);
+        signOut({ callbackUrl: '/en/auth' });
       }
-    }, 10_000); // check every 10 seconds
+    }, 10_000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [session]);
+  }, [authSession]);
 
   const unlock = async () => {
-    setIsLoading(true);
-    // Simulate OAuth delay
-    await new Promise((r) => setTimeout(r, 800));
-    const newSession = createMockSession();
-    storeSession(newSession);
-    setSession(newSession);
-    setMinutesRemaining(getMinutesRemaining(newSession));
-    setIsLoading(false);
+    await signIn('google');
   };
 
   const lock = () => {
-    clearStoredSession();
-    setSession(null);
-    setMinutesRemaining(0);
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    signOut({ callbackUrl: '/en/auth' });
   };
 
   const updateName = (name: string) => {
-    import('@/lib/session').then(({ updateUserName }) => {
-      const updatedSession = updateUserName(name);
-      if (updatedSession) {
-        setSession(updatedSession);
-      }
-    });
+    // NextAuth handles profile name via provider. 
+    // Manual updates would require a database query and session refresh.
   };
 
   return {
-    session,
+    session: mappedSession,
     isLoading,
     minutesRemaining,
-    isExpired: session ? getMinutesRemaining(session) <= 0 : false,
+    isExpired: mappedSession ? minutesRemaining <= 0 : false,
     unlock,
     lock,
     updateName,

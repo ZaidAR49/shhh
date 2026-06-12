@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { RiShieldKeyholeLine, RiGoogleLine, RiFingerprint2Line } from 'react-icons/ri';
+import { RiGoogleLine, RiFingerprint2Line } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface UnlockScreenProps {
@@ -24,7 +25,13 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
         )}
         aria-hidden="true"
       >
-        <RiShieldKeyholeLine size={80} strokeWidth={1} />
+        <Image 
+          src="/logo.svg" 
+          alt="Shhh Logo" 
+          width={80} 
+          height={80} 
+          priority
+        />
       </div>
 
       {/* App identity */}

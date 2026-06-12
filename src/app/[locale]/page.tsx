@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { RiShieldKeyholeLine, RiLockLine, RiShieldCheckLine, RiFileShieldLine, RiGroupLine } from 'react-icons/ri';
+import { RiLockLine, RiShieldCheckLine, RiFileShieldLine, RiGroupLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { cn } from '@/lib/utils';
@@ -30,7 +31,7 @@ export default function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 h-[57px] bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <RiShieldKeyholeLine size={22} className="text-primary" aria-hidden="true" />
+            <Image src="/logo.svg" alt="Shhh Logo" width={22} height={22} priority className="shrink-0" />
             <span className="text-base font-bold tracking-tight">{tc('appName')}</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -54,7 +55,7 @@ export default function LandingPage() {
           {/* Shield */}
           <div className="flex justify-center mb-8" aria-hidden="true">
             <div className="relative">
-              <RiShieldKeyholeLine size={88} className="text-primary" />
+              <Image src="/logo.svg" alt="Shhh Logo" width={88} height={88} priority className="shrink-0" />
               <div className="absolute inset-0 rounded-full bg-primary/5 blur-2xl scale-150" />
             </div>
           </div>
