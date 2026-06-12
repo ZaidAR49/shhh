@@ -1,0 +1,209 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Tailwind v4 theme tokens ─────────────────────────────── */
+@theme inline {
+  /* Semantic color aliases → CSS custom properties */
+  --color-background:        var(--background);
+  --color-foreground:        var(--foreground);
+  --color-card:              var(--card);
+  --color-card-foreground:   var(--card-foreground);
+  --color-popover:           var(--popover);
+  --color-popover-foreground:var(--popover-foreground);
+  --color-primary:           var(--primary);
+  --color-primary-foreground:var(--primary-foreground);
+  --color-secondary:         var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-muted:             var(--muted);
+  --color-muted-foreground:  var(--muted-foreground);
+  --color-accent:            var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive:       var(--destructive);
+  --color-border:            var(--border);
+  --color-input:             var(--input);
+  --color-ring:              var(--ring);
+
+  /* Security-specific color tokens */
+  --color-vault-locked:      var(--vault-locked);
+  --color-vault-unlocked:    var(--vault-unlocked);
+  --color-vault-warning:     var(--vault-warning);
+  --color-vault-shield:      var(--vault-shield);
+
+  /* Font families */
+  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-arabic:  var(--font-cairo), ui-sans-serif, sans-serif;
+  --font-mono:    var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Border-radius scale */
+  --radius-sm:  calc(var(--radius) - 4px);
+  --radius-md:  calc(var(--radius) - 2px);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) + 4px);
+}
+
+/* ── Light mode palette ────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --background:          oklch(0.979 0.005 247);  /* Near-white, blue-grey tint */
+  --foreground:          oklch(0.13 0.015 255);   /* Almost-black */
+
+  /* Card / popover surfaces */
+  --card:                oklch(1 0 0);
+  --card-foreground:     oklch(0.13 0.015 255);
+  --popover:             oklch(1 0 0);
+  --popover-foreground:  oklch(0.13 0.015 255);
+
+  /* Primary — Deep Navy */
+  --primary:             oklch(0.32 0.095 258);
+  --primary-foreground:  oklch(0.979 0.005 247);
+
+  /* Secondary — Pale blue-grey */
+  --secondary:           oklch(0.955 0.015 250);
+  --secondary-foreground:oklch(0.32 0.095 258);
+
+  /* Muted */
+  --muted:               oklch(0.955 0.015 250);
+  --muted-foreground:    oklch(0.52 0.04 258);
+
+  /* Accent — Bright cobalt, used sparingly */
+  --accent:              oklch(0.56 0.21 262);
+  --accent-foreground:   oklch(1 0 0);
+
+  /* Destructive */
+  --destructive:         oklch(0.55 0.215 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Border / input */
+  --border:              oklch(0.895 0.02 254);
+  --input:               oklch(0.895 0.02 254);
+  --ring:                oklch(0.56 0.21 262);
+
+  /* Border-radius base */
+  --radius: 0.5rem;
+
+  /* ── Security status tokens ────── */
+  --vault-locked:        oklch(0.55 0.215 27);    /* Red */
+  --vault-unlocked:      oklch(0.51 0.15 145);    /* Green */
+  --vault-warning:       oklch(0.67 0.17 55);     /* Amber */
+  --vault-shield:        oklch(0.32 0.095 258);   /* Navy */
+}
+
+/* ── Dark mode palette ─────────────────────────────────────── */
+.dark {
+  /* Backgrounds */
+  --background:          oklch(0.115 0.02 258);   /* Deep blue-black */
+  --foreground:          oklch(0.9 0.015 250);
+
+  /* Card / popover surfaces */
+  --card:                oklch(0.16 0.022 258);
+  --card-foreground:     oklch(0.9 0.015 250);
+  --popover:             oklch(0.16 0.022 258);
+  --popover-foreground:  oklch(0.9 0.015 250);
+
+  /* Primary — Lighter navy for dark bg readability */
+  --primary:             oklch(0.66 0.175 262);
+  --primary-foreground:  oklch(0.115 0.02 258);
+
+  /* Secondary */
+  --secondary:           oklch(0.19 0.03 258);
+  --secondary-foreground:oklch(0.68 0.06 255);
+
+  /* Muted */
+  --muted:               oklch(0.19 0.03 258);
+  --muted-foreground:    oklch(0.52 0.04 258);
+
+  /* Accent */
+  --accent:              oklch(0.66 0.175 262);
+  --accent-foreground:   oklch(0.115 0.02 258);
+
+  /* Destructive */
+  --destructive:         oklch(0.63 0.225 25);
+  --destructive-foreground: oklch(0.115 0.02 258);
+
+  /* Border / input */
+  --border:              oklch(0.22 0.035 258);
+  --input:               oklch(0.22 0.035 258);
+  --ring:                oklch(0.66 0.175 262);
+
+  /* ── Security status tokens ────── */
+  --vault-locked:        oklch(0.63 0.225 25);    /* Red */
+  --vault-unlocked:      oklch(0.57 0.16 145);    /* Green */
+  --vault-warning:       oklch(0.72 0.17 58);     /* Amber */
+  --vault-shield:        oklch(0.66 0.175 262);   /* Cobalt */
+}
+
+/* ── Base layer ────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Arabic body font when dir=rtl */
+  [dir="rtl"] body {
+    font-family: var(--font-cairo), ui-sans-serif, sans-serif;
+  }
+
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ── Utility layer ─────────────────────────────────────────── */
+@layer utilities {
+  /* Monospace secret value rendering */
+  .secret-value {
+    @apply font-mono text-sm tracking-wider;
+  }
+  .secret-masked {
+    @apply font-mono text-sm text-muted-foreground;
+    letter-spacing: 0.25em;
+  }
+}
+
+/* ── Session bar pulse (critical state) ────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes session-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.35; }
+  }
+
+  .session-bar-critical {
+    animation: session-pulse 1.5s ease-in-out infinite;
+  }
+}
+
+/* ── Fade transition (wizard steps, panels) ────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 150ms ease-in-out forwards;
+  }
+}
+
+/* ── Subtle scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
