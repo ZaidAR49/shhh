@@ -33,7 +33,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 h-[72px] bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
+      className="fixed top-0 left-0 right-0 z-50 h-[96px] bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
       role="banner"
     >
       <div className="h-full px-4 sm:px-6 lg:px-8 mx-auto max-w-[1400px] flex items-center justify-between w-full">
@@ -60,12 +60,12 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
             aria-label={t('common.appName')}
             className="flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full hover:opacity-80 transition-opacity"
           >
-            <div className="bg-primary/10 p-2 rounded-xl">
+            <div className=" p-2 rounded-xl">
               <Image
-                src="/logo.svg"
+                src="/icon.png"
                 alt="Shhh Logo"
-                width={26}
-                height={26}
+                width={80}
+                height={80}
                 className="shrink-0"
                 priority
               />
@@ -97,14 +97,17 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
               <Link
                 href={`/${locale}/vault/settings`}
                 aria-label={t('settings.title')}
-                className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
+                className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full hover:opacity-80 transition-opacity"
               >
-                <Avatar className="h-9 w-9 transition-opacity hover:opacity-80" aria-label={session.user.name}>
+                <Avatar className="h-9 w-9" aria-label={session.user.name}>
                   <AvatarImage src={session.user.image} alt={session.user.name} />
                   <AvatarFallback className="text-sm font-medium">
                     {session.user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+                <span className="hidden sm:inline-flex text-sm font-medium text-foreground">
+                  {session.user.name}
+                </span>
               </Link>
 
               {/* Lock vault */}

@@ -28,11 +28,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-[57px] bg-background/95 backdrop-blur-sm border-b border-border">
+      <header className="fixed top-0 left-0 right-0 z-50 h-[96px] bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="Shhh Logo" width={22} height={22} priority className="shrink-0" />
-            <span className="text-base font-bold tracking-tight">{tc('appName')}</span>
+            <Image src="/icon.png" alt="Shhh Logo" width={80} height={80} priority className="shrink-0" />
+            <span className="text-2xl font-bold tracking-tight">{tc('appName')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
@@ -50,12 +50,12 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <main className="flex-1 pt-[57px]">
+      <main className="flex-1 pt-[96px]">
         <section className="px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 max-w-5xl mx-auto text-center">
           {/* Shield */}
           <div className="flex justify-center mb-8" aria-hidden="true">
             <div className="relative">
-              <Image src="/logo.svg" alt="Shhh Logo" width={88} height={88} priority className="shrink-0" />
+              <Image src="/icon.png" alt="Shhh Logo" width={240} height={240} priority className="shrink-0" />
               <div className="absolute inset-0 rounded-full bg-primary/5 blur-2xl scale-150" />
             </div>
           </div>

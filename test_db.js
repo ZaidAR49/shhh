@@ -7,8 +7,8 @@ const pool = new Pool({
 
 async function main() {
   try {
-    const res = await pool.query(`select "account"."userId", "account"."type", "account"."provider", "account"."providerAccountId", "account"."refresh_token", "account"."access_token", "account"."expires_at", "account"."token_type", "account"."scope", "account"."id_token", "account"."session_state", "user"."id", "user"."name", "user"."email", "user"."emailVerified", "user"."image" from "account" inner join "user" on "account"."userId" = "user"."id" where ("account"."provider" = $1 and "account"."providerAccountId" = $2)`, ['google', '123']);
-    console.log(res.rows);
+    await pool.query('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "image" text;');
+    console.log('Successfully added image column to user table');
   } catch (e) {
     console.error('DB Error:', e);
   } finally {

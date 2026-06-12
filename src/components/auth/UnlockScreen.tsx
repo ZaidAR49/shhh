@@ -26,10 +26,10 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
         aria-hidden="true"
       >
         <Image 
-          src="/logo.svg" 
+          src="/icon.png" 
           alt="Shhh Logo" 
-          width={80} 
-          height={80} 
+          width={240} 
+          height={240} 
           priority
         />
       </div>
