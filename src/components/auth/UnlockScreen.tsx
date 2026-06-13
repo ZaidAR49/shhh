@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { RiGoogleLine, RiFingerprint2Line } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,30 @@ interface UnlockScreenProps {
 export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps) {
   const t = useTranslations('auth');
   const tc = useTranslations('common');
+
+  const [rememberedUser, setRememberedUser] = useState<{name: string, email: string} | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('shhh_remembered_user');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.expiresAt > Date.now()) {
+          setRememberedUser(parsed);
+        } else {
+          localStorage.removeItem('shhh_remembered_user');
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+  const formatEmail = (email: string) => {
+    if (!email) return '';
+    const [username, domain] = email.split('@');
+    if (!domain) return email;
+    const visibleChars = Math.min(3, username.length);
+    return username.substring(0, visibleChars) + '***@' + domain;
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-background">
@@ -30,17 +55,31 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
           alt="Shhh Logo" 
           width={240} 
           height={240} 
+          style={{ width: 'auto', height: 'auto' }}
           priority
         />
       </div>
 
       {/* App identity */}
-      <h1 className="text-4xl font-bold tracking-tight text-foreground mb-2">
-        {tc('appName')}
-      </h1>
-      <p className="text-sm text-muted-foreground mb-12 max-w-xs text-center leading-relaxed">
-        {tc('tagline')}
-      </p>
+      {rememberedUser ? (
+        <>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2 text-center">
+            {t('welcomeBack', { name: rememberedUser.name.split(' ')[0] })}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-12 max-w-xs text-center leading-relaxed font-medium">
+            {formatEmail(rememberedUser.email)}
+          </p>
+        </>
+      ) : (
+        <>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground mb-2 text-center">
+            {tc('appName')}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-12 max-w-xs text-center leading-relaxed">
+            {tc('tagline')}
+          </p>
+        </>
+      )}
 
       {/* Primary action */}
       <div className="w-full max-w-xs space-y-3">

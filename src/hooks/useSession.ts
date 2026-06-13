@@ -15,7 +15,7 @@ interface UseSessionReturn {
 }
 
 export function useSession(): UseSessionReturn {
-  const { data: authSession, status } = useNextAuthSession();
+  const { data: authSession, status, update } = useNextAuthSession();
   const [minutesRemaining, setMinutesRemaining] = useState(60);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -34,6 +34,15 @@ export function useSession(): UseSessionReturn {
   } : null;
 
   useEffect(() => {
+    if (mappedSession?.user) {
+      const rememberedUser = {
+        name: mappedSession.user.name,
+        email: mappedSession.user.email,
+        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+      };
+      localStorage.setItem('shhh_remembered_user', JSON.stringify(rememberedUser));
+    }
+
     if (!mappedSession) return;
 
     const calcMins = () => {
@@ -66,9 +75,28 @@ export function useSession(): UseSessionReturn {
     signOut({ callbackUrl: '/en/auth' });
   };
 
-  const updateName = (name: string) => {
-    // NextAuth handles profile name via provider. 
-    // Manual updates would require a database query and session refresh.
+  const updateName = async (name: string) => {
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (res.ok) {
+        await update({ name });
+        // Update local storage so the unlock screen gets the new name immediately
+        const stored = localStorage.getItem('shhh_remembered_user');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            parsed.name = name;
+            localStorage.setItem('shhh_remembered_user', JSON.stringify(parsed));
+          } catch (e) {}
+        }
+      }
+    } catch (e) {
+      console.error("Failed to update name", e);
+    }
   };
 
   return {

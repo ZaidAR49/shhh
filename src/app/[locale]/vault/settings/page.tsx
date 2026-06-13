@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { signOut } from 'next-auth/react';
 import { RiSunLine, RiMoonLine, RiComputerLine, RiGlobalLine, RiDeleteBinLine, RiShieldLine, RiEditLine, RiCheckLine, RiCloseLine, RiLogoutBoxRLine, RiUser3Line, RiSettings3Line, RiAlertLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { mockApi } from '@/lib/mock-api';
 import { useSession } from '@/hooks/useSession';
 import { cn } from '@/lib/utils';
+import { MfaSettings } from '@/components/settings/MfaSettings';
 
 function SettingsCard({ title, icon: Icon, children, destructive }: { title: string, icon: React.ElementType, children: React.ReactNode, destructive?: boolean }) {
   return (
@@ -42,12 +44,25 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
+  const [mfaEnabled, setMfaEnabled] = useState<boolean | null>(null);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (session?.user?.name) {
       setEditNameValue(session.user.name);
     }
   }, [session?.user?.name]);
+
+  useEffect(() => {
+    fetch('/api/auth/mfa/status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.mfaEnabled === 'boolean') {
+          setMfaEnabled(data.mfaEnabled);
+        }
+      })
+      .catch((err) => console.error('Failed to fetch MFA status:', err));
+  }, []);
 
   const handleSignOut = () => {
     lock();
@@ -68,13 +83,44 @@ export default function SettingsPage() {
     setClearOpen(false);
   };
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccountClick = () => {
+    if (mfaEnabled === false) {
+      alert("You must enable Two-Factor Authentication before you can delete your account.");
+      return;
+    }
+    setDeleteError('');
+    setDeleteAccountOpen(true);
+  };
+
+  const handleDeleteAccount = async (token?: string) => {
+    if (!token) return;
+    
     setDeletingAccount(true);
-    await mockApi.clearVault();
-    lock();
-    setDeletingAccount(false);
-    setDeleteAccountOpen(false);
-    router.replace(`/${locale}/auth`);
+    setDeleteError('');
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setDeleteError(data.error || 'Invalid code');
+        setDeletingAccount(false);
+        return;
+      }
+
+      await signOut({ redirect: false });
+      localStorage.removeItem('shhh_remembered_user');
+      setDeletingAccount(false);
+      setDeleteAccountOpen(false);
+      router.replace(`/${locale}/auth`);
+    } catch (err) {
+      setDeleteError('An error occurred');
+      setDeletingAccount(false);
+    }
   };
 
   const themeOptions = [
@@ -169,12 +215,18 @@ export default function SettingsPage() {
 
         {/* Security Card */}
         <SettingsCard title={t('security')} icon={RiShieldLine}>
-          <div className="flex items-start gap-4">
-            <div className="flex-1">
-              <p className="text-sm font-medium leading-none mb-1.5">{t('sessionDuration')}</p>
-              <p className="text-sm text-muted-foreground">{t('sessionDurationNote')}</p>
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <p className="text-sm font-medium leading-none mb-1.5">{t('sessionDuration')}</p>
+                <p className="text-sm text-muted-foreground">{t('sessionDurationNote')}</p>
+              </div>
+              <Badge variant="secondary" className="shrink-0 text-xs px-2.5 py-1">{t('sessionDurationValue')}</Badge>
             </div>
-            <Badge variant="secondary" className="shrink-0 text-xs px-2.5 py-1">{t('sessionDurationValue')}</Badge>
+            
+            <div className="pt-6 border-t">
+              <MfaSettings mfaEnabled={mfaEnabled} setMfaEnabled={setMfaEnabled} />
+            </div>
           </div>
         </SettingsCard>
 
@@ -208,7 +260,7 @@ export default function SettingsPage() {
                 <p className="text-sm font-medium text-destructive truncate">{t('deleteAccount')}</p>
                 <p className="text-xs text-destructive/70 truncate">{t('deleteAccountConfirm').split('?')[0]}?</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setDeleteAccountOpen(true)} className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground">
+              <Button variant="outline" size="sm" onClick={handleDeleteAccountClick} className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground">
                 <RiDeleteBinLine size={14} className="ltr:mr-1.5 rtl:ml-1.5" aria-hidden="true" />
                 {t('deleteAccount')}
               </Button>
@@ -232,9 +284,13 @@ export default function SettingsPage() {
         title={t('deleteAccount')}
         description={t('deleteAccountConfirm')}
         onConfirm={handleDeleteAccount}
-        onCancel={() => setDeleteAccountOpen(false)}
+        onCancel={() => {
+          setDeleteAccountOpen(false);
+          setDeleteError('');
+        }}
         isPending={deletingAccount}
-        confirmTextRequired={session?.user?.name}
+        requireMfa={true}
+        error={deleteError}
       />
     </div>
   );

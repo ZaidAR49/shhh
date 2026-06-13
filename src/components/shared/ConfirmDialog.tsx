@@ -19,11 +19,13 @@ interface ConfirmDialogProps {
   open: boolean;
   title: string;
   description: string;
-  onConfirm: () => void;
+  onConfirm: (mfaToken?: string) => void;
   onCancel: () => void;
   isDestructive?: boolean;
   isPending?: boolean;
   confirmTextRequired?: string;
+  requireMfa?: boolean;
+  error?: string;
 }
 
 export function ConfirmDialog({
@@ -35,11 +37,15 @@ export function ConfirmDialog({
   isDestructive = true,
   isPending = false,
   confirmTextRequired,
+  requireMfa,
+  error,
 }: ConfirmDialogProps) {
   const t = useTranslations('common');
   const [confirmInput, setConfirmInput] = useState('');
 
-  const isConfirmDisabled = isPending || (confirmTextRequired && confirmInput !== confirmTextRequired);
+  const isConfirmDisabled = isPending || 
+    (confirmTextRequired && confirmInput !== confirmTextRequired) ||
+    (requireMfa && confirmInput.length !== 6);
 
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !o && onCancel()}>
@@ -54,7 +60,7 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         
-        {confirmTextRequired && (
+        {confirmTextRequired && !requireMfa && (
           <div className="my-4">
             <p className="text-sm text-foreground font-medium mb-2">
               {t('typeToConfirm', { text: confirmTextRequired })}
@@ -66,6 +72,23 @@ export function ConfirmDialog({
               className="font-mono text-sm"
               autoFocus
             />
+          </div>
+        )}
+
+        {requireMfa && (
+          <div className="my-4">
+            <p className="text-sm text-foreground font-medium mb-2">
+              Enter 6-digit Authenticator Code to confirm
+            </p>
+            <Input
+              value={confirmInput}
+              onChange={(e) => setConfirmInput(e.target.value.replace(/\D/g, ''))}
+              placeholder="000000"
+              maxLength={6}
+              className="font-mono text-sm tracking-widest text-center"
+              autoFocus
+            />
+            {error && <p className="text-xs text-destructive mt-2">{error}</p>}
           </div>
         )}
 
@@ -85,8 +108,8 @@ export function ConfirmDialog({
             variant={isDestructive ? 'destructive' : 'default'}
             className={isDestructive ? 'bg-red-600 hover:bg-red-700 text-white border-none' : ''}
             onClick={() => {
-              setConfirmInput('');
-              onConfirm();
+              onConfirm(requireMfa ? confirmInput : undefined);
+              if (!requireMfa) setConfirmInput('');
             }}
             disabled={Boolean(isConfirmDisabled)}
             aria-label={t('confirm')}

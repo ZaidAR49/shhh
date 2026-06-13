@@ -28,6 +28,7 @@
   "auth": {
     "unlockVault": "Unlock your vault",
     "unlockVaultDescription": "Sign in with Google to access your secrets securely.",
+    "welcomeBack": "Hi {name}, be quiet Shhh",
     "continueWithGoogle": "Unlock with Google",
     "useFingerprint": "Use Fingerprint",
     "useFaceId": "Use Face ID",

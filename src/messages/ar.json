@@ -28,6 +28,7 @@
   "auth": {
     "unlockVault": "افتح خزنتك",
     "unlockVaultDescription": "سجّل دخولك بحساب Google للوصول إلى أسرارك بأمان.",
+    "welcomeBack": "أهلاً {name}، كن هادئاً Shhh",
     "continueWithGoogle": "فتح الخزنة بـ Google",
     "useFingerprint": "استخدام بصمة الإصبع",
     "useFaceId": "استخدام التعرف على الوجه",
