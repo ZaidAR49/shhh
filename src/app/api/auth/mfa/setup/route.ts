@@ -16,11 +16,12 @@ export async function POST(request: Request) {
     const secret = generateSecret();
 
     // Create the provisioning URI for Google/Microsoft Authenticator
-    const otpauthUrl = generateURI({
+    const baseOtpauthUrl = generateURI({
       label: session.user.email,
       issuer: 'Shhh App', // Your app name
       secret
     });
+    const otpauthUrl = `${baseOtpauthUrl}&image=${process.env.NEXT_PUBLIC_DOMAIN}/_next/image?url=%2Ficon.png&w=256&q=75`
 
     // Generate a QR code from the URI
     const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
