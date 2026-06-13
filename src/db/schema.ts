@@ -6,6 +6,7 @@ import {
   integer,
   boolean,
   pgEnum,
+  index,
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from 'next-auth/adapters';
 
@@ -92,4 +93,6 @@ export const secrets = pgTable('secrets', {
   isFavorite: boolean('is_favorite').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index('user_id_idx').on(table.userId),
+}));

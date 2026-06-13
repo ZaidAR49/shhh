@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../[...nextauth]/route';
 import { verify } from 'otplib';
 import { UserService } from '@/lib/services/user.service';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +11,15 @@ export async function POST(request: Request) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate limit: 5 attempts per 15 minutes per user
+    const rateLimit = checkRateLimit(`mfa_verify_${session.user.id}`, 5, 15 * 60 * 1000);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again in 15 minutes.' },
+        { status: 429 }
+      );
     }
 
     const body = await request.json();

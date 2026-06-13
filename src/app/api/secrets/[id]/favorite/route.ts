@@ -27,6 +27,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       created_at: updatedSecret.createdAt.toISOString(),
       updated_at: updatedSecret.updatedAt.toISOString(),
       is_favorite: updatedSecret.isFavorite,
+      is_sensitive: updatedSecret.isSensitive,
       tags: (updatedSecret.data as any)?.tags || []
     };
 

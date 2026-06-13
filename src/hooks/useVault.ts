@@ -6,8 +6,11 @@ import type { Secret, CreateSecretPayload, UpdateSecretPayload } from '@/types';
 interface UseVaultReturn {
   secrets: Secret[];
   isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
   error: string | null;
   loadSecrets: () => Promise<void>;
+  loadMoreSecrets: () => Promise<void>;
   createSecret: (payload: CreateSecretPayload) => Promise<Secret>;
   updateSecret: (id: string, payload: UpdateSecretPayload) => Promise<Secret>;
   deleteSecret: (id: string) => Promise<void>;
@@ -19,6 +22,9 @@ interface UseVaultReturn {
 export function useVault(): UseVaultReturn {
   const [secrets, setSecrets] = useState<Secret[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mfaEnabled, setMfaEnabled] = useState(false);
 
@@ -28,14 +34,16 @@ export function useVault(): UseVaultReturn {
     try {
       // Fetch both secrets and MFA status in parallel
       const [secretsRes, mfaRes] = await Promise.all([
-        fetch('/api/secrets'),
+        fetch('/api/secrets?limit=50&offset=0'),
         fetch('/api/auth/mfa/status')
       ]);
       
       if (!secretsRes.ok) throw new Error('Failed to fetch secrets');
       
-      const secretsData = await secretsRes.json();
-      setSecrets(secretsData);
+      const secretsResult = await secretsRes.json();
+      setSecrets(secretsResult.data || []);
+      setNextOffset(secretsResult.nextOffset);
+      setHasMore(secretsResult.nextOffset !== null);
 
       if (mfaRes.ok) {
         const mfaData = await mfaRes.json();
@@ -47,6 +55,23 @@ export function useVault(): UseVaultReturn {
       setIsLoading(false);
     }
   }, []);
+
+  const loadMoreSecrets = useCallback(async () => {
+    if (!hasMore || isLoadingMore || nextOffset === null) return;
+    setIsLoadingMore(true);
+    try {
+      const res = await fetch(`/api/secrets?limit=50&offset=${nextOffset}`);
+      if (!res.ok) throw new Error('Failed to fetch more secrets');
+      const result = await res.json();
+      setSecrets(prev => [...prev, ...(result.data || [])]);
+      setNextOffset(result.nextOffset);
+      setHasMore(result.nextOffset !== null);
+    } catch (e) {
+      setError('errors.networkError');
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [hasMore, isLoadingMore, nextOffset]);
 
   const createSecret = useCallback(async (payload: CreateSecretPayload): Promise<Secret> => {
     const res = await fetch('/api/secrets', {
@@ -87,10 +112,12 @@ export function useVault(): UseVaultReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/secrets?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/secrets?q=${encodeURIComponent(query)}&limit=50&offset=0`);
       if (!res.ok) throw new Error('Failed to search secrets');
-      const results = await res.json();
-      setSecrets(results);
+      const result = await res.json();
+      setSecrets(result.data || []);
+      setNextOffset(result.nextOffset);
+      setHasMore(result.nextOffset !== null);
     } catch (e) {
       setError('errors.networkError');
     } finally {
@@ -110,8 +137,11 @@ export function useVault(): UseVaultReturn {
   return {
     secrets,
     isLoading,
+    isLoadingMore,
+    hasMore,
     error,
     loadSecrets,
+    loadMoreSecrets,
     createSecret,
     updateSecret,
     deleteSecret,

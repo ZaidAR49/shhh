@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { secrets } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { encryptPayload, decryptPayload } from '../helpers/crypto';
+import { eq, and, sql } from 'drizzle-orm';
+import { encryptPayload, decryptPayload, encryptString, decryptString } from '../helpers/crypto';
 
 // Re-export type for convenience
 import type { SecretType } from '../secret-types';
@@ -9,23 +9,39 @@ import type { SecretType } from '../secret-types';
 export class SecretService {
   /**
    * Retrieves all secrets for a user, with their payloads decrypted.
+   * @param userId The user's ID
+   * @param limit The maximum number of records to return
+   * @param offset The number of records to skip
    */
-  static async findAllByUserId(userId: string) {
+  static async findAllByUserId(userId: string, limit: number = 50, offset: number = 0) {
     const userSecrets = await db.query.secrets.findMany({
-      where: (secrets, { eq }) => eq(secrets.userId, userId),
-      orderBy: (secrets, { desc }) => [desc(secrets.updatedAt)],
+      where: eq(secrets.userId, userId),
+      orderBy: (secrets, { desc }) => [desc(secrets.createdAt)],
+      limit,
+      offset,
     });
 
     return userSecrets.map(secret => {
       let data = {};
+      let title = secret.title;
+
       try {
-        data = decryptPayload(secret.encryptedData, secret.encryptedDek);
+        title = decryptString(secret.title);
       } catch (e) {
-        console.error(`Failed to decrypt secret ${secret.id}`, e);
-        data = { error: 'Failed to decrypt data' };
+        // Fallback for legacy plaintext titles
+      }
+
+      if (!secret.isSensitive) {
+        try {
+          data = decryptPayload(secret.encryptedData, secret.encryptedDek);
+        } catch (e) {
+          console.error('Failed to decrypt secret', e);
+          data = { error: 'Failed to decrypt data' };
+        }
       }
       return {
         ...secret,
+        title,
         data,
       };
     });
@@ -42,15 +58,24 @@ export class SecretService {
     if (!secret) return null;
 
     let data = {};
+    let title = secret.title;
+
+    try {
+      title = decryptString(secret.title);
+    } catch (e) {
+      // Fallback for legacy plaintext titles
+    }
+
     try {
       data = decryptPayload(secret.encryptedData, secret.encryptedDek);
     } catch (e) {
-      console.error(`Failed to decrypt secret ${secret.id}`, e);
+      console.error('Failed to decrypt secret', e);
       data = { error: 'Failed to decrypt data' };
     }
 
     return {
       ...secret,
+      title,
       data,
     };
   }
@@ -60,12 +85,13 @@ export class SecretService {
    */
   static async createSecret(userId: string, type: SecretType, title: string, data: any, isSensitive: boolean = false) {
     const { encryptedData, encryptedDek } = encryptPayload(data);
+    const encryptedTitle = encryptString(title);
 
     const newSecret = await db.insert(secrets)
       .values({
         userId,
         type,
-        title,
+        title: encryptedTitle,
         encryptedData,
         encryptedDek,
         isSensitive,
@@ -74,6 +100,7 @@ export class SecretService {
 
     return {
       ...newSecret[0],
+      title,
       data,
     };
   }
@@ -83,10 +110,11 @@ export class SecretService {
    */
   static async updateSecret(userId: string, secretId: string, title: string, data: any, isSensitive: boolean = false) {
     const { encryptedData, encryptedDek } = encryptPayload(data);
+    const encryptedTitle = encryptString(title);
 
     const updatedSecret = await db.update(secrets)
       .set({
-        title,
+        title: encryptedTitle,
         encryptedData,
         encryptedDek,
         isSensitive,
@@ -101,6 +129,7 @@ export class SecretService {
 
     return {
       ...updatedSecret[0],
+      title,
       data,
     };
   }
@@ -120,27 +149,29 @@ export class SecretService {
    * Toggles the favorite status of a secret.
    */
   static async toggleFavorite(userId: string, secretId: string) {
-    const secret = await db.query.secrets.findFirst({
-      where: (secrets, { eq, and }) => and(eq(secrets.id, secretId), eq(secrets.userId, userId)),
-    });
-    
-    if (!secret) return null;
-
     const updatedSecret = await db.update(secrets)
-      .set({ isFavorite: !secret.isFavorite, updatedAt: new Date() })
+      .set({ isFavorite: sql`NOT ${secrets.isFavorite}`, updatedAt: new Date() })
       .where(and(eq(secrets.id, secretId), eq(secrets.userId, userId)))
       .returning();
 
     if (!updatedSecret.length) return null;
 
     let data = {};
+    let title = updatedSecret[0].title;
+
+    try {
+      title = decryptString(updatedSecret[0].title);
+    } catch (e) {
+      // Fallback
+    }
+
     try {
       data = decryptPayload(updatedSecret[0].encryptedData, updatedSecret[0].encryptedDek);
     } catch (e) {
-      console.error(`Failed to decrypt secret ${updatedSecret[0].id}`, e);
+      console.error('Failed to decrypt secret', e);
     }
 
-    return { ...updatedSecret[0], data };
+    return { ...updatedSecret[0], title, data };
   }
 
   /**

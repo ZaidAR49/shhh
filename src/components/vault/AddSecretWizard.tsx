@@ -54,6 +54,12 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > 100_000) {
+      alert('File too large. Maximum size is 100 KB.');
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;

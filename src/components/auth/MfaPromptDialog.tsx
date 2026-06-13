@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 interface MfaPromptDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (token: string) => void;
   actionName?: string;
 }
 
@@ -39,7 +39,7 @@ export function MfaPromptDialog({ open, onOpenChange, onSuccess, actionName }: M
       const data = await res.json();
 
       if (res.ok && data.success) {
-        onSuccess();
+        onSuccess(token);
         onOpenChange(false);
         setToken('');
       } else {

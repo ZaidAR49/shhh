@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../[...nextauth]/route';
 import { verify } from 'otplib';
 import { UserService } from '@/lib/services/user.service';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
@@ -12,20 +13,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { token, secret } = body;
-
-    if (!token || !secret) {
+    // Rate limit: 5 attempts per 15 minutes per user
+    const rateLimit = checkRateLimit(`mfa_enable_${session.user.id}`, 5, 15 * 60 * 1000);
+    if (!rateLimit.success) {
       return NextResponse.json(
-        { error: 'Token and secret are required' },
+        { error: 'Too many attempts. Please try again in 15 minutes.' },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json();
+    const { token } = body;
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Token is required' },
         { status: 400 }
       );
     }
 
-    // Validate the token against the provided secret
+    // Get the pending secret from the database
+    const user = await UserService.getMfaStatus(session.user.id);
+    if (!user || !user.mfaSecret) {
+      return NextResponse.json(
+        { error: 'MFA setup not initiated' },
+        { status: 400 }
+      );
+    }
+
+    // Validate the token against the pending secret
     const result = await verify({
       token,
-      secret,
+      secret: user.mfaSecret,
     });
 
     if (!result.valid) {
@@ -35,8 +54,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // If valid, save the secret to the database and enable MFA
-    await UserService.enableMfa(session.user.id, secret);
+    // If valid, enable MFA
+    await UserService.enableMfa(session.user.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

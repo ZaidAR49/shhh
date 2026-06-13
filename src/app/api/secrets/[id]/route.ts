@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { SecretService } from '@/lib/services/secret.service';
+import { UserService } from '@/lib/services/user.service';
+import { verify } from 'otplib';
+import { SECRET_SCHEMAS } from '@/lib/validations';
+import type { SecretType } from '@/lib/secret-types';
+import { z } from 'zod';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,6 +20,25 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     if (!secret) {
       return NextResponse.json({ error: 'Secret not found' }, { status: 404 });
+    }
+
+    if (secret.isSensitive) {
+      const { searchParams } = new URL(request.url);
+      const token = searchParams.get('token');
+      
+      const userStatus = await UserService.getMfaStatus(session.user.id);
+      if (!userStatus?.mfaEnabled || !userStatus?.mfaSecret) {
+        return NextResponse.json({ error: 'MFA not enabled' }, { status: 403 });
+      }
+
+      if (!token) {
+        return NextResponse.json({ error: 'MFA token required for sensitive secret' }, { status: 403 });
+      }
+
+      const isValid = await verify({ token, secret: userStatus.mfaSecret });
+      if (!isValid.valid) {
+        return NextResponse.json({ error: 'Invalid MFA token' }, { status: 403 });
+      }
     }
 
     const mappedSecret = {
@@ -60,11 +84,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    const existingSecret = await SecretService.findById(session.user.id, id);
+    if (!existingSecret) {
+      return NextResponse.json({ error: 'Secret not found or unauthorized' }, { status: 404 });
+    }
+
+    let parsedData;
+    try {
+      parsedData = SECRET_SCHEMAS[existingSecret.type as SecretType].parse(data);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return NextResponse.json({ error: 'Validation failed', details: e.errors }, { status: 400 });
+      }
+      return NextResponse.json({ error: 'Invalid data format' }, { status: 400 });
+    }
+
     const updatedSecret = await SecretService.updateSecret(
       session.user.id,
       id,
       title,
-      data,
+      parsedData,
       isSensitive
     );
 

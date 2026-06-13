@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession as useNextAuthSession, signIn, signOut } from 'next-auth/react';
+import { useLocale } from 'next-intl';
 import type { Session } from '@/types';
 
 interface UseSessionReturn {
@@ -16,6 +17,7 @@ interface UseSessionReturn {
 
 export function useSession(): UseSessionReturn {
   const { data: authSession, status, update } = useNextAuthSession();
+  const locale = useLocale();
   const [minutesRemaining, setMinutesRemaining] = useState(60);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -37,7 +39,6 @@ export function useSession(): UseSessionReturn {
     if (mappedSession?.user) {
       const rememberedUser = {
         name: mappedSession.user.name,
-        email: mappedSession.user.email,
         expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
       };
       localStorage.setItem('shhh_remembered_user', JSON.stringify(rememberedUser));
@@ -53,26 +54,37 @@ export function useSession(): UseSessionReturn {
 
     setMinutesRemaining(calcMins());
 
-    intervalRef.current = setInterval(() => {
+    const handleExpiry = () => {
       const mins = calcMins();
       setMinutesRemaining(mins);
       if (mins <= 0) {
         if (intervalRef.current) clearInterval(intervalRef.current);
-        signOut({ callbackUrl: '/en/auth' });
+        signOut({ callbackUrl: `/${locale}/auth` });
       }
-    }, 10_000);
+    };
+
+    intervalRef.current = setInterval(handleExpiry, 10_000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleExpiry();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [authSession]);
+  }, [authSession, locale]);
 
   const unlock = async () => {
     await signIn('google');
   };
 
   const lock = () => {
-    signOut({ callbackUrl: '/en/auth' });
+    localStorage.removeItem('shhh_remembered_user');
+    signOut({ callbackUrl: `/${locale}/auth` });
   };
 
   const updateName = async (name: string) => {

@@ -21,7 +21,7 @@ export default function VaultPage() {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { secrets, isLoading, loadSecrets, createSecret, deleteSecret, searchSecrets, mfaEnabled } = useGlobalVault();
+  const { secrets, isLoading, isLoadingMore, hasMore, loadSecrets, loadMoreSecrets, createSecret, deleteSecret, searchSecrets, mfaEnabled } = useGlobalVault();
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -140,6 +140,19 @@ export default function VaultPage() {
           onEdit={(id) => interceptAction(id, 'edit')}
           onDelete={(id) => interceptAction(id, 'delete')}
         />
+      )}
+
+      {hasMore && (
+        <div className="mt-8 flex justify-center">
+          <Button
+            variant="outline"
+            onClick={loadMoreSecrets}
+            disabled={isLoadingMore}
+            className="w-full sm:w-auto"
+          >
+            {isLoadingMore ? 'Loading...' : 'Load More'}
+          </Button>
+        </div>
       )}
 
       {/* Add Secret wizard in a Sheet */}

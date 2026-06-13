@@ -13,8 +13,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Generate a secure secret for the user
-    const secret = generateSecret();
+    const userStatus = await UserService.getMfaStatus(session.user.id);
+    if (userStatus?.mfaEnabled) {
+      return NextResponse.json({ error: 'MFA is already enabled. Disable it first to set up a new device.' }, { status: 400 });
+    }
+
+    // Generate a secure secret for the user (20 bytes for strict authenticator compatibility)
+    const secret = generateSecret(20);
 
     // Create the provisioning URI for Google/Microsoft Authenticator
     const baseOtpauthUrl = generateURI({

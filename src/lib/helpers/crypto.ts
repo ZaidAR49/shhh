@@ -7,10 +7,21 @@ const KEY_LENGTH = 32;
 
 function getMasterKey(): Buffer {
   const secret = process.env.MASTER_KEY;
-  if (!secret || secret.length !== 64) {
-    throw new Error('MASTER_KEY must be a 64-character hex string');
+  if (!secret) {
+    throw new Error('MASTER_KEY environment variable is not set');
   }
-  return Buffer.from(secret, 'hex');
+
+  // Backwards compatibility for old 32-character keys
+  if (secret.length === 32) {
+    return crypto.createHash('sha256').update(secret).digest();
+  }
+
+  // Secure behavior for new 64-character (32-byte) hex keys
+  if (secret.length === 64) {
+    return Buffer.from(secret, 'hex');
+  }
+
+  throw new Error('MASTER_KEY must be a 64-character hex string');
 }
 
 /**
@@ -29,10 +40,12 @@ function encryptBuffer(buffer: Buffer, key: Buffer): string {
  * Decrypts a formatted string (iv:authTag:ciphertext) using a specific 32-byte key.
  */
 function decryptBuffer(encryptedString: string, key: Buffer): Buffer {
-  const [ivHex, authTagHex, ciphertextHex] = encryptedString.split(':');
-  if (!ivHex || !authTagHex || !ciphertextHex) {
+  const parts = encryptedString.split(':');
+  if (parts.length !== 3 || !parts.every(p => /^[0-9a-fA-F]*$/.test(p))) {
     throw new Error('Invalid encrypted data format');
   }
+  const [ivHex, authTagHex, ciphertextHex] = parts;
+  
   const iv = Buffer.from(ivHex, 'hex');
   const authTag = Buffer.from(authTagHex, 'hex');
   const ciphertext = Buffer.from(ciphertextHex, 'hex');
@@ -73,4 +86,14 @@ export function decryptPayload(encryptedData: string, encryptedDek: string): any
   const payloadBuffer = decryptBuffer(encryptedData, dek);
   
   return JSON.parse(payloadBuffer.toString('utf8'));
+}
+
+export function encryptString(text: string): string {
+  const masterKey = getMasterKey();
+  return encryptBuffer(Buffer.from(text, 'utf8'), masterKey);
+}
+
+export function decryptString(encrypted: string): string {
+  const masterKey = getMasterKey();
+  return decryptBuffer(encrypted, masterKey).toString('utf8');
 }

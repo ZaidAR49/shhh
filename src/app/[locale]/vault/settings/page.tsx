@@ -45,6 +45,7 @@ export default function SettingsPage() {
   const [editNameValue, setEditNameValue] = useState('');
   const [mfaEnabled, setMfaEnabled] = useState<boolean | null>(null);
   const [deleteError, setDeleteError] = useState('');
+  const [clearError, setClearError] = useState('');
 
   useEffect(() => {
     if (session?.user?.name) {
@@ -75,11 +76,34 @@ export default function SettingsPage() {
     setIsEditingName(false);
   };
 
-  const handleClearVault = async () => {
+  const handleClearVaultClick = () => {
+    setClearError('');
+    setClearOpen(true);
+  };
+
+  const handleClearVault = async (token?: string) => {
+    if (mfaEnabled && !token) {
+      setClearError('Please enter your 6-digit code');
+      return;
+    }
     setClearing(true);
-    await fetch('/api/secrets/clear', { method: 'DELETE' });
-    setClearing(false);
-    setClearOpen(false);
+    try {
+      const res = await fetch('/api/secrets/clear', { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setClearError(data.error || 'Failed to clear vault.');
+      } else {
+        setClearOpen(false);
+      }
+    } catch (err) {
+      setClearError('Network error while clearing vault.');
+    } finally {
+      setClearing(false);
+    }
   };
 
   const handleDeleteAccountClick = () => {
@@ -92,7 +116,10 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async (token?: string) => {
-    if (!token) return;
+    if (!token) {
+      setDeleteError('Please enter your 6-digit code');
+      return;
+    }
     
     setDeletingAccount(true);
     setDeleteError('');
@@ -248,7 +275,7 @@ export default function SettingsPage() {
                 <p className="text-sm font-medium text-destructive truncate">{t('clearVault')}</p>
                 <p className="text-xs text-destructive/70 truncate">{t('clearVaultConfirm').split('.')[0]}.</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setClearOpen(true)} className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground">
+              <Button variant="outline" size="sm" onClick={handleClearVaultClick} className="shrink-0 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground">
                 <RiDeleteBinLine size={14} className="ltr:mr-1.5 rtl:ml-1.5" aria-hidden="true" />
                 {t('clearVault')}
               </Button>
@@ -274,8 +301,13 @@ export default function SettingsPage() {
         title={t('clearVault')}
         description={t('clearVaultConfirm')}
         onConfirm={handleClearVault}
-        onCancel={() => setClearOpen(false)}
+        onCancel={() => {
+          setClearOpen(false);
+          setClearError('');
+        }}
         isPending={clearing}
+        requireMfa={!!mfaEnabled}
+        error={clearError}
       />
 
       <ConfirmDialog

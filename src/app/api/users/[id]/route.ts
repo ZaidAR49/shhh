@@ -13,6 +13,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (user.id !== id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     try {
         const foundUser = await UserService.findById(id);
         return NextResponse.json({ users: foundUser }, { status: 200 });
@@ -27,6 +30,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (user.id !== id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     try {

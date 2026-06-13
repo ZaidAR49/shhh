@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { RiShieldKeyholeLine, RiCheckLine } from 'react-icons/ri';
 import Image from 'next/image';
+import { MfaPromptDialog } from '@/components/auth/MfaPromptDialog';
 
 interface MfaSettingsProps {
   mfaEnabled: boolean | null;
@@ -21,6 +22,7 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
   const [token, setToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isDisablePromptOpen, setIsDisablePromptOpen] = useState(false);
 
   const handleSetup = async () => {
     setLoading(true);
@@ -53,7 +55,7 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
       const res = await fetch('/api/auth/mfa/enable', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, secret }),
+        body: JSON.stringify({ token }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -72,15 +74,20 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
     }
   };
 
-  const handleDisable = async () => {
+  const handleDisable = async (disableToken: string) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/auth/mfa/disable', { method: 'POST' });
+      const res = await fetch('/api/auth/mfa/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: disableToken }),
+      });
       if (res.ok) {
         setMfaEnabled(false);
+        setIsDisablePromptOpen(false);
       } else {
-        setError('Failed to disable MFA');
+        setError('Failed to disable MFA. Invalid code.');
       }
     } catch (err) {
       setError('An error occurred');
@@ -109,7 +116,7 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
         </div>
         <div>
           {mfaEnabled ? (
-            <Button variant="outline" size="sm" onClick={handleDisable} disabled={loading} className="text-destructive border-destructive/30 hover:bg-destructive/10">
+            <Button variant="outline" size="sm" onClick={() => setIsDisablePromptOpen(true)} disabled={loading} className="text-destructive border-destructive/30 hover:bg-destructive/10">
               Disable
             </Button>
           ) : (
@@ -153,6 +160,15 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
             {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
         </div>
+      )}
+
+      {isDisablePromptOpen && (
+        <MfaPromptDialog
+          open={isDisablePromptOpen}
+          onOpenChange={setIsDisablePromptOpen}
+          onSuccess={handleDisable}
+          actionName="disable MFA"
+        />
       )}
     </div>
   );
