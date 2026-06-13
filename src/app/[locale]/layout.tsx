@@ -41,7 +41,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       suppressHydrationWarning
       className={`${inter.variable} ${cairo.variable}`}
     >
-      <body>
+      <body suppressHydrationWarning>
         <Providers
           attribute="class"
           defaultTheme="system"

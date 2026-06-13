@@ -12,7 +12,7 @@ export function EmptyState({ onAddSecret }: EmptyStateProps) {
   const t = useTranslations();
 
   return (
-    <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+    <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 text-center">
       <div className="h-16 w-16 rounded-2xl bg-secondary flex items-center justify-center mb-6 text-muted-foreground">
         <RiShieldLine size={32} />
       </div>

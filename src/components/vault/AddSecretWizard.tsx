@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiUploadCloud2Line } from 'react-icons/ri';
+import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiUploadCloud2Line, RiEyeLine, RiEyeOffLine, RiSearchLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +23,7 @@ import { SecretTypeIcon } from './SecretTypeIcon';
 import { SECRET_TYPE_CONFIGS, SECRET_TYPE_CONFIG_MAP } from '@/lib/secret-types';
 import { SECRET_SCHEMAS } from '@/lib/validations';
 import { cn } from '@/lib/utils';
-import type { Secret, CreateSecretPayload, UpdateSecretPayload } from '@/types';
+import type { Secret, SecretType, CreateSecretPayload, UpdateSecretPayload } from '@/types';
 
 interface AddSecretWizardProps {
   onSave: (payload: CreateSecretPayload | UpdateSecretPayload) => Promise<void>;
@@ -40,6 +40,9 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
   const [selectedType, setSelectedType] = useState<SecretType | null>(initialSecret ? initialSecret.secret_type : null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSensitive, setIsSensitive] = useState(initialSecret?.is_sensitive ?? false);
+  const [showSecrets, setShowSecrets] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     if (initialSecret) {
       return {
@@ -64,6 +67,8 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
     reader.onload = (event) => {
       const text = event.target?.result as string;
       reset({ ...getValues(), content: text });
+      setUploadSuccess(true);
+      setTimeout(() => setUploadSuccess(false), 3000);
     };
     reader.readAsText(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -76,7 +81,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
     register,
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isDirty },
     getValues,
     reset,
   } = useForm<Record<string, string>>({
@@ -101,6 +106,13 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
   const goToStep2 = () => {
     if (!selectedType) return;
     setStep(2);
+  };
+
+  const goBackToStep1 = () => {
+    if (isDirty && !window.confirm(t('common.confirmDiscard') || 'Are you sure you want to go back? Unsaved changes will be lost.')) {
+      return;
+    }
+    setStep(1);
   };
 
   const onStep2Submit = handleSubmit((data) => {
@@ -129,10 +141,22 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
       <div className="animate-fade-in">
         <div className="mb-6">
           <h2 className="text-xl font-semibold">{t('wizard.chooseType')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{t('wizard.chooseTypeDescription')}</p>
+          <p className="text-sm text-muted-foreground mt-1 mb-4">{t('wizard.chooseTypeDescription')}</p>
+          <div className="relative">
+            <RiSearchLine className="absolute ltr:left-3 rtl:right-3 top-2.5 text-muted-foreground" size={18} />
+            <Input 
+              placeholder={t('common.search') || 'Search...'} 
+              value={searchQuery} 
+              onChange={e => setSearchQuery(e.target.value)} 
+              className="ltr:pl-10 rtl:pr-10 bg-muted/50" 
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          {SECRET_TYPE_CONFIGS.map((cfg) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[40vh] overflow-y-auto scrollbar-thin pr-1 pb-1">
+          {SECRET_TYPE_CONFIGS.filter(cfg => 
+            t(cfg.labelKey as Parameters<typeof t>[0]).toLowerCase().includes(searchQuery.toLowerCase()) || 
+            cfg.type.toLowerCase().includes(searchQuery.toLowerCase())
+          ).map((cfg) => (
             <button
               key={cfg.type}
               type="button"
@@ -154,7 +178,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
             </button>
           ))}
         </div>
-        <div className="flex justify-end mt-6">
+        <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-6 flex justify-end z-10">
           <Button
             onClick={goToStep2}
             disabled={!selectedType}
@@ -216,14 +240,20 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                         accept=".env,text/plain"
                         onChange={handleFileUpload}
                       />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="text-xs flex items-center gap-1 text-primary hover:underline font-medium"
-                      >
-                        <RiUploadCloud2Line size={14} />
-                        {t('wizard.importFile')}
-                      </button>
+                      {uploadSuccess ? (
+                        <span className="text-xs flex items-center gap-1 text-vault-unlocked font-medium">
+                          <RiCheckLine size={14} /> Imported successfully!
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="text-xs flex items-center gap-1 text-primary hover:underline font-medium"
+                        >
+                          <RiUploadCloud2Line size={14} />
+                          {t('wizard.importFile')}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -314,10 +344,10 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
           )}
         </div>
 
-        <div className="flex items-center justify-between mt-6">
+        <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-6 flex items-center justify-between z-10">
           <Button
             variant="outline"
-            onClick={() => initialSecret ? onCancel() : setStep(1)}
+            onClick={() => initialSecret ? onCancel() : goBackToStep1()}
             aria-label={t('common.back')}
           >
             <RiArrowLeftLine size={16} className="ltr:mr-1.5 rtl:ml-1.5 rtl:rotate-180" />
@@ -334,9 +364,14 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
     // ── Step 3: Confirm ───────────────────────────────────────
     3: (
       <div className="animate-fade-in">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold">{t('wizard.confirmSave')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{t('wizard.confirmSaveDescription')}</p>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">{t('wizard.confirmSave')}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{t('wizard.confirmSaveDescription')}</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowSecrets(!showSecrets)} className="text-muted-foreground">
+            {showSecrets ? <><RiEyeOffLine className="ltr:mr-2 rtl:ml-2" /> Hide</> : <><RiEyeLine className="ltr:mr-2 rtl:ml-2" /> Show values</>}
+          </Button>
         </div>
         <div className="bg-muted rounded-lg p-4 space-y-3">
           {Object.entries(formData)
@@ -347,12 +382,12 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                   {key.replace(/_/g, ' ')}
                 </span>
                 <span className="text-sm font-mono break-all flex-1 text-muted-foreground">
-                  {'••••••••'}
+                  {showSecrets ? value : '••••••••'}
                 </span>
               </div>
             ))}
         </div>
-        <div className="flex items-center justify-between mt-6">
+        <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-6 flex items-center justify-between z-10">
           <Button variant="outline" onClick={() => setStep(2)} aria-label={t('common.back')}>
             <RiArrowLeftLine size={16} className="ltr:mr-1.5 rtl:ml-1.5 rtl:rotate-180" />
             {t('common.back')}

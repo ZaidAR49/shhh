@@ -43,7 +43,7 @@ export default function EditSecretPage({ params }: EditSecretPageProps) {
 
   if (!secret) {
     return (
-      <div className="text-center py-24 text-muted-foreground">
+      <div className="text-center py-12 sm:py-16 text-muted-foreground">
         Secret not found.
       </div>
     );

@@ -43,13 +43,15 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
 
   return (
     <VaultProvider>
-      <div className="min-h-screen bg-background">
-        <Navbar session={session} minutesRemaining={minutesRemaining} onLock={handleLock} />
-      <SessionBar minutesRemaining={minutesRemaining} />
-      <SessionExpiry minutesRemaining={minutesRemaining} />
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
+        <div className="sticky top-0 z-50 w-full flex flex-col">
+          <Navbar session={session} minutesRemaining={minutesRemaining} onLock={handleLock} />
+          <SessionBar minutesRemaining={minutesRemaining} />
+        </div>
+        <SessionExpiry minutesRemaining={minutesRemaining} />
 
-      {/* Main content with sidebar */}
-      <div className="mt-[96px] flex w-full max-w-[1400px] mx-auto h-[calc(100vh-96px)] overflow-hidden">
+        {/* Main content with sidebar */}
+        <div className="flex-1 min-h-0 flex w-full max-w-[1400px] mx-auto overflow-hidden">
         {/* Desktop sidebar */}
         <div className="hidden md:flex flex-col border-border border-e ltr:pr-6 rtl:pl-6 lg:ltr:pr-8 lg:rtl:pl-8 overflow-y-auto h-full shrink-0 w-[260px] scrollbar-thin">
           <Sidebar />

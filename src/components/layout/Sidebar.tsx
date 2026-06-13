@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
+import { useSession } from '@/hooks/useSession';
 import {
   RiSafe2Line,
   RiLockPasswordLine,
@@ -18,6 +19,7 @@ import {
   RiSettings3Line,
   RiStarLine,
   RiLock2Line,
+  RiLockLine,
 } from 'react-icons/ri';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -49,8 +51,10 @@ export function Sidebar({ onNavClick }: SidebarProps) {
   const t = useTranslations();
   const locale = useLocale();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const activeFilter = searchParams.get('filter') || 'all';
   
+  const { lock } = useSession();
   const { secrets } = useGlobalVault();
   
   const secretCounts = useMemo(() => {
@@ -96,10 +100,11 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
   return (
     <aside
-      className="w-56 shrink-0 py-6 space-y-1"
+      className="flex flex-col h-full w-56 shrink-0 py-6"
       aria-label={t('vault.myVault')}
     >
-      {/* All secrets */}
+      <div className="flex-1 overflow-y-auto space-y-1 scrollbar-none pr-2">
+        {/* All secrets */}
       {navItem('all', t('vault.allSecrets'), RiSafe2Line, secretCounts['all'])}
       
       {/* Favorites */}
@@ -121,9 +126,10 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         );
       })}
 
-      <Separator className="my-3 mx-4 w-auto" />
+      </div>
 
-      {/* Settings Link */}
+      <div className="shrink-0 space-y-1 pt-4 mt-2 border-t border-border/50 pr-2">
+        {/* Settings Link */}
       <Link
         href={`/${locale}/vault/settings`}
         onClick={onNavClick}
@@ -136,6 +142,26 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         <RiSettings3Line size={18} className="shrink-0" />
         <span className="ltr:text-left rtl:text-right truncate">{t('settings.title')}</span>
       </Link>
+
+      <Separator className="my-3 mx-4 w-auto md:hidden" />
+
+      {/* Lock Button (Mobile mostly) */}
+      <button
+        onClick={() => {
+          if (onNavClick) onNavClick();
+          lock();
+          router.push(`/${locale}/auth`);
+        }}
+        className={cn(
+          'w-full flex md:hidden items-center gap-3 px-4 py-2.5 rounded-md text-[15px]',
+          'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'text-destructive hover:bg-destructive/10'
+        )}
+      >
+        <RiLockLine size={18} className="shrink-0" />
+        <span className="ltr:text-left rtl:text-right truncate">{t('auth.lockVault')}</span>
+      </button>
+      </div>
     </aside>
   );
 }

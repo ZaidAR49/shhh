@@ -106,10 +106,11 @@ export function SecretCard({ secret, onView, onEdit, onDelete }: SecretCardProps
         {/* Hover action row — visible on hover/focus-within */}
         <div
           className={cn(
-            'flex items-center gap-0.5 opacity-0 translate-y-0.5',
-            'group-hover:opacity-100 group-hover:translate-y-0',
-            'group-focus-within:opacity-100 group-focus-within:translate-y-0',
-            'transition-all duration-150'
+            'flex items-center gap-0.5 transition-all duration-150',
+            'opacity-100 translate-y-0',
+            'sm:opacity-0 sm:translate-y-0.5',
+            'sm:group-hover:opacity-100 sm:group-hover:translate-y-0',
+            'sm:group-focus-within:opacity-100 sm:group-focus-within:translate-y-0'
           )}
           onClick={(e) => e.stopPropagation()}
         >

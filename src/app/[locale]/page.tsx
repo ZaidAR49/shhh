@@ -51,11 +51,11 @@ export default function LandingPage() {
 
       {/* Hero */}
       <main className="flex-1 pt-[96px]">
-        <section className="px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 max-w-5xl mx-auto text-center">
+        <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24 max-w-5xl mx-auto text-center">
           {/* Shield */}
           <div className="flex justify-center mb-8" aria-hidden="true">
             <div className="relative">
-              <Image src="/icon.png" alt="Shhh Logo" width={240} height={240} priority className="shrink-0" />
+              <Image src="/icon.png" alt="Shhh Logo" width={200} height={200} priority className="shrink-0" />
               <div className="absolute inset-0 rounded-full bg-primary/5 blur-2xl scale-150" />
             </div>
           </div>

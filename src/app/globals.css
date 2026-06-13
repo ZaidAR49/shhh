@@ -94,40 +94,40 @@
 
 /* ── Dark mode palette ─────────────────────────────────────── */
 .dark {
-  /* Backgrounds */
-  --background:          oklch(0.115 0.02 258);   /* Deep blue-black */
-  --foreground:          oklch(0.9 0.015 250);
+  /* Backgrounds - True deep space black for sleekness */
+  --background:          oklch(0.10 0.01 260);    /* Sleek almost-black */
+  --foreground:          oklch(0.96 0.01 260);    /* Bright clear text */
 
   /* Card / popover surfaces */
-  --card:                oklch(0.16 0.022 258);
-  --card-foreground:     oklch(0.9 0.015 250);
-  --popover:             oklch(0.16 0.022 258);
-  --popover-foreground:  oklch(0.9 0.015 250);
+  --card:                oklch(0.14 0.02 260);    /* Elevated card color */
+  --card-foreground:     oklch(0.96 0.01 260);
+  --popover:             oklch(0.14 0.02 260);
+  --popover-foreground:  oklch(0.96 0.01 260);
 
-  /* Primary — Lighter navy for dark bg readability */
-  --primary:             oklch(0.66 0.175 262);
-  --primary-foreground:  oklch(0.115 0.02 258);
+  /* Primary — Vibrant electric blue */
+  --primary:             oklch(0.75 0.18 260);
+  --primary-foreground:  oklch(0.10 0.01 260);
 
   /* Secondary */
-  --secondary:           oklch(0.19 0.03 258);
-  --secondary-foreground:oklch(0.68 0.06 255);
+  --secondary:           oklch(0.18 0.02 260);
+  --secondary-foreground:oklch(0.90 0.02 260);
 
   /* Muted */
-  --muted:               oklch(0.19 0.03 258);
-  --muted-foreground:    oklch(0.52 0.04 258);
+  --muted:               oklch(0.16 0.02 260);
+  --muted-foreground:    oklch(0.60 0.03 260);    /* Clearer muted text */
 
   /* Accent */
-  --accent:              oklch(0.66 0.175 262);
-  --accent-foreground:   oklch(0.115 0.02 258);
+  --accent:              oklch(0.75 0.18 260);
+  --accent-foreground:   oklch(0.10 0.01 260);
 
   /* Destructive */
-  --destructive:         oklch(0.63 0.225 25);
-  --destructive-foreground: oklch(0.115 0.02 258);
+  --destructive:         oklch(0.65 0.25 25);
+  --destructive-foreground: oklch(0.96 0.01 260);
 
   /* Border / input */
-  --border:              oklch(0.22 0.035 258);
-  --input:               oklch(0.22 0.035 258);
-  --ring:                oklch(0.66 0.175 262);
+  --border:              oklch(0.25 0.03 260);    /* More visible borders */
+  --input:               oklch(0.25 0.03 260);
+  --ring:                oklch(0.75 0.18 260);
 
   /* ── Security status tokens ────── */
   --vault-locked:        oklch(0.63 0.225 25);    /* Red */

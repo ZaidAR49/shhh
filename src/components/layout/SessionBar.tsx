@@ -35,7 +35,7 @@ export function SessionBar({ minutesRemaining }: SessionBarProps) {
                 : 'var(--vault-unlocked)',
             }}
             className={cn(
-              'fixed top-[96px] left-0 right-0 h-1 z-40 transition-colors duration-1000 cursor-help hover:h-2 opacity-80 hover:opacity-100',
+              'w-full h-1 z-20 transition-colors duration-1000 cursor-help hover:h-2 opacity-80 hover:opacity-100',
               isCritical && 'session-bar-critical'
             )}
           />

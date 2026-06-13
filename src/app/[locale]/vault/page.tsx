@@ -167,7 +167,7 @@ export default function VaultPage() {
           </SheetHeader>
           <AddSecretWizard
             onSave={async (payload) => {
-              await createSecret(payload);
+              await createSecret(payload as any);
               setWizardOpen(false);
             }}
             onCancel={() => setWizardOpen(false)}

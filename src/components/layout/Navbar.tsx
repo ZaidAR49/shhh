@@ -34,7 +34,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 h-[96px] bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
+      className="relative z-10 h-[96px] bg-background/95 backdrop-blur-md border-b border-border shadow-sm w-full"
       role="banner"
     >
       <div className="h-full px-4 sm:px-6 lg:px-8 mx-auto max-w-[1400px] flex items-center justify-between w-full">
@@ -61,7 +61,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
             aria-label={t('common.appName')}
             className="flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full hover:opacity-80 transition-opacity"
           >
-            <div className=" p-2 rounded-xl">
+            <div>
               <Image
                 src="/icon.png"
                 alt="Shhh Logo"

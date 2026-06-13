@@ -137,14 +137,14 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
                 {field.masked ? (
                   <MaskToggle value={value} className="flex-1" />
                 ) : (
-                  <span
+                  <div
                     className={cn(
-                      'flex-1 text-sm break-all',
+                      'flex-1 text-sm break-all max-h-[300px] overflow-y-auto scrollbar-thin bg-muted/30 p-2.5 rounded-md border border-border/50',
                       field.monospace && 'font-mono tracking-wide'
                     )}
                   >
                     {value || <span className="text-muted-foreground">—</span>}
-                  </span>
+                  </div>
                 )}
                 {field.copyable && value && (
                   <CopyButton value={value} size="sm" />
@@ -181,12 +181,6 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
             </div>
           </div>
         )}
-        <div className="col-span-2">
-          <p className="font-medium uppercase tracking-wider mb-1">Encrypted blob</p>
-          <p className="font-mono text-[10px] break-all text-muted-foreground/60 leading-relaxed">
-            {secret.encrypted_blob.slice(0, 80)}…
-          </p>
-        </div>
       </div>
     </div>
   );

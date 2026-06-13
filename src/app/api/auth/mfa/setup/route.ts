@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     // Generate a secure secret for the user (20 bytes for strict authenticator compatibility)
-    const secret = generateSecret(20);
+    const secret = generateSecret({ length: 20 });
 
     // Create the provisioning URI for Google/Microsoft Authenticator
     const baseOtpauthUrl = generateURI({

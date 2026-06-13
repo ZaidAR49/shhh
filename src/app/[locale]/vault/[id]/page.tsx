@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { SecretDetail } from '@/components/vault/SecretDetail';
@@ -17,6 +17,7 @@ export default function SecretPage({ params }: SecretPageProps) {
   const { id } = use(params);
   const locale = useLocale();
   const router = useRouter();
+  const t = useTranslations();
   const [secret, setSecret] = useState<Secret | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -62,8 +63,8 @@ export default function SecretPage({ params }: SecretPageProps) {
 
   if (!secret) {
     return (
-      <div className="text-center py-24 text-muted-foreground">
-        Secret not found.
+      <div className="text-center py-12 sm:py-16 text-muted-foreground">
+        {t('vault.secretNotFound')}
       </div>
     );
   }

@@ -16,7 +16,7 @@ export default function NewSecretPage() {
       <h1 className="text-2xl font-semibold tracking-tight mb-6">{t('addSecret')}</h1>
       <AddSecretWizard
         onSave={async (payload) => {
-          await createSecret(payload);
+          await createSecret(payload as any);
           router.push(`/${locale}/vault`);
         }}
         onCancel={() => router.push(`/${locale}/vault`)}
