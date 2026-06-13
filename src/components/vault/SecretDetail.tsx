@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { RiArrowLeftLine, RiArrowRightLine, RiDeleteBinLine, RiPencilLine } from 'react-icons/ri';
+import { RiArrowLeftLine, RiArrowRightLine, RiDeleteBinLine, RiPencilLine, RiDownloadLine } from 'react-icons/ri';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -29,6 +29,21 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
 
   const isRtl = locale === 'ar';
   const BackIcon = isRtl ? RiArrowRightLine : RiArrowLeftLine;
+
+  const handleExportEnv = () => {
+    const content = fields['content'];
+    if (!content) return;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${secret.name}.env`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8">
@@ -68,6 +83,17 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
+          {secret.secret_type === 'env_variable' && (
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label={t('vault.exportEnv')}
+              onClick={handleExportEnv}
+            >
+              <RiDownloadLine size={14} className="ltr:mr-1.5 rtl:ml-1.5" />
+              {t('vault.exportEnv')}
+            </Button>
+          )}
           {onEdit && (
             <Button
               variant="outline"

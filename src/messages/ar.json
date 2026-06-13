@@ -59,7 +59,8 @@
     "editSecret": "تعديل السر",
     "total": "{count} سر",
     "filterBy": "تصفية حسب النوع",
-    "clearFilter": "مسح التصفية"
+    "clearFilter": "مسح التصفية",
+    "exportEnv": "تصدير كملف .env"
   },
   "secretTypes": {
     "password": "كلمة مرور",

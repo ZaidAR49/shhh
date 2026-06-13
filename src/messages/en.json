@@ -59,7 +59,8 @@
     "editSecret": "Edit Secret",
     "total": "{count} secrets",
     "filterBy": "Filter by type",
-    "clearFilter": "Clear filter"
+    "clearFilter": "Clear filter",
+    "exportEnv": "Export as .env"
   },
   "secretTypes": {
     "password": "Password",
