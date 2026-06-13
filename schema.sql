@@ -1,175 +1,242 @@
--- =============================================================
---  SHHH — Digital Vault Database Schema
---  Compatible with: PostgreSQL 15+, Supabase, Neon, Railway,
---                   Render, PlanetScale (Postgres mode), etc.
---  To apply: paste this entire file into your SQL editor and run.
--- =============================================================
+-- =============================================================================
+--  FULL SCHEMA DUMP — shhh (Supabase project: qtzockghmthzsdjjpceg)
+--  Generated: 2026-06-13
+--  Postgres 17 compatible
+--  Apply top-to-bottom on a fresh Postgres / Supabase instance.
+-- =============================================================================
 
 
--- =============================================================
---  SECTION 1 — ENUM TYPES
--- =============================================================
+-- -----------------------------------------------------------------------------
+-- 0. EXTENSIONS
+-- -----------------------------------------------------------------------------
+CREATE EXTENSION IF NOT EXISTS "pgcrypto"        WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"       WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA extensions;
+-- Note: supabase_vault is Supabase-internal; skip on non-Supabase providers.
+-- CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA vault;
 
-CREATE TYPE secret_type AS ENUM (
-    'password',
-    'visa',
-    'env_variable',
-    'api_key',
-    'license',
-    'identity',
-    'bank_account',
-    'secure_note',
-    'wifi'
+
+-- -----------------------------------------------------------------------------
+-- 1. SCHEMAS
+-- -----------------------------------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS drizzle;
+-- public already exists on every Postgres instance.
+
+
+-- -----------------------------------------------------------------------------
+-- 2. SEQUENCES
+-- -----------------------------------------------------------------------------
+CREATE SEQUENCE IF NOT EXISTS drizzle.__drizzle_migrations_id_seq
+  INCREMENT BY 1
+  MINVALUE 1
+  MAXVALUE 2147483647
+  START WITH 1
+  NO CYCLE;
+
+
+-- -----------------------------------------------------------------------------
+-- 3. CUSTOM TYPES / ENUMS
+-- -----------------------------------------------------------------------------
+CREATE TYPE public.secret_type AS ENUM (
+  'password',
+  'visa',
+  'env_variable',
+  'api_key',
+  'license',
+  'identity',
+  'bank_account',
+  'secure_note',
+  'wifi'
 );
 
 
--- =============================================================
---  SECTION 2 — NEXTAUTH TABLES
--- =============================================================
+-- -----------------------------------------------------------------------------
+-- 4. TABLES
+-- -----------------------------------------------------------------------------
 
--- Users
-CREATE TABLE "user" (
-    id              TEXT        PRIMARY KEY DEFAULT gen_random_uuid()::text,
-    name            TEXT,
-    email           TEXT        NOT NULL UNIQUE,
-    "emailVerified" TIMESTAMP,
-    image           TEXT
+-- 4a. drizzle.__drizzle_migrations  (Drizzle ORM migration tracking)
+CREATE TABLE IF NOT EXISTS drizzle.__drizzle_migrations (
+  id         int4  NOT NULL DEFAULT nextval('drizzle.__drizzle_migrations_id_seq'::regclass),
+  hash       text  NOT NULL,
+  created_at int8
 );
 
--- OAuth provider accounts linked to a user
-CREATE TABLE account (
-    "userId"            TEXT    NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    type                TEXT    NOT NULL,
-    provider            TEXT    NOT NULL,
-    "providerAccountId" TEXT    NOT NULL,
-    refresh_token       TEXT,
-    access_token        TEXT,
-    expires_at          INTEGER,
-    token_type          TEXT,
-    scope               TEXT,
-    id_token            TEXT,
-    session_state       TEXT,
-    PRIMARY KEY (provider, "providerAccountId")
+-- 4b. public."user"
+CREATE TABLE IF NOT EXISTS public."user" (
+  id              text        NOT NULL DEFAULT (gen_random_uuid())::text,
+  name            text,
+  email           text        NOT NULL,
+  "emailVerified" timestamp,
+  image           text,
+  mfa_enabled     bool        NOT NULL DEFAULT false,
+  mfa_secret      text
 );
 
--- Active user sessions
-CREATE TABLE session (
-    "sessionToken"  TEXT        PRIMARY KEY,
-    "userId"        TEXT        NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    expires         TIMESTAMP   NOT NULL
+-- 4c. public.account  (OAuth accounts linked to a user)
+CREATE TABLE IF NOT EXISTS public.account (
+  "userId"          text NOT NULL,
+  type              text NOT NULL,
+  provider          text NOT NULL,
+  "providerAccountId" text NOT NULL,
+  refresh_token     text,
+  access_token      text,
+  expires_at        int4,
+  token_type        text,
+  scope             text,
+  id_token          text,
+  session_state     text
 );
 
--- Email verification tokens
-CREATE TABLE "verificationToken" (
-    identifier  TEXT        NOT NULL,
-    token       TEXT        NOT NULL,
-    expires     TIMESTAMP   NOT NULL,
-    PRIMARY KEY (identifier, token)
+-- 4d. public.session
+CREATE TABLE IF NOT EXISTS public.session (
+  "sessionToken" text      NOT NULL,
+  "userId"       text      NOT NULL,
+  expires        timestamp NOT NULL
+);
+
+-- 4e. public.secrets
+CREATE TABLE IF NOT EXISTS public.secrets (
+  id             text             NOT NULL DEFAULT (gen_random_uuid())::text,
+  user_id        text             NOT NULL,
+  type           public.secret_type NOT NULL,
+  title          text             NOT NULL,
+  encrypted_data text             NOT NULL,
+  encrypted_dek  text             NOT NULL,
+  created_at     timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     timestamp        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  is_sensitive   bool             NOT NULL DEFAULT false,
+  is_favorite    bool             NOT NULL DEFAULT false
+);
+
+-- 4f. public."verificationToken"
+CREATE TABLE IF NOT EXISTS public."verificationToken" (
+  identifier text      NOT NULL,
+  token      text      NOT NULL,
+  expires    timestamp NOT NULL
 );
 
 
--- =============================================================
---  SECTION 3 — CORE VAULT TABLE
--- =============================================================
+-- -----------------------------------------------------------------------------
+-- 5. PRIMARY KEYS & UNIQUE CONSTRAINTS
+-- -----------------------------------------------------------------------------
+ALTER TABLE drizzle.__drizzle_migrations
+  ADD CONSTRAINT __drizzle_migrations_pkey PRIMARY KEY (id);
 
-CREATE TABLE secrets (
-    id              TEXT        PRIMARY KEY DEFAULT gen_random_uuid()::text,
-    user_id         TEXT        NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    type            secret_type NOT NULL,
-    title           TEXT        NOT NULL,
-    encrypted_data  TEXT        NOT NULL,  -- AES-GCM ciphertext (base64)
-    encrypted_dek   TEXT        NOT NULL,  -- DEK wrapped with user's KEK (base64)
-    is_sensitive    BOOLEAN     NOT NULL DEFAULT false,  -- treat as maximum security level
-    created_at      TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+ALTER TABLE public."user"
+  ADD CONSTRAINT user_pkey PRIMARY KEY (id);
 
+ALTER TABLE public."user"
+  ADD CONSTRAINT user_email_key UNIQUE (email);
 
--- =============================================================
---  SECTION 4 — FUNCTIONS & TRIGGERS
--- =============================================================
+ALTER TABLE public.account
+  ADD CONSTRAINT account_pkey PRIMARY KEY (provider, "providerAccountId");
 
--- Auto-update updated_at on every secrets row change
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+ALTER TABLE public.session
+  ADD CONSTRAINT session_pkey PRIMARY KEY ("sessionToken");
 
-CREATE TRIGGER secrets_updated_at
-    BEFORE UPDATE ON secrets
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+ALTER TABLE public.secrets
+  ADD CONSTRAINT secrets_pkey PRIMARY KEY (id);
+
+ALTER TABLE public."verificationToken"
+  ADD CONSTRAINT "verificationToken_pkey" PRIMARY KEY (identifier, token);
 
 
--- =============================================================
---  SECTION 5 — INDEXES
--- =============================================================
+-- -----------------------------------------------------------------------------
+-- 6. FOREIGN KEYS
+-- -----------------------------------------------------------------------------
+ALTER TABLE public.account
+  ADD CONSTRAINT "account_userId_fkey"
+  FOREIGN KEY ("userId") REFERENCES public."user" (id)
+  ON UPDATE NO ACTION ON DELETE CASCADE;
 
--- account
+ALTER TABLE public.session
+  ADD CONSTRAINT "session_userId_fkey"
+  FOREIGN KEY ("userId") REFERENCES public."user" (id)
+  ON UPDATE NO ACTION ON DELETE CASCADE;
+
+ALTER TABLE public.secrets
+  ADD CONSTRAINT secrets_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES public."user" (id)
+  ON UPDATE NO ACTION ON DELETE CASCADE;
+
+
+-- -----------------------------------------------------------------------------
+-- 7. INDEXES
+-- -----------------------------------------------------------------------------
 CREATE INDEX idx_account_user_id
-    ON account("userId");
+  ON public.account USING btree ("userId");
 
--- session
 CREATE INDEX idx_session_user_id
-    ON session("userId");
+  ON public.session USING btree ("userId");
 
 CREATE INDEX idx_session_expires
-    ON session(expires);
+  ON public.session USING btree (expires);
 
--- verificationToken
-CREATE INDEX idx_verification_token_expires
-    ON "verificationToken"(expires);
-
--- secrets — single column (broad lookups)
 CREATE INDEX idx_secrets_user_id
-    ON secrets(user_id);
+  ON public.secrets USING btree (user_id);
 
--- secrets — composite: filter by type within a user's vault
 CREATE INDEX idx_secrets_user_id_type
-    ON secrets(user_id, type);
+  ON public.secrets USING btree (user_id, type);
 
--- secrets — composite: sort by newest first within a user's vault
 CREATE INDEX idx_secrets_user_id_created
-    ON secrets(user_id, created_at DESC);
+  ON public.secrets USING btree (user_id, created_at DESC);
+
+CREATE INDEX idx_verification_token_expires
+  ON public."verificationToken" USING btree (expires);
 
 
--- =============================================================
---  SECTION 6 — ROW LEVEL SECURITY (RLS)
---  Note: auth.uid() is Supabase-specific.
---  If using another provider, replace auth.uid() with your
---  equivalent session user function, or remove RLS and enforce
---  access control at the application layer instead.
--- =============================================================
-
-ALTER TABLE "user"              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE account             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE session             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE secrets             ENABLE ROW LEVEL SECURITY;
-
--- Each user can only access their own row
-CREATE POLICY "users_own_row" ON "user"
-    FOR ALL
-    USING (id = auth.uid()::text);
-
--- Each user can only access their own linked OAuth accounts
-CREATE POLICY "accounts_own_row" ON account
-    FOR ALL
-    USING ("userId" = auth.uid()::text);
-
--- Each user can only access their own sessions
-CREATE POLICY "sessions_own_row" ON session
-    FOR ALL
-    USING ("userId" = auth.uid()::text);
-
--- Each user can only access their own secrets
-CREATE POLICY "secrets_own_row" ON secrets
-    FOR ALL
-    USING (user_id = auth.uid()::text);
+-- -----------------------------------------------------------------------------
+-- 8. FUNCTIONS
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.update_updated_at()
+  RETURNS trigger
+  LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$;
 
 
--- =============================================================
---  END OF SCHEMA
--- =============================================================
+-- -----------------------------------------------------------------------------
+-- 9. TRIGGERS
+-- -----------------------------------------------------------------------------
+CREATE TRIGGER secrets_updated_at
+  BEFORE UPDATE ON public.secrets
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at();
+
+
+-- -----------------------------------------------------------------------------
+-- 10. ROW LEVEL SECURITY
+-- -----------------------------------------------------------------------------
+ALTER TABLE public."user"    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.account   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.session   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.secrets   ENABLE ROW LEVEL SECURITY;
+
+-- Policies: each user may only see/modify their own rows.
+-- NOTE: auth.uid() is Supabase-specific.
+--       On other providers replace with your JWT uid extraction expression.
+
+CREATE POLICY users_own_row ON public."user"
+  AS PERMISSIVE FOR ALL TO public
+  USING (id = (auth.uid())::text);
+
+CREATE POLICY accounts_own_row ON public.account
+  AS PERMISSIVE FOR ALL TO public
+  USING ("userId" = (auth.uid())::text);
+
+CREATE POLICY sessions_own_row ON public.session
+  AS PERMISSIVE FOR ALL TO public
+  USING ("userId" = (auth.uid())::text);
+
+CREATE POLICY secrets_own_row ON public.secrets
+  AS PERMISSIVE FOR ALL TO public
+  USING (user_id = (auth.uid())::text);
+
+
+-- =============================================================================
+-- END OF SCHEMA
+-- =============================================================================

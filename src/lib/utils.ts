@@ -23,7 +23,11 @@ export function formatDate(isoString: string, locale: string = 'en'): string {
 export function timeAgo(isoString: string, locale: string = 'en'): string {
   const date = new Date(isoString);
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
+  let diffMs = now.getTime() - date.getTime();
+  
+  // Prevent "tomorrow" / future dates if server clock is slightly ahead of client
+  if (diffMs < 0) diffMs = 0;
+
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   const rtf = new Intl.RelativeTimeFormat(locale === 'ar' ? 'ar' : 'en', { numeric: 'auto' });
 

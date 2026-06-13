@@ -16,6 +16,8 @@ import {
   RiStickyNoteLine,
   RiWifiLine,
   RiSettings3Line,
+  RiStarLine,
+  RiLock2Line,
 } from 'react-icons/ri';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -60,7 +62,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
   }, [secrets]);
 
   const navItem = (
-    filter: SecretType | 'all',
+    filter: SecretType | 'all' | 'favorites' | 'sensitive',
     label: string,
     Icon: React.ComponentType<{ size?: number; className?: string }>,
     count?: number
@@ -99,6 +101,12 @@ export function Sidebar({ onNavClick }: SidebarProps) {
     >
       {/* All secrets */}
       {navItem('all', t('vault.allSecrets'), RiSafe2Line, secretCounts['all'])}
+      
+      {/* Favorites */}
+      {navItem('favorites', t('vault.favorites') || 'Favorites', RiStarLine, secrets.filter(s => s.is_favorite).length)}
+
+      {/* Sensitive */}
+      {navItem('sensitive', 'Sensitive', RiLock2Line, secrets.filter(s => s.is_sensitive).length)}
 
       <Separator className="my-3 mx-4 w-auto" />
 

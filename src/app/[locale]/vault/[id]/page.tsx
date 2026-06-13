@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { mockApi } from '@/lib/mock-api';
+
 import { SecretDetail } from '@/components/vault/SecretDetail';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,15 +23,18 @@ export default function SecretPage({ params }: SecretPageProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    mockApi.getSecret(id).then((s) => {
-      setSecret(s);
-      setIsLoading(false);
-    });
+    fetch(`/api/secrets/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setSecret(data);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
   }, [id]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    await mockApi.deleteSecret(id);
+    await fetch(`/api/secrets/${id}`, { method: 'DELETE' });
     setIsDeleting(false);
     router.push(`/${locale}/vault`);
   };
@@ -70,7 +73,7 @@ export default function SecretPage({ params }: SecretPageProps) {
       <SecretDetail
         secret={secret}
         onDelete={() => setDeleteOpen(true)}
-        onEdit={() => router.push(`/${locale}/vault/${id}`)}
+        onEdit={() => router.push(`/${locale}/vault/${id}/edit`)}
       />
       <ConfirmDialog
         open={deleteOpen}

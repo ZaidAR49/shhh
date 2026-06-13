@@ -11,19 +11,28 @@ import { AddSecretWizard } from '@/components/vault/AddSecretWizard';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { MfaPromptDialog } from '@/components/auth/MfaPromptDialog';
 import { useGlobalVault } from '@/components/vault/VaultProvider';
+import { useRouter } from 'next/navigation';
 import type { SecretType } from '@/types';
 
 export default function VaultPage() {
   const t = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const { secrets, isLoading, loadSecrets, createSecret, deleteSecret, searchSecrets } = useGlobalVault();
+  const { secrets, isLoading, loadSecrets, createSecret, deleteSecret, searchSecrets, mfaEnabled } = useGlobalVault();
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [mfaPrompt, setMfaPrompt] = useState<{
+    open: boolean;
+    actionType: 'view' | 'edit' | 'delete';
+    targetId: string | null;
+  }>({ open: false, actionType: 'view', targetId: null });
   
   const activeFilter = searchParams.get('filter') || 'all';
 
@@ -32,9 +41,11 @@ export default function VaultPage() {
     loadSecrets();
   }, [loadSecrets]);
 
-  // Filter secrets by type
+  // Filter secrets by type or favorites
   const filteredSecrets = useMemo(() => {
     if (activeFilter === 'all') return secrets;
+    if (activeFilter === 'favorites') return secrets.filter(s => s.is_favorite);
+    if (activeFilter === 'sensitive') return secrets.filter(s => s.is_sensitive);
     return secrets.filter((s) => s.secret_type === activeFilter);
   }, [secrets, activeFilter]);
 
@@ -63,6 +74,25 @@ export default function VaultPage() {
 
   const deleteTarget = deleteId ? secrets.find((s) => s.id === deleteId) : null;
 
+  const interceptAction = (id: string, actionType: 'view' | 'edit' | 'delete') => {
+    const target = secrets.find(s => s.id === id);
+    if (target?.is_sensitive && mfaEnabled) {
+      setMfaPrompt({ open: true, actionType, targetId: id });
+    } else {
+      executeAction(id, actionType);
+    }
+  };
+
+  const executeAction = (id: string, actionType: 'view' | 'edit' | 'delete') => {
+    if (actionType === 'view') {
+      router.push(`/${locale}/vault/${id}`);
+    } else if (actionType === 'edit') {
+      router.push(`/${locale}/vault/${id}/edit`);
+    } else if (actionType === 'delete') {
+      setDeleteId(id);
+    }
+  };
+
   return (
     <div className="flex px-4 sm:px-6 lg:px-8">
       {/* Page content */}
@@ -71,7 +101,15 @@ export default function VaultPage() {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{t('vault.myVault')}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {activeFilter === 'favorites' 
+                  ? (t('vault.favorites') || 'Favorites') 
+                  : activeFilter === 'sensitive'
+                    ? 'Sensitive'
+                    : activeFilter !== 'all' 
+                      ? t(`secretTypes.${activeFilter}` as Parameters<typeof t>[0])
+                      : t('vault.myVault')}
+              </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {t('vault.total', { count: filteredSecrets.length })}
               </p>
@@ -95,7 +133,13 @@ export default function VaultPage() {
       {!isLoading && filteredSecrets.length === 0 ? (
         <EmptyState onAddSecret={() => setWizardOpen(true)} />
       ) : (
-        <SecretGrid secrets={filteredSecrets} isLoading={isLoading} />
+        <SecretGrid 
+          secrets={filteredSecrets} 
+          isLoading={isLoading} 
+          onView={(id) => interceptAction(id, 'view')}
+          onEdit={(id) => interceptAction(id, 'edit')}
+          onDelete={(id) => interceptAction(id, 'delete')}
+        />
       )}
 
       {/* Add Secret wizard in a Sheet */}
@@ -130,6 +174,18 @@ export default function VaultPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteId(null)}
         isPending={isDeleting}
+      />
+
+      {/* MFA Verification Prompt */}
+      <MfaPromptDialog
+        open={mfaPrompt.open}
+        onOpenChange={(open) => setMfaPrompt(prev => ({ ...prev, open }))}
+        onSuccess={() => {
+          if (mfaPrompt.targetId) {
+            executeAction(mfaPrompt.targetId, mfaPrompt.actionType);
+          }
+        }}
+        actionName={mfaPrompt.actionType}
       />
       </div>
     </div>

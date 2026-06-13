@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { RiPencilLine, RiFileCopyLine } from 'react-icons/ri';
+import { RiPencilLine, RiFileCopyLine, RiDeleteBinLine, RiStarLine, RiStarFill, RiLock2Fill } from 'react-icons/ri';
 import { Badge } from '@/components/ui/badge';
+import { useGlobalVault } from '@/components/vault/VaultProvider';
 import { CopyButton } from './CopyButton';
 import { SecretTypeIcon } from './SecretTypeIcon';
 import { SECRET_TYPE_CONFIG_MAP } from '@/lib/secret-types';
@@ -12,13 +13,16 @@ import type { Secret } from '@/types';
 
 interface SecretCardProps {
   secret: Secret;
+  onView?: (id: string) => void;
   onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function SecretCard({ secret, onEdit }: SecretCardProps) {
+export function SecretCard({ secret, onView, onEdit, onDelete }: SecretCardProps) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations();
+  const { toggleFavorite } = useGlobalVault();
   const config = SECRET_TYPE_CONFIG_MAP[secret.secret_type];
 
   // Decode primary field for preview
@@ -26,13 +30,26 @@ export function SecretCard({ secret, onEdit }: SecretCardProps) {
   const primaryValue = config ? fields[config.primaryField] ?? '' : '';
 
   const handleCardClick = () => {
-    router.push(`/${locale}/vault/${secret.id}`);
+    if (onView) onView(secret.id);
+    else router.push(`/${locale}/vault/${secret.id}`);
   };
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onEdit) onEdit(secret.id);
-    else router.push(`/${locale}/vault/${secret.id}`);
+    else router.push(`/${locale}/vault/${secret.id}/edit`);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) onDelete(secret.id);
+  };
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await toggleFavorite(secret.id);
+    } catch (err) {}
   };
 
   return (
@@ -55,8 +72,11 @@ export function SecretCard({ secret, onEdit }: SecretCardProps) {
           <SecretTypeIcon type={secret.secret_type} size={18} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate leading-tight">
+          <p className="text-sm font-semibold text-foreground truncate leading-tight flex items-center gap-1.5">
             {secret.name}
+            {secret.is_sensitive && (
+              <RiLock2Fill size={14} className="text-destructive shrink-0" aria-label="Sensitive Secret" />
+            )}
           </p>
           {config && (
             <Badge
@@ -98,6 +118,20 @@ export function SecretCard({ secret, onEdit }: SecretCardProps) {
           )}
           <button
             type="button"
+            aria-label={secret.is_favorite ? "Remove from favorites" : "Add to favorites"}
+            onClick={handleFavorite}
+            className={cn(
+              'inline-flex items-center justify-center h-7 w-7 rounded-md',
+              'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              secret.is_favorite 
+                ? 'text-amber-500 hover:bg-amber-500/10' 
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            )}
+          >
+            {secret.is_favorite ? <RiStarFill size={14} /> : <RiStarLine size={14} />}
+          </button>
+          <button
+            type="button"
             aria-label={t('vault.editSecret')}
             onClick={handleEdit}
             className={cn(
@@ -107,6 +141,18 @@ export function SecretCard({ secret, onEdit }: SecretCardProps) {
             )}
           >
             <RiPencilLine size={14} />
+          </button>
+          <button
+            type="button"
+            aria-label={t('vault.deleteSecret')}
+            onClick={handleDelete}
+            className={cn(
+              'inline-flex items-center justify-center h-7 w-7 rounded-md',
+              'text-muted-foreground hover:text-destructive hover:bg-destructive/10',
+              'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            )}
+          >
+            <RiDeleteBinLine size={14} />
           </button>
         </div>
       </div>

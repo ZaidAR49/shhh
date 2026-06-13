@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
-import { mockApi } from '@/lib/mock-api';
 import { useSession } from '@/hooks/useSession';
 import { cn } from '@/lib/utils';
 import { MfaSettings } from '@/components/settings/MfaSettings';
@@ -78,7 +77,7 @@ export default function SettingsPage() {
 
   const handleClearVault = async () => {
     setClearing(true);
-    await mockApi.clearVault();
+    await fetch('/api/secrets/clear', { method: 'DELETE' });
     setClearing(false);
     setClearOpen(false);
   };

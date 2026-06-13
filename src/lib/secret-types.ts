@@ -25,6 +25,7 @@ export interface SecretField {
   required: boolean;
   selectOptions?: { value: string; labelKey: string }[];
   placeholder?: string;
+  defaultValue?: string;
 }
 
 export interface SecretTypeConfig {
@@ -46,7 +47,6 @@ export const SECRET_TYPE_CONFIGS: SecretTypeConfig[] = [
     badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     primaryField: 'password',
     fields: [
-      { key: 'site_url',  labelKey: 'fields.siteUrl',  type: 'text',     masked: false, copyable: false, monospace: false, required: false },
       { key: 'username',  labelKey: 'fields.username',  type: 'text',     masked: false, copyable: true,  monospace: false, required: true  },
       { key: 'password',  labelKey: 'fields.password',  type: 'password', masked: true,  copyable: true,  monospace: true,  required: true  },
       { key: 'notes',     labelKey: 'fields.notes',     type: 'textarea', masked: false, copyable: false, monospace: false, required: false },
@@ -76,7 +76,6 @@ export const SECRET_TYPE_CONFIGS: SecretTypeConfig[] = [
     primaryField: 'content',
     fields: [
       { key: 'content', labelKey: 'fields.content', type: 'textarea', masked: true, copyable: true, monospace: true, required: true, placeholder: 'API_KEY=123\nDB_PASS=abc' },
-      { key: 'project',       labelKey: 'fields.project',      type: 'text',     masked: false, copyable: false, monospace: false, required: false },
       { key: 'notes',         labelKey: 'fields.notes',        type: 'textarea', masked: false, copyable: false, monospace: false, required: false },
     ],
   },
@@ -158,9 +157,7 @@ export const SECRET_TYPE_CONFIGS: SecretTypeConfig[] = [
     badgeColor: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
     primaryField: 'content',
     fields: [
-      { key: 'title',   labelKey: 'fields.title',   type: 'text',     masked: false, copyable: false, monospace: false, required: true  },
       { key: 'content', labelKey: 'fields.content', type: 'textarea', masked: true,  copyable: true,  monospace: false, required: true  },
-      { key: 'tags',    labelKey: 'fields.tags',    type: 'text',     masked: false, copyable: false, monospace: false, required: false },
     ],
   },
   {
@@ -175,6 +172,7 @@ export const SECRET_TYPE_CONFIGS: SecretTypeConfig[] = [
       { key: 'password',      labelKey: 'fields.password',     type: 'password', masked: true,  copyable: true,  monospace: true,  required: true  },
       {
         key: 'security_type', labelKey: 'fields.securityType', type: 'select',   masked: false, copyable: false, monospace: false, required: true,
+        defaultValue: 'WPA2',
         selectOptions: [
           { value: 'WPA3', labelKey: 'fields.secWPA3' },
           { value: 'WPA2', labelKey: 'fields.secWPA2' },

@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export function ThemeToggle({ className }: { className?: string }) {
@@ -23,25 +24,34 @@ export function ThemeToggle({ className }: { className?: string }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={t('theme')}
-        className={cn(
-          'inline-flex h-10 w-10 items-center justify-center rounded-md',
-          'text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          className
-        )}
-      >
-        {!mounted ? (
-          <div className="h-5 w-5" />
-        ) : theme === 'dark' ? (
-          <RiMoonLine size={20} />
-        ) : theme === 'light' ? (
-          <RiSunLine size={20} />
-        ) : (
-          <RiComputerLine size={20} />
-        )}
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DropdownMenuTrigger
+              aria-label={t('theme')}
+              className={cn(
+                'inline-flex h-10 w-10 items-center justify-center rounded-md',
+                'text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                className
+              )}
+            >
+              {!mounted ? (
+                <div className="h-5 w-5" />
+              ) : theme === 'dark' ? (
+                <RiMoonLine size={20} />
+              ) : theme === 'light' ? (
+                <RiSunLine size={20} />
+              ) : (
+                <RiComputerLine size={20} />
+              )}
+            </DropdownMenuTrigger>
+          }
+        />
+        <TooltipContent side="bottom" align="center">
+          <p className="text-xs font-medium">Toggle Theme</p>
+        </TooltipContent>
+      </Tooltip>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => setTheme('light')}

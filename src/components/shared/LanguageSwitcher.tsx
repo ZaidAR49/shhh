@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export function LanguageSwitcher({ className }: { className?: string }) {
@@ -25,18 +26,27 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={t('language')}
-        className={cn(
-          'inline-flex h-10 items-center justify-center gap-2 rounded-md px-3',
-          'text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-sm font-medium',
-          className
-        )}
-      >
-        <RiGlobalLine size={20} />
-        <span>{locale === 'ar' ? 'العربية' : 'EN'}</span>
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DropdownMenuTrigger
+              aria-label="Change Language"
+              className={cn(
+                'inline-flex h-10 items-center justify-center gap-2 rounded-md px-3',
+                'text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-sm font-medium',
+                className
+              )}
+            >
+              <RiGlobalLine size={20} />
+              <span>{locale === 'ar' ? 'العربية' : 'EN'}</span>
+            </DropdownMenuTrigger>
+          }
+        />
+        <TooltipContent side="bottom" align="center">
+          <p className="text-xs font-medium">Change Language</p>
+        </TooltipContent>
+      </Tooltip>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => switchLocale('en')}

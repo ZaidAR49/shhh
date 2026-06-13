@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../[...nextauth]/route';
 import { generateSecret, generateURI } from 'otplib';
 import QRCode from 'qrcode';
+import { UserService } from '@/lib/services/user.service';
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,10 @@ export async function POST(request: Request) {
       issuer: 'Shhh App', // Your app name
       secret
     });
-    const otpauthUrl = `${baseOtpauthUrl}&image=${process.env.NEXT_PUBLIC_DOMAIN}/_next/image?url=%2Ficon.png&w=256&q=75`
+    const otpauthUrl = `${baseOtpauthUrl}&image=${encodeURIComponent(`${process.env.NEXT_PUBLIC_DOMAIN}/icon.png`)}`
+
+    // Save the generated secret to the DB as pending
+    await UserService.setPendingMfaSecret(session.user.id, secret);
 
     // Generate a QR code from the URI
     const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);

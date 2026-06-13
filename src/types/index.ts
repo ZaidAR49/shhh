@@ -38,6 +38,7 @@ export interface Secret {
   updated_at: string;
   tags?: string[];
   is_favorite?: boolean;
+  is_sensitive?: boolean;
 }
 
 export interface User {
@@ -63,6 +64,7 @@ export interface CreateSecretPayload {
   name: string;
   fields: Record<string, string>;
   tags?: string[];
+  is_sensitive?: boolean;
 }
 
 export interface UpdateSecretPayload {
@@ -70,4 +72,5 @@ export interface UpdateSecretPayload {
   fields?: Record<string, string>;
   tags?: string[];
   is_favorite?: boolean;
+  is_sensitive?: boolean;
 }

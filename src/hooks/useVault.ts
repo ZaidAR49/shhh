@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { mockApi } from '@/lib/mock-api';
 import type { Secret, CreateSecretPayload, UpdateSecretPayload } from '@/types';
 
 interface UseVaultReturn {
@@ -14,23 +13,34 @@ interface UseVaultReturn {
   deleteSecret: (id: string) => Promise<void>;
   searchSecrets: (query: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
+  mfaEnabled: boolean;
 }
 
-/**
- * Vault data hook — all CRUD operations via mockApi.
- * Replace mockApi calls with real fetch() when wiring backend.
- */
 export function useVault(): UseVaultReturn {
   const [secrets, setSecrets] = useState<Secret[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mfaEnabled, setMfaEnabled] = useState(false);
 
   const loadSecrets = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await mockApi.getSecrets();
-      setSecrets(data);
+      // Fetch both secrets and MFA status in parallel
+      const [secretsRes, mfaRes] = await Promise.all([
+        fetch('/api/secrets'),
+        fetch('/api/auth/mfa/status')
+      ]);
+      
+      if (!secretsRes.ok) throw new Error('Failed to fetch secrets');
+      
+      const secretsData = await secretsRes.json();
+      setSecrets(secretsData);
+
+      if (mfaRes.ok) {
+        const mfaData = await mfaRes.json();
+        setMfaEnabled(mfaData.mfaEnabled || false);
+      }
     } catch (e) {
       setError('errors.networkError');
     } finally {
@@ -39,14 +49,26 @@ export function useVault(): UseVaultReturn {
   }, []);
 
   const createSecret = useCallback(async (payload: CreateSecretPayload): Promise<Secret> => {
-    const newSecret = await mockApi.createSecret(payload);
+    const res = await fetch('/api/secrets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Failed to create secret');
+    const newSecret = await res.json();
     setSecrets((prev) => [newSecret, ...prev]);
     return newSecret;
   }, []);
 
   const updateSecret = useCallback(
     async (id: string, payload: UpdateSecretPayload): Promise<Secret> => {
-      const updated = await mockApi.updateSecret(id, payload);
+      const res = await fetch(`/api/secrets/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to update secret');
+      const updated = await res.json();
       setSecrets((prev) => prev.map((s) => (s.id === id ? updated : s)));
       return updated;
     },
@@ -54,14 +76,20 @@ export function useVault(): UseVaultReturn {
   );
 
   const deleteSecret = useCallback(async (id: string): Promise<void> => {
-    await mockApi.deleteSecret(id);
+    const res = await fetch(`/api/secrets/${id}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error('Failed to delete secret');
     setSecrets((prev) => prev.filter((s) => s.id !== id));
   }, []);
 
   const searchSecrets = useCallback(async (query: string): Promise<void> => {
     setIsLoading(true);
+    setError(null);
     try {
-      const results = await mockApi.searchSecrets(query);
+      const res = await fetch(`/api/secrets?q=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error('Failed to search secrets');
+      const results = await res.json();
       setSecrets(results);
     } catch (e) {
       setError('errors.networkError');
@@ -71,7 +99,11 @@ export function useVault(): UseVaultReturn {
   }, []);
 
   const toggleFavorite = useCallback(async (id: string): Promise<void> => {
-    const updated = await mockApi.toggleFavorite(id);
+    const res = await fetch(`/api/secrets/${id}/favorite`, {
+      method: 'PATCH'
+    });
+    if (!res.ok) throw new Error('Failed to toggle favorite');
+    const updated = await res.json();
     setSecrets((prev) => prev.map((s) => (s.id === id ? updated : s)));
   }, []);
 
@@ -85,5 +117,6 @@ export function useVault(): UseVaultReturn {
     deleteSecret,
     searchSecrets,
     toggleFavorite,
+    mfaEnabled,
   };
 }

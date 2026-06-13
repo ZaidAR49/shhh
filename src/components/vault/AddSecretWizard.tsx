@@ -16,26 +16,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useGlobalVault } from '@/components/vault/VaultProvider';
 import { SecretTypeIcon } from './SecretTypeIcon';
 import { SECRET_TYPE_CONFIGS, SECRET_TYPE_CONFIG_MAP } from '@/lib/secret-types';
 import { SECRET_SCHEMAS } from '@/lib/validations';
 import { cn } from '@/lib/utils';
-import type { SecretType } from '@/types';
-import type { CreateSecretPayload } from '@/types';
+import type { Secret, CreateSecretPayload, UpdateSecretPayload } from '@/types';
 
 interface AddSecretWizardProps {
-  onSave: (payload: CreateSecretPayload) => Promise<void>;
+  onSave: (payload: CreateSecretPayload | UpdateSecretPayload) => Promise<void>;
   onCancel: () => void;
+  initialSecret?: Secret;
 }
 
 type WizardStep = 1 | 2 | 3;
 
-export function AddSecretWizard({ onSave, onCancel }: AddSecretWizardProps) {
+export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWizardProps) {
   const t = useTranslations();
-  const [step, setStep] = useState<WizardStep>(1);
-  const [selectedType, setSelectedType] = useState<SecretType | null>(null);
+  const { mfaEnabled } = useGlobalVault();
+  const [step, setStep] = useState<WizardStep>(initialSecret ? 2 : 1);
+  const [selectedType, setSelectedType] = useState<SecretType | null>(initialSecret ? initialSecret.secret_type : null);
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [isSensitive, setIsSensitive] = useState(initialSecret?.is_sensitive ?? false);
+  const [formData, setFormData] = useState<Record<string, string>>(() => {
+    if (initialSecret) {
+      return {
+        name: initialSecret.name,
+        ...(initialSecret.decrypted_fields || {})
+      };
+    }
+    return {};
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,11 +76,20 @@ export function AddSecretWizard({ onSave, onCancel }: AddSecretWizardProps) {
   } = useForm<Record<string, string>>({
     resolver: schema ? zodResolver(schema as any) : undefined,
     mode: 'onBlur',
+    defaultValues: formData,
   });
 
   const handleTypeSelect = (type: SecretType) => {
     setSelectedType(type);
-    reset();
+    const typeConfig = SECRET_TYPE_CONFIG_MAP[type];
+    const defaults: Record<string, string> = {};
+    if (typeConfig) {
+      typeConfig.fields.forEach(f => {
+        if (f.defaultValue) defaults[f.key] = f.defaultValue;
+      });
+    }
+    setFormData(defaults);
+    reset(defaults);
   };
 
   const goToStep2 = () => {
@@ -88,6 +110,7 @@ export function AddSecretWizard({ onSave, onCancel }: AddSecretWizardProps) {
         secret_type: selectedType,
         name: formData.name ?? formData.title ?? selectedType,
         fields: formData,
+        is_sensitive: isSensitive
       });
     } finally {
       setIsSaving(false);
@@ -257,10 +280,38 @@ export function AddSecretWizard({ onSave, onCancel }: AddSecretWizardProps) {
           })}
         </div>
 
+        {/* Sensitive Toggle */}
+        <div className="flex flex-col gap-3 mt-6 p-4 rounded-lg border bg-card">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium">Sensitive Secret</Label>
+              <p className="text-xs text-muted-foreground">Require extra authentication to view the payload.</p>
+            </div>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Switch
+                    checked={isSensitive}
+                    onCheckedChange={setIsSensitive}
+                  />
+                }
+              />
+              <TooltipContent side="bottom" align="center">
+                <p className="text-xs font-medium">Toggle sensitive mode</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          {isSensitive && !mfaEnabled && (
+            <div className="text-xs font-medium text-amber-500 bg-amber-500/10 p-2.5 rounded border border-amber-500/20">
+              We highly recommend enabling Multi-Factor Authentication (MFA) in your account settings to fully protect sensitive secrets.
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-between mt-6">
           <Button
             variant="outline"
-            onClick={() => setStep(1)}
+            onClick={() => initialSecret ? onCancel() : setStep(1)}
             aria-label={t('common.back')}
           >
             <RiArrowLeftLine size={16} className="ltr:mr-1.5 rtl:ml-1.5 rtl:rotate-180" />

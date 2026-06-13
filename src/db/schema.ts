@@ -89,6 +89,7 @@ export const secrets = pgTable('secrets', {
   encryptedData: text('encrypted_data').notNull(),
   encryptedDek: text('encrypted_dek').notNull(),
   isSensitive: boolean('is_sensitive').notNull().default(false),
+  isFavorite: boolean('is_favorite').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

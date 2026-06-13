@@ -15,11 +15,6 @@ const opt = (max = 1000) => z.string().max(max).optional();
 
 export const passwordSchema = z.object({
   name:     req(),
-  site_url: z
-    .string()
-    .url({ message: 'errors.invalidUrl' })
-    .optional()
-    .or(z.literal('')),
   username: req(),
   password: req(),
   notes:    opt(),
@@ -45,7 +40,6 @@ export const visaSchema = z.object({
 export const envVariableSchema = z.object({
   name:    req(),
   content: z.string().min(1, { message: 'errors.required' }).max(100000, { message: 'errors.fieldTooLong' }),
-  project: opt(),
   notes:   opt(),
 });
 
@@ -103,9 +97,7 @@ export const bankAccountSchema = z.object({
 
 export const secureNoteSchema = z.object({
   name:    req(),
-  title:   req(),
   content: z.string().min(1, { message: 'errors.required' }).max(10000),
-  tags:    z.string().optional(),
 });
 
 export const wifiSchema = z.object({

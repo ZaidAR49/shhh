@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { ThemeToggle } from './ThemeToggle';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { Session } from '@/types';
 
@@ -77,15 +78,28 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
         <div className="flex items-center gap-2 md:gap-4 ms-auto">
           {/* Session status dot */}
           {session && (
-            <span
-              aria-label={t('auth.sessionActive')}
-              className={cn(
-                'h-3 w-3 rounded-full shrink-0 transition-colors duration-1000',
-                sessionStatus === 'active'  && 'bg-vault-unlocked',
-                sessionStatus === 'warning' && 'bg-vault-warning',
-                sessionStatus === 'critical'&& 'bg-vault-locked animate-pulse'
-              )}
-            />
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <span
+                    aria-label="Session Status"
+                    className={cn(
+                      'h-3 w-3 rounded-full shrink-0 transition-colors duration-1000 cursor-help',
+                      sessionStatus === 'active'  && 'bg-vault-unlocked',
+                      sessionStatus === 'warning' && 'bg-vault-warning',
+                      sessionStatus === 'critical'&& 'bg-vault-locked animate-pulse'
+                    )}
+                  />
+                }
+              />
+              <TooltipContent side="bottom" align="center">
+                <p className="text-xs font-medium">
+                  {sessionStatus === 'active' ? 'Account Secure & Session Active' : 
+                   sessionStatus === 'warning' ? 'Session expiring soon' : 
+                   'Session ending critically soon'}
+                </p>
+              </TooltipContent>
+            </Tooltip>
           )}
 
           <ThemeToggle />
@@ -111,15 +125,24 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
               </Link>
 
               {/* Lock vault */}
-              <Button
-                variant="ghost"
-                onClick={onLock}
-                aria-label={t('auth.lockVault')}
-                className="hidden sm:inline-flex gap-2 text-muted-foreground hover:text-foreground h-10 px-3"
-              >
-                <RiLockLine size={18} />
-                <span className="text-sm font-medium">{t('auth.lockVault')}</span>
-              </Button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      onClick={onLock}
+                      aria-label={t('auth.lockVault')}
+                      className="hidden sm:inline-flex gap-2 text-muted-foreground hover:text-foreground h-10 px-3"
+                    >
+                      <RiLockLine size={18} />
+                      <span className="text-sm font-medium">{t('auth.lockVault')}</span>
+                    </Button>
+                  }
+                />
+                <TooltipContent side="bottom" align="end">
+                  <p className="text-xs font-medium">Instantly lock your vault and end session</p>
+                </TooltipContent>
+              </Tooltip>
             </>
           )}
         </div>

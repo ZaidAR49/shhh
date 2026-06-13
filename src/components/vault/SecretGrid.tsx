@@ -7,6 +7,9 @@ import type { Secret } from '@/types';
 interface SecretGridProps {
   secrets: Secret[];
   isLoading: boolean;
+  onView?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 function SecretCardSkeleton() {
@@ -25,7 +28,7 @@ function SecretCardSkeleton() {
   );
 }
 
-export function SecretGrid({ secrets, isLoading }: SecretGridProps) {
+export function SecretGrid({ secrets, isLoading, onView, onEdit, onDelete }: SecretGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
@@ -39,7 +42,13 @@ export function SecretGrid({ secrets, isLoading }: SecretGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
       {secrets.map((secret) => (
-        <SecretCard key={secret.id} secret={secret} />
+        <SecretCard 
+          key={secret.id} 
+          secret={secret} 
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete} 
+        />
       ))}
     </div>
   );

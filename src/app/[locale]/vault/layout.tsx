@@ -49,21 +49,21 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
       <SessionExpiry minutesRemaining={minutesRemaining} />
 
       {/* Main content with sidebar */}
-      <div className="pt-[74px] flex w-full max-w-[1400px] mx-auto min-h-[calc(100vh-74px)]">
+      <div className="mt-[96px] flex w-full max-w-[1400px] mx-auto h-[calc(100vh-96px)] overflow-hidden">
         {/* Desktop sidebar */}
-        <div className="hidden md:block border-border border-e ltr:pr-6 rtl:pl-6 lg:ltr:pr-8 lg:rtl:pl-8">
+        <div className="hidden md:flex flex-col border-border border-e ltr:pr-6 rtl:pl-6 lg:ltr:pr-8 lg:rtl:pl-8 overflow-y-auto h-full shrink-0 w-[260px] scrollbar-thin">
           <Sidebar />
         </div>
 
         {/* Page content wrapper */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-y-auto h-full scrollbar-thin relative">
           <main
             className="flex-1 min-w-0"
             id="main-content"
           >
           {children}
-        </main>
-          <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground mt-auto">
+          </main>
+          <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground mt-auto shrink-0">
             &copy; {new Date().getFullYear()} Shhh. All rights reserved.
           </footer>
         </div>

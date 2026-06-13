@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SessionBarProps {
   minutesRemaining: number;
@@ -17,23 +18,32 @@ export function SessionBar({ minutesRemaining }: SessionBarProps) {
   const isGood     = minutesRemaining >= 20;
 
   return (
-    <div
-      role="progressbar"
-      aria-label={`Session expires in ${minutesRemaining} minutes`}
-      aria-valuenow={minutesRemaining}
-      aria-valuemin={0}
-      aria-valuemax={60}
-      style={{
-        background: isCritical
-          ? 'var(--vault-locked)'
-          : isWarning
-          ? 'var(--vault-warning)'
-          : 'var(--vault-unlocked)',
-      }}
-      className={cn(
-        'fixed top-[72px] left-0 right-0 h-0.5 z-40 transition-colors duration-1000',
-        isCritical && 'session-bar-critical'
-      )}
-    />
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <div
+            role="progressbar"
+            aria-label={`Session expires in ${minutesRemaining} minutes`}
+            aria-valuenow={minutesRemaining}
+            aria-valuemin={0}
+            aria-valuemax={60}
+            style={{
+              background: isCritical
+                ? 'var(--vault-locked)'
+                : isWarning
+                ? 'var(--vault-warning)'
+                : 'var(--vault-unlocked)',
+            }}
+            className={cn(
+              'fixed top-[96px] left-0 right-0 h-1 z-40 transition-colors duration-1000 cursor-help hover:h-2 opacity-80 hover:opacity-100',
+              isCritical && 'session-bar-critical'
+            )}
+          />
+        }
+      />
+      <TooltipContent side="bottom" align="center">
+        <p className="text-xs font-medium">Session expires in {minutesRemaining} minutes</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
