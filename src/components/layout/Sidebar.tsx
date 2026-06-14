@@ -126,10 +126,9 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         );
       })}
 
-      </div>
+      <Separator className="my-3 mx-4 w-auto" />
 
-      <div className="shrink-0 space-y-1 pt-4 mt-2 border-t border-border/50">
-        {/* Settings Link */}
+      {/* Settings Link */}
       <Link
         href={`/${locale}/vault/settings`}
         onClick={onNavClick}
@@ -161,6 +160,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         <RiLockLine size={18} className="shrink-0" />
         <span className="ltr:text-left rtl:text-right truncate">{t('auth.lockVault')}</span>
       </button>
+
       </div>
     </aside>
   );

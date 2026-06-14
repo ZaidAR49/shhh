@@ -48,14 +48,13 @@ export const authOptions: NextAuthOptions = {
     async createUser({ user }) {
       const headersList = await headers();
       const acceptLanguage = headersList.get('accept-language') || '';
-      const detectedLocale = acceptLanguage.toLowerCase().includes('ar') ? 'ar' : 'en';
+      const detectedLocale = /(^|,\s*)ar(\s*[;,]|$)/i.test(acceptLanguage) ? 'ar' : 'en';
 
       if (user.id) {
         await db.update(users).set({ preferredLocale: detectedLocale }).where(eq(users.id, user.id));
       }
 
       if (user.email) {
-        // Now sendWelcomeEmail doesn't take locale yet, but we'll update it later
         await sendWelcomeEmail(user.email, user.name || 'User', detectedLocale);
       }
     },

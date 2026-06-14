@@ -39,10 +39,8 @@ export async function POST(request: Request) {
     // Generate a QR code from the URI
     const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
 
-    // Return the secret and QR code to the client
-    // We DO NOT save this to the DB yet. We wait for them to confirm it works.
+    // Return the QR code to the client
     return NextResponse.json({
-      secret,
       qrCodeDataUrl,
     });
   } catch (error) {

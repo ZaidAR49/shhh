@@ -10,7 +10,7 @@ import { MaskToggle } from './MaskToggle';
 import { CopyButton } from './CopyButton';
 import { SecretTypeIcon } from './SecretTypeIcon';
 import { SECRET_TYPE_CONFIG_MAP } from '@/lib/secret-types';
-import { decodeBlob, formatDate, cn } from '@/lib/utils';
+import { formatDate, cn } from '@/lib/utils';
 import type { Secret } from '@/types';
 
 interface SecretDetailProps {
@@ -25,7 +25,7 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
   const t = useTranslations();
   const config = SECRET_TYPE_CONFIG_MAP[secret.secret_type];
 
-  const fields = secret.decrypted_fields ?? decodeBlob(secret.encrypted_blob);
+  const fields = secret.decrypted_fields ?? {};
 
   const isRtl = locale === 'ar';
   const BackIcon = isRtl ? RiArrowRightLine : RiArrowLeftLine;
@@ -160,7 +160,7 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
       {/* Metadata */}
       <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
         <div>
-          <p className="font-medium uppercase tracking-wider mb-1">Created</p>
+          <p className="font-medium uppercase tracking-wider mb-1">{t('vault.created')}</p>
           <p>{formatDate(secret.created_at, locale)}</p>
         </div>
         <div>
@@ -171,7 +171,7 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
         </div>
         {(secret.tags ?? []).length > 0 && (
           <div className="col-span-2">
-            <p className="font-medium uppercase tracking-wider mb-1.5">Tags</p>
+            <p className="font-medium uppercase tracking-wider mb-1.5">{t('vault.tags')}</p>
             <div className="flex flex-wrap gap-1.5">
               {(secret.tags ?? []).map((tag) => (
                 <Badge key={tag} variant="outline" className="text-[11px]">

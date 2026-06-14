@@ -14,6 +14,7 @@ export function LandingHeader() {
   const locale = useLocale();
   const t = useTranslations();
   const tc = useTranslations('common');
+  const tn = useTranslations('nav');
   const { status } = useSession();
 
   const handleUnlock = () => {
@@ -31,8 +32,20 @@ export function LandingHeader() {
           <Image src="/icon.png" alt="Shhh Logo" width={80} height={80} priority className="shrink-0" style={{ width: 'auto', height: 'auto' }} />
           <span className="text-2xl font-bold tracking-tight">{tc('appName')}</span>
         </Link>
-        <div className="flex items-center gap-1.5">
-          <ThemeToggle />
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+            <Link href={`/${locale}/about`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
+              {tn('about')}
+            </Link>
+            <Link href={`/${locale}/security`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
+              {tn('security')}
+            </Link>
+            <Link href={`/${locale}/contact`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
+              {tn('contact')}
+            </Link>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
           <LanguageSwitcher />
           {status === 'loading' ? (
             <div className="h-9 w-32 bg-muted animate-pulse rounded-md ltr:ml-2 rtl:mr-2" />
@@ -55,6 +68,7 @@ export function LandingHeader() {
               {t('auth.unlockVault')}
             </Button>
           )}
+        </div>
         </div>
       </div>
     </header>

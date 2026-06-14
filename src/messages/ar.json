@@ -66,7 +66,9 @@
     "total": "{count} سر",
     "filterBy": "تصفية حسب النوع",
     "clearFilter": "مسح التصفية",
-    "exportEnv": "تصدير كملف .env"
+    "exportEnv": "تصدير كملف .env",
+    "created": "تاريخ الإنشاء",
+    "tags": "الوسوم"
   },
   "secretTypes": {
     "password": "كلمة مرور",
@@ -173,7 +175,8 @@
     "invalidSwift": "أدخل رمز SWIFT/BIC صحيحًا",
     "invalidCurrency": "أدخل رمز عملة مكوّنًا من 3 أحرف (مثال: SAR)",
     "sessionExpired": "انتهت مدة جلستك. يرجى فتح خزنتك من جديد.",
-    "networkError": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    "networkError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "invalidEnvFile": "محتوى الملف غير صالح. يجب أن يكون ملفًا نصيًا."
   },
   "wizard": {
     "chooseType": "اختر نوع السر",
@@ -185,7 +188,12 @@
     "saving": "جارٍ حفظ السر...",
     "secretName": "أعطِ هذا السر اسمًا",
     "secretNamePlaceholder": "مثال: حساب GitHub للعمل",
-    "importFile": "استيراد ملف .env"
+    "importFile": "استيراد ملف .env",
+    "importSuccess": "تم الاستيراد بنجاح!",
+    "sensitiveSecret": "سر حساس",
+    "sensitiveSecretDesc": "يتطلب مصادقة إضافية لعرض البيانات.",
+    "toggleSensitive": "تبديل الوضع الحساس",
+    "recommendMfa": "نوصي بشدة بتفعيل المصادقة الثنائية (MFA) في إعدادات حسابك لحماية الأسرار الحساسة بالكامل."
   },
   "nav": {
     "vault": "الخزنة",

@@ -15,12 +15,6 @@ export function LandingFooter() {
           © {new Date().getFullYear()} {tc('appName')} — {(tc.raw('taglines') as string[])[0]}
         </p>
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          <Link href={`/${locale}/about`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
-            {t('about')}
-          </Link>
-          <Link href={`/${locale}/security`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
-            {t('security')}
-          </Link>
           <Link href={`/${locale}/help`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
             {t('help')}
           </Link>
@@ -29,9 +23,6 @@ export function LandingFooter() {
           </Link>
           <Link href={`/${locale}/terms`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
             {t('terms')}
-          </Link>
-          <Link href={`/${locale}/contact`} className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded">
-            {t('contact')}
           </Link>
         </div>
       </div>

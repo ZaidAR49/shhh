@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../[...nextauth]/route';
+import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
 import { UserService } from '@/lib/services/user.service';
 import { verify } from 'otplib';
 import { sendNotification } from '@/lib/email';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
@@ -15,6 +17,14 @@ export async function POST(request: Request) {
 
     if (await UserService.isLocked(session.user.id)) {
       return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
+    }
+
+    const rateLimit = checkRateLimit(`mfa_disable_${session.user.id}`, 5, 15 * 60 * 1000);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again in 15 minutes.' },
+        { status: 429 }
+      );
     }
 
     const body = await request.json().catch(() => ({}));
@@ -30,6 +40,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'MFA is not enabled' }, { status: 400 });
     }
 
+    if (isTokenUsed(session.user.id, token)) {
+      return NextResponse.json({ error: 'Token already used. Please wait for a new code.' }, { status: 400 });
+    }
+
     const verificationResult = await verify({
       token,
       secret: user.mfaSecret,
@@ -38,6 +52,8 @@ export async function POST(request: Request) {
     if (!verificationResult.valid) {
       return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
     }
+
+    markTokenUsed(session.user.id, token);
 
     // Disable MFA by setting mfaEnabled to false and clearing the secret
     await UserService.disableMfa(session.user.id);

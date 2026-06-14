@@ -24,8 +24,8 @@ export async function GET(request: Request) {
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
-    const limit = limitParam ? parseInt(limitParam, 10) : 50;
-    const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+    const limit = Math.min(Math.max(parseInt(limitParam || '', 10) || 50, 1), 100);
+    const offset = Math.max(parseInt(offsetParam || '', 10) || 0, 0);
 
     // Fetch limit + 1 to determine if there is a next page
     let secrets = await SecretService.findAllByUserId(session.user.id, limit + 1, offset);
@@ -38,9 +38,9 @@ export async function GET(request: Request) {
 
     if (query) {
       const q = query.toLowerCase();
-      // Note: In-memory filtering after pagination might result in fewer results than `limit`
-      // For a robust search, the query should be passed to the database.
-      // But we maintain existing behavior here.
+      // Note: In-memory filtering after pagination might result in fewer results than `limit`.
+      // Since the title is encrypted in the database, we cannot perform an SQL `ilike` query 
+      // without implementing a blind index. In-memory is the only way for now.
       secrets = secrets.filter(s => s.title.toLowerCase().includes(q));
     }
 
@@ -48,9 +48,8 @@ export async function GET(request: Request) {
     const mappedSecrets = secrets.map(s => ({
       id: s.id,
       user_id: s.userId,
-      name: s.title,
+      name: s.isSensitive ? '[Sensitive]' : s.title,
       secret_type: s.type,
-      encrypted_blob: s.encryptedData,
       decrypted_fields: s.data,
       created_at: s.createdAt.toISOString(),
       updated_at: s.updatedAt.toISOString(),
@@ -59,7 +58,9 @@ export async function GET(request: Request) {
       tags: (s.data as any)?.tags || []
     }));
 
-    return NextResponse.json({ data: mappedSecrets, nextOffset });
+    return NextResponse.json({ data: mappedSecrets, nextOffset }, {
+      headers: { 'Cache-Control': 'no-store' }
+    });
   } catch (error) {
     console.error('Error fetching secrets:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -127,7 +128,6 @@ export async function POST(request: Request) {
       user_id: secret.userId,
       name: secret.title,
       secret_type: secret.type,
-      encrypted_blob: secret.encryptedData,
       decrypted_fields: secret.data,
       created_at: secret.createdAt.toISOString(),
       updated_at: secret.updatedAt.toISOString(),
@@ -136,7 +136,10 @@ export async function POST(request: Request) {
       tags: (secret.data as any)?.tags || []
     };
 
-    return NextResponse.json(mappedSecret, { status: 201 });
+    return NextResponse.json(mappedSecret, { 
+      status: 201,
+      headers: { 'Cache-Control': 'no-store' }
+    });
   } catch (error) {
     console.error('Error creating secret:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

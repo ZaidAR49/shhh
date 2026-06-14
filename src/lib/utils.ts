@@ -57,15 +57,3 @@ export function maskValue(value: string, visibleChars: number = 4): string {
   return '•'.repeat(Math.min(value.length - visibleChars, 12)) + value.slice(-visibleChars);
 }
 
-/** Decode fake encrypted_blob back to fields object. */
-export function decodeBlob(blob: string): Record<string, string> {
-  try {
-    const decoded =
-      typeof atob !== 'undefined'
-        ? atob(blob)
-        : Buffer.from(blob, 'base64').toString('utf-8');
-    return JSON.parse(decoded) as Record<string, string>;
-  } catch {
-    return {};
-  }
-}

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../[...nextauth]/route';
 import { verify } from 'otplib';
 import { UserService } from '@/lib/services/user.service';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
 import { sendNotification } from '@/lib/email';
 
 export async function POST(request: Request) {
@@ -46,6 +46,10 @@ export async function POST(request: Request) {
       );
     }
 
+    if (isTokenUsed(session.user.id, token)) {
+      return NextResponse.json({ error: 'Token already used. Please wait for a new code.' }, { status: 400 });
+    }
+
     // Validate the token against the pending secret
     const result = await verify({
       token,
@@ -58,6 +62,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    markTokenUsed(session.user.id, token);
 
     // If valid, enable MFA
     await UserService.enableMfa(session.user.id);

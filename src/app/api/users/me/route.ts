@@ -7,6 +7,20 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendNotification } from '@/lib/email';
+import { isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
+
+export async function GET(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const user = await UserService.findById(session.user.id);
+    return NextResponse.json({ user }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
+  }
+}
 
 export async function PATCH(request: Request) {
   try {
@@ -27,7 +41,7 @@ export async function PATCH(request: Request) {
     let isUpdating = false;
 
     if (body.name && typeof body.name === 'string' && body.name.trim().length > 0) {
-      updateData.name = body.name.trim();
+      updateData.name = body.name.trim().slice(0, 100);
       isUpdating = true;
     }
 
@@ -88,6 +102,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'MFA token is required' }, { status: 400 });
     }
 
+    if (isTokenUsed(session.user.id, token)) {
+      return NextResponse.json({ error: 'Token already used. Please wait for a new code.' }, { status: 400 });
+    }
+
     const verificationResult = await verify({
       token,
       secret: user.mfaSecret!,
@@ -96,6 +114,8 @@ export async function DELETE(request: Request) {
     if (!verificationResult.valid) {
       return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
     }
+
+    markTokenUsed(session.user.id, token);
 
     // Send notification BEFORE deleting the user (so they still exist in the DB)
     await sendNotification(

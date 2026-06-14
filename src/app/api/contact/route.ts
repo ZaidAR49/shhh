@@ -6,10 +6,22 @@ import path from 'path';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    const { name, email, subject, message, recaptchaToken } = body;
 
-    if (!name || !email || !subject || !message) {
+    if (!name || !email || !subject || !message || !recaptchaToken) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Verify reCAPTCHA token
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'; // Dummy secret key if missing
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`;
+
+    const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
+    const recaptchaData = await recaptchaRes.json();
+
+    if (!recaptchaData.success || recaptchaData.score < 0.5) {
+      console.error('reCAPTCHA validation failed:', recaptchaData);
+      return NextResponse.json({ error: 'reCAPTCHA verification failed' }, { status: 400 });
     }
 
     const transporter = nodemailer.createTransport({

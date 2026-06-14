@@ -9,6 +9,7 @@ import { SessionBar } from '@/components/layout/SessionBar';
 import { SessionExpiry } from '@/components/auth/SessionExpiry';
 import { VaultProvider } from '@/components/vault/VaultProvider';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { LandingFooter } from '@/components/layout/LandingFooter';
 
 interface VaultLayoutProps {
   children: React.ReactNode;
@@ -65,12 +66,13 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
           >
           {children}
           </main>
-          <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground mt-auto shrink-0">
-            &copy; {new Date().getFullYear()} Shhh. All rights reserved.
-          </footer>
         </div>
       </div>
-    </div>
+        
+        <div className="shrink-0">
+          <LandingFooter />
+        </div>
+      </div>
     </VaultProvider>
   );
 }

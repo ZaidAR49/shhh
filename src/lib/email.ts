@@ -8,6 +8,16 @@ import { eq } from 'drizzle-orm';
 const enMessages = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src', 'messages', 'en.json'), 'utf8'));
 const arMessages = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'src', 'messages', 'ar.json'), 'utf8'));
 
+function escapeHtml(unsafe: string) {
+  if (!unsafe) return '';
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Setup reusable transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -53,7 +63,7 @@ export async function sendNotification(
 
     if (params) {
       for (const [key, value] of Object.entries(params)) {
-        message = message.replace(new RegExp(`{${key}}`, 'g'), value);
+        message = message.replace(new RegExp(`{${key}}`, 'g'), escapeHtml(value));
       }
     }
 
@@ -64,7 +74,7 @@ export async function sendNotification(
     // 3. Replace variables
     htmlContent = htmlContent
       .replace(/{{title}}/g, title)
-      .replace(/{{name}}/g, user.name || 'User')
+      .replace(/{{name}}/g, escapeHtml(user.name || 'User'))
       .replace(/{{message}}/g, message);
 
     // 4. Send email
@@ -98,7 +108,7 @@ export async function sendWelcomeEmail(
 
     // Replace variables
     htmlContent = htmlContent
-      .replace(/{{name}}/g, name);
+      .replace(/{{name}}/g, escapeHtml(name));
 
     // Send email
     await transporter.sendMail({

@@ -38,7 +38,8 @@ export class SecretService {
       try {
         title = decryptString(secret.title);
       } catch (e) {
-        // Fallback for legacy plaintext titles
+        console.error('Failed to decrypt title', e);
+        title = '[Encrypted - Key mismatch]';
       }
 
       if (!secret.isSensitive) {
@@ -73,7 +74,8 @@ export class SecretService {
     try {
       title = decryptString(secret.title);
     } catch (e) {
-      // Fallback for legacy plaintext titles
+      console.error('Failed to decrypt title', e);
+      title = '[Encrypted - Key mismatch]';
     }
 
     try {
@@ -128,7 +130,6 @@ export class SecretService {
         encryptedData,
         encryptedDek,
         isSensitive,
-        updatedAt: new Date(),
       })
       .where(and(eq(secrets.id, secretId), eq(secrets.userId, userId)))
       .returning();
@@ -160,7 +161,7 @@ export class SecretService {
    */
   static async toggleFavorite(userId: string, secretId: string) {
     const updatedSecret = await db.update(secrets)
-      .set({ isFavorite: sql`NOT ${secrets.isFavorite}`, updatedAt: new Date() })
+      .set({ isFavorite: sql`NOT ${secrets.isFavorite}` })
       .where(and(eq(secrets.id, secretId), eq(secrets.userId, userId)))
       .returning();
 
@@ -172,7 +173,8 @@ export class SecretService {
     try {
       title = decryptString(updatedSecret[0].title);
     } catch (e) {
-      // Fallback
+      console.error('Failed to decrypt title', e);
+      title = '[Encrypted - Key mismatch]';
     }
 
     try {

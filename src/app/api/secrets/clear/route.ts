@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { SecretService } from '@/lib/services/secret.service';
 import { UserService } from '@/lib/services/user.service';
 import { verify } from 'otplib';
+import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
 
 export async function DELETE(request: Request) {
   try {
@@ -25,9 +26,19 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ error: 'MFA token is required' }, { status: 400 });
       }
 
+      if (isTokenUsed(session.user.id, token)) {
+        return NextResponse.json({ error: 'Token already used. Please wait for a new code.' }, { status: 400 });
+      }
+
       const isValid = await verify({ token, secret: userStatus.mfaSecret });
       if (!isValid.valid) {
         return NextResponse.json({ error: 'Invalid MFA token' }, { status: 400 });
+      }
+      
+      markTokenUsed(session.user.id, token);
+    } else {
+      if (!body.confirm) {
+        return NextResponse.json({ error: 'Confirmation required to clear vault' }, { status: 400 });
       }
     }
 

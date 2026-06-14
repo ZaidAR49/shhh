@@ -42,7 +42,9 @@ export class UserService {
             try {
                 user.mfaSecret = decryptString(user.mfaSecret);
             } catch (e) {
-                // Fallback for legacy plaintext secrets already in the database
+                console.error('Failed to decrypt MFA secret', e);
+                // Invalidate the secret to ensure verification fails securely
+                user.mfaSecret = '[Encrypted - Key mismatch]';
             }
         }
         

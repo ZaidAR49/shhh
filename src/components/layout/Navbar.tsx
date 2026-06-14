@@ -57,7 +57,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
 
           {/* Logo */}
           <Link
-            href={`/${locale}/vault`}
+            href={`/${locale}`}
             aria-label={t('common.appName')}
             className="flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full hover:opacity-80 transition-opacity"
           >

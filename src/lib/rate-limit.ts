@@ -30,3 +30,23 @@ export function checkRateLimit(key: string, limit: number, windowMs: number): { 
   store.set(key, record);
   return { success: true };
 }
+
+// Prevent TOTP token reuse within the validity window (usually 30s, we keep it for 60s to be safe)
+const usedTokens = new Map<string, number>();
+
+export function isTokenUsed(userId: string, token: string): boolean {
+  const key = `${userId}:${token}`;
+  const expiryTime = usedTokens.get(key);
+  if (!expiryTime) return false;
+  if (Date.now() > expiryTime) {
+    usedTokens.delete(key);
+    return false;
+  }
+  return true;
+}
+
+export function markTokenUsed(userId: string, token: string) {
+  const key = `${userId}:${token}`;
+  // Store it for 60s
+  usedTokens.set(key, Date.now() + 60 * 1000);
+}

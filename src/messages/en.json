@@ -66,7 +66,9 @@
     "total": "{count} secrets",
     "filterBy": "Filter by type",
     "clearFilter": "Clear filter",
-    "exportEnv": "Export as .env"
+    "exportEnv": "Export as .env",
+    "created": "Created",
+    "tags": "Tags"
   },
   "secretTypes": {
     "password": "Password",
@@ -173,7 +175,8 @@
     "invalidSwift": "Enter a valid SWIFT/BIC code",
     "invalidCurrency": "Enter a 3-letter currency code (e.g. USD)",
     "sessionExpired": "Your session has expired. Please unlock your vault again.",
-    "networkError": "Something went wrong. Please try again."
+    "networkError": "Something went wrong. Please try again.",
+    "invalidEnvFile": "Invalid file content. Must be a text file."
   },
   "wizard": {
     "chooseType": "Choose secret type",
@@ -185,7 +188,12 @@
     "saving": "Saving secret...",
     "secretName": "Give this secret a name",
     "secretNamePlaceholder": "e.g. Work GitHub Account",
-    "importFile": "Import .env file"
+    "importFile": "Import .env file",
+    "importSuccess": "Imported successfully!",
+    "sensitiveSecret": "Sensitive Secret",
+    "sensitiveSecretDesc": "Require extra authentication to view the payload.",
+    "toggleSensitive": "Toggle sensitive mode",
+    "recommendMfa": "We highly recommend enabling Multi-Factor Authentication (MFA) in your account settings to fully protect sensitive secrets."
   },
   "nav": {
     "vault": "Vault",

@@ -8,6 +8,7 @@ import { SECRET_SCHEMAS } from '@/lib/validations';
 import type { SecretType } from '@/lib/secret-types';
 import { z } from 'zod';
 import { sendNotification } from '@/lib/email';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -28,8 +29,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     if (secret.isSensitive) {
-      const { searchParams } = new URL(request.url);
-      const token = searchParams.get('token');
+      const token = request.headers.get('x-mfa-token');
       
       const userStatus = await UserService.getMfaStatus(session.user.id);
       if (!userStatus?.mfaEnabled || !userStatus?.mfaSecret) {
@@ -38,6 +38,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
       if (!token) {
         return NextResponse.json({ error: 'MFA token required for sensitive secret' }, { status: 403 });
+      }
+
+      const rateLimit = checkRateLimit(`mfa_sensitive_${session.user.id}`, 5, 15 * 60 * 1000);
+      if (!rateLimit.success) {
+        return NextResponse.json(
+          { error: 'Too many attempts. Please try again in 15 minutes.' },
+          { status: 429 }
+        );
       }
 
       const isValid = await verify({ token, secret: userStatus.mfaSecret });
@@ -58,7 +66,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       user_id: secret.userId,
       name: secret.title,
       secret_type: secret.type,
-      encrypted_blob: secret.encryptedData,
       decrypted_fields: secret.data,
       created_at: secret.createdAt.toISOString(),
       updated_at: secret.updatedAt.toISOString(),
@@ -67,7 +74,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       tags: (secret.data as any)?.tags || []
     };
 
-    return NextResponse.json(mappedSecret);
+    return NextResponse.json(mappedSecret, {
+      headers: { 'Cache-Control': 'no-store' }
+    });
   } catch (error) {
     console.error('Error fetching secret:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -132,7 +141,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       user_id: updatedSecret.userId,
       name: updatedSecret.title,
       secret_type: updatedSecret.type,
-      encrypted_blob: updatedSecret.encryptedData,
       decrypted_fields: updatedSecret.data,
       created_at: updatedSecret.createdAt.toISOString(),
       updated_at: updatedSecret.updatedAt.toISOString(),
@@ -141,7 +149,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       tags: (updatedSecret.data as any)?.tags || []
     };
 
-    return NextResponse.json(mappedSecret);
+    return NextResponse.json(mappedSecret, {
+      headers: { 'Cache-Control': 'no-store' }
+    });
   } catch (error) {
     console.error('Error updating secret:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

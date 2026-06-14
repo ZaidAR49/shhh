@@ -69,6 +69,10 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
+      if (text.includes('\0')) {
+        toast.error(t('errors.invalidEnvFile') || 'Invalid file content. Must be a text file.');
+        return;
+      }
       reset({ ...getValues(), content: text });
       setUploadSuccess(true);
       setTimeout(() => setUploadSuccess(false), 3000);
@@ -251,7 +255,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                       />
                       {uploadSuccess ? (
                         <span className="text-xs flex items-center gap-1 text-vault-unlocked font-medium">
-                          <RiCheckLine size={14} /> Imported successfully!
+                          <RiCheckLine size={14} /> {t('wizard.importSuccess') || 'Imported successfully!'}
                         </span>
                       ) : (
                         <button
@@ -329,8 +333,8 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
         <div className="flex flex-col gap-3 mt-6 p-4 rounded-lg border bg-card">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-sm font-medium">Sensitive Secret</Label>
-              <p className="text-xs text-muted-foreground">Require extra authentication to view the payload.</p>
+              <Label className="text-sm font-medium">{t('wizard.sensitiveSecret') || 'Sensitive Secret'}</Label>
+              <p className="text-xs text-muted-foreground">{t('wizard.sensitiveSecretDesc') || 'Require extra authentication to view the payload.'}</p>
             </div>
             <Tooltip>
               <TooltipTrigger
@@ -342,13 +346,13 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                 }
               />
               <TooltipContent side="bottom" align="center">
-                <p className="text-xs font-medium">Toggle sensitive mode</p>
+                <p className="text-xs font-medium">{t('wizard.toggleSensitive') || 'Toggle sensitive mode'}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           {isSensitive && !mfaEnabled && (
             <div className="text-xs font-medium text-amber-500 bg-amber-500/10 p-2.5 rounded border border-amber-500/20">
-              We highly recommend enabling Multi-Factor Authentication (MFA) in your account settings to fully protect sensitive secrets.
+              {t('wizard.recommendMfa') || 'We highly recommend enabling Multi-Factor Authentication (MFA) in your account settings to fully protect sensitive secrets.'}
             </div>
           )}
         </div>

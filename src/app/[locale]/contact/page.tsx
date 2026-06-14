@@ -1,32 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { LandingFooter } from '@/components/layout/LandingFooter';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
-export default function ContactPage() {
+function ContactFormContent() {
   const t = useTranslations('contact');
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const formRef = useRef<HTMLFormElement>(null);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setStatus('idle');
+    
+    if (!executeRecaptcha) {
+      toast.error('reCAPTCHA not initialized yet');
+      return;
+    }
 
-    const formData = new FormData(e.currentTarget);
-    const data = {
+    // Extract form data BEFORE disabling the inputs!
+    // (Disabled inputs are ignored by FormData)
+    const formData = new FormData(formRef.current!);
+    const rawData = {
       name: formData.get('name'),
       email: formData.get('email'),
       subject: formData.get('subject'),
       message: formData.get('message'),
     };
 
+    setIsSubmitting(true);
+    setStatus('idle');
+
     try {
+      const recaptchaToken = await executeRecaptcha('contact_form_submit');
+      
+      const data = {
+        ...rawData,
+        recaptchaToken,
+      };
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -77,7 +95,7 @@ export default function ContactPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium text-foreground">
@@ -144,5 +162,16 @@ export default function ContactPage() {
 
       <LandingFooter />
     </div>
+  );
+}
+
+export default function ContactPage() {
+  // Use a dummy key if env var is missing during build/dev without keys
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+  
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <ContactFormContent />
+    </GoogleReCaptchaProvider>
   );
 }

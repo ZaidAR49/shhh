@@ -8,7 +8,7 @@ import { useGlobalVault } from '@/components/vault/VaultProvider';
 import { CopyButton } from './CopyButton';
 import { SecretTypeIcon } from './SecretTypeIcon';
 import { SECRET_TYPE_CONFIG_MAP } from '@/lib/secret-types';
-import { decodeBlob, timeAgo, cn } from '@/lib/utils';
+import { timeAgo, cn } from '@/lib/utils';
 import type { Secret } from '@/types';
 
 interface SecretCardProps {
@@ -26,7 +26,7 @@ export function SecretCard({ secret, onView, onEdit, onDelete }: SecretCardProps
   const config = SECRET_TYPE_CONFIG_MAP[secret.secret_type];
 
   // Decode primary field for preview
-  const fields = secret.decrypted_fields ?? decodeBlob(secret.encrypted_blob);
+  const fields = secret.decrypted_fields ?? {};
   const primaryValue = config ? fields[config.primaryField] ?? '' : '';
 
   const handleCardClick = () => {
