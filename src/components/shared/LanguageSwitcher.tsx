@@ -26,9 +26,6 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 
   return (
     <DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger
-          render={
             <DropdownMenuTrigger
               aria-label="Change Language"
               className={cn(
@@ -41,12 +38,6 @@ export function LanguageSwitcher({ className }: { className?: string }) {
               <RiGlobalLine size={20} />
               <span>{locale === 'ar' ? 'العربية' : 'EN'}</span>
             </DropdownMenuTrigger>
-          }
-        />
-        <TooltipContent side="bottom" align="center">
-          <p className="text-xs font-medium">Change Language</p>
-        </TooltipContent>
-      </Tooltip>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => switchLocale('en')}

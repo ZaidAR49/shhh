@@ -52,7 +52,7 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
         <SessionExpiry minutesRemaining={minutesRemaining} />
 
         {/* Main content with sidebar */}
-        <div className="flex-1 min-h-0 flex w-full max-w-[1400px] mx-auto overflow-hidden">
+        <div className="flex-1 min-h-0 flex w-full mx-auto overflow-hidden">
         {/* Desktop sidebar */}
         <div className="hidden md:flex flex-col border-border border-e px-3 lg:px-4 overflow-y-auto h-full shrink-0 w-60 lg:w-64 scrollbar-thin">
           <Sidebar />
@@ -68,10 +68,6 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
           </main>
         </div>
       </div>
-        
-        <div className="shrink-0">
-          <LandingFooter />
-        </div>
       </div>
     </VaultProvider>
   );

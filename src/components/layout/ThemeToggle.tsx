@@ -24,9 +24,6 @@ export function ThemeToggle({ className }: { className?: string }) {
 
   return (
     <DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger
-          render={
             <DropdownMenuTrigger
               aria-label={t('theme')}
               className={cn(
@@ -46,12 +43,6 @@ export function ThemeToggle({ className }: { className?: string }) {
                 <RiComputerLine size={20} />
               )}
             </DropdownMenuTrigger>
-          }
-        />
-        <TooltipContent side="bottom" align="center">
-          <p className="text-xs font-medium">Toggle Theme</p>
-        </TooltipContent>
-      </Tooltip>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => setTheme('light')}

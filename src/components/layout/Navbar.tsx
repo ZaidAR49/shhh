@@ -37,7 +37,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
       className="relative z-10 h-[96px] bg-background/95 backdrop-blur-md border-b border-border shadow-sm w-full"
       role="banner"
     >
-      <div className="h-full px-4 sm:px-6 lg:px-8 mx-auto max-w-[1400px] flex items-center justify-between w-full">
+      <div className="h-full px-4 sm:px-6 lg:px-8 mx-auto w-full flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Mobile menu trigger */}
           {session && (
@@ -67,8 +67,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
                 alt="Shhh Logo"
                 width={80}
                 height={80}
-                className="shrink-0"
-                style={{ width: 'auto', height: 'auto' }}
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain shrink-0"
                 priority
               />
             </div>
