@@ -77,6 +77,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
+    const secretCount = await SecretService.countByUserId(session.user.id);
+    if (secretCount >= 50) {
+      return NextResponse.json({ error: 'Maximum limit of 50 secrets reached. Please delete some secrets to add more.' }, { status: 403 });
+    }
+
     const body = await request.json();
     
     // Support both new mapping and old mapping

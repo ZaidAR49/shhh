@@ -24,6 +24,8 @@ import { SECRET_TYPE_CONFIGS, SECRET_TYPE_CONFIG_MAP } from '@/lib/secret-types'
 import { SECRET_SCHEMAS } from '@/lib/validations';
 import { cn } from '@/lib/utils';
 import type { Secret, SecretType, CreateSecretPayload, UpdateSecretPayload } from '@/types';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 interface AddSecretWizardProps {
   onSave: (payload: CreateSecretPayload | UpdateSecretPayload) => Promise<void>;
@@ -43,6 +45,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
   const [showSecrets, setShowSecrets] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     if (initialSecret) {
       return {
@@ -59,7 +62,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
     if (!file) return;
 
     if (file.size > 100_000) {
-      alert('File too large. Maximum size is 100 KB.');
+      toast.error('File too large. Maximum size is 100 KB.');
       return;
     }
 
@@ -109,9 +112,15 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
   };
 
   const goBackToStep1 = () => {
-    if (isDirty && !window.confirm(t('common.confirmDiscard') || 'Are you sure you want to go back? Unsaved changes will be lost.')) {
+    if (isDirty) {
+      setShowDiscardConfirm(true);
       return;
     }
+    setStep(1);
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowDiscardConfirm(false);
     setStep(1);
   };
 
@@ -419,6 +428,15 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
         {t('common.stepOf', { step, total: 3 })}
       </p>
       {stepContent[step]}
+
+      <ConfirmDialog
+        open={showDiscardConfirm}
+        title={t('common.confirmDiscardTitle') || 'Discard Changes?'}
+        description={t('common.confirmDiscard') || 'Are you sure you want to go back? Unsaved changes will be lost.'}
+        onConfirm={handleConfirmDiscard}
+        onCancel={() => setShowDiscardConfirm(false)}
+        isDestructive={true}
+      />
     </div>
   );
 }

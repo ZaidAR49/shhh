@@ -17,6 +17,7 @@ import { useSession } from '@/hooks/useSession';
 import { cn } from '@/lib/utils';
 import { MfaSettings } from '@/components/settings/MfaSettings';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 function SettingsCard({ title, icon: Icon, children, destructive }: { title: string, icon: React.ElementType, children: React.ReactNode, destructive?: boolean }) {
   return (
@@ -97,9 +98,14 @@ export default function SettingsPage() {
       if (!res.ok) {
         // Revert on failure
         setNotificationsEnabled(!checked);
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || 'Failed to update notification settings');
+      } else {
+        toast.success(checked ? 'Notifications enabled' : 'Notifications disabled');
       }
     } catch (err) {
       setNotificationsEnabled(!checked);
+      toast.error('Network error while updating notification settings');
     }
   };
 
@@ -114,9 +120,14 @@ export default function SettingsPage() {
       });
       if (!res.ok) {
         setNotificationLocale(prev);
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || 'Failed to update preferred language');
+      } else {
+        toast.success('Preferred language updated');
       }
     } catch (err) {
       setNotificationLocale(prev);
+      toast.error('Network error while updating language');
     }
   };
 
@@ -139,12 +150,17 @@ export default function SettingsPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setClearError(data.error || 'Failed to clear vault.');
+        const errStr = data.error || 'Failed to clear vault.';
+        setClearError(errStr);
+        toast.error(errStr);
       } else {
         setClearOpen(false);
+        toast.success('Vault cleared successfully');
       }
     } catch (err) {
-      setClearError('Network error while clearing vault.');
+      const errStr = 'Network error while clearing vault.';
+      setClearError(errStr);
+      toast.error(errStr);
     } finally {
       setClearing(false);
     }
@@ -152,7 +168,7 @@ export default function SettingsPage() {
 
   const handleDeleteAccountClick = () => {
     if (mfaEnabled === false) {
-      alert("You must enable Two-Factor Authentication before you can delete your account.");
+      toast.error("You must enable Two-Factor Authentication before you can delete your account.");
       return;
     }
     setDeleteError('');
@@ -177,7 +193,9 @@ export default function SettingsPage() {
       const data = await res.json();
       
       if (!res.ok) {
-        setDeleteError(data.error || 'Invalid code');
+        const errStr = data.error || 'Invalid code';
+        setDeleteError(errStr);
+        toast.error(errStr);
         setDeletingAccount(false);
         return;
       }
@@ -186,9 +204,11 @@ export default function SettingsPage() {
       localStorage.removeItem('shhh_remembered_user');
       setDeletingAccount(false);
       setDeleteAccountOpen(false);
+      toast.success('Account deleted successfully');
       router.replace(`/${locale}/auth`);
     } catch (err) {
       setDeleteError('An error occurred');
+      toast.error('An error occurred while deleting account');
       setDeletingAccount(false);
     }
   };

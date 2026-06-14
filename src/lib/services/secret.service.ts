@@ -8,6 +8,16 @@ import type { SecretType } from '../secret-types';
 
 export class SecretService {
   /**
+   * Retrieves the total count of secrets for a user.
+   */
+  static async countByUserId(userId: string): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(secrets)
+      .where(eq(secrets.userId, userId));
+    return Number(result[0].count);
+  }
+
+  /**
    * Retrieves all secrets for a user, with their payloads decrypted.
    * @param userId The user's ID
    * @param limit The maximum number of records to return

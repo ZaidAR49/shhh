@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { LandingFooter } from '@/components/layout/LandingFooter';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function ContactPage() {
   const t = useTranslations('contact');
@@ -36,13 +37,16 @@ export default function ContactPage() {
 
       if (response.ok) {
         setStatus('success');
+        toast.success(t('success'));
         (e.target as HTMLFormElement).reset();
       } else {
         setStatus('error');
+        toast.error(t('error'));
       }
     } catch (error) {
       console.error('Error submitting form:', error);
       setStatus('error');
+      toast.error(t('error'));
     } finally {
       setIsSubmitting(false);
     }

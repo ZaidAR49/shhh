@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 
 interface UseClipboardReturn {
   copy: (value: string) => void;
@@ -22,6 +23,7 @@ export function useClipboard(clearDelayMs: number = 30_000): UseClipboardReturn 
 
       navigator.clipboard.writeText(value).then(() => {
         setCopied(true);
+        toast.success('Copied to clipboard');
         // Clear any existing timer
         if (timerRef.current) clearTimeout(timerRef.current);
         // Schedule auto-clear

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { RiShieldKeyholeLine, RiCheckLine } from 'react-icons/ri';
 import Image from 'next/image';
 import { MfaPromptDialog } from '@/components/auth/MfaPromptDialog';
+import { toast } from 'sonner';
 
 interface MfaSettingsProps {
   mfaEnabled: boolean | null;
@@ -35,10 +36,13 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
         setSecret(data.secret);
         setIsSetupOpen(true);
       } else {
-        setError(data.error || 'Failed to start setup');
+        const errMsg = data.error || 'Failed to start setup';
+        setError(errMsg);
+        toast.error(errMsg);
       }
     } catch (err) {
       setError('An error occurred');
+      toast.error('An error occurred while starting MFA setup');
     } finally {
       setLoading(false);
     }
@@ -64,11 +68,15 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
         setToken('');
         setSecret('');
         setQrCodeUrl('');
+        toast.success('MFA enabled successfully');
       } else {
-        setError(data.error || 'Invalid code');
+        const errMsg = data.error || 'Invalid code';
+        setError(errMsg);
+        toast.error(errMsg);
       }
     } catch (err) {
       setError('An error occurred');
+      toast.error('An error occurred while enabling MFA');
     } finally {
       setLoading(false);
     }
@@ -86,11 +94,14 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
       if (res.ok) {
         setMfaEnabled(false);
         setIsDisablePromptOpen(false);
+        toast.success('MFA disabled successfully');
       } else {
         setError('Failed to disable MFA. Invalid code.');
+        toast.error('Failed to disable MFA. Invalid code.');
       }
     } catch (err) {
       setError('An error occurred');
+      toast.error('An error occurred while disabling MFA');
     } finally {
       setLoading(false);
     }

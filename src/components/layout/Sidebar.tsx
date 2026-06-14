@@ -90,7 +90,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
         )}
       >
         <Icon size={18} className="shrink-0" />
-        <span className="ltr:text-left rtl:text-right truncate">{label}</span>
+        <span className="flex-1 ltr:text-left rtl:text-right truncate">{label}</span>
         {count !== undefined && (
           <span className="text-xs text-muted-foreground tabular-nums ltr:pl-2 rtl:pr-2">{count}</span>
         )}
@@ -100,10 +100,10 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
   return (
     <aside
-      className="flex flex-col h-full w-56 shrink-0 py-6"
+      className="flex flex-col h-full w-full shrink-0 py-6"
       aria-label={t('vault.myVault')}
     >
-      <div className="flex-1 overflow-y-auto space-y-1 scrollbar-none pr-2">
+      <div className="flex-1 overflow-y-auto space-y-1 scrollbar-none">
         {/* All secrets */}
       {navItem('all', t('vault.allSecrets'), RiSafe2Line, secretCounts['all'])}
       
@@ -128,7 +128,7 @@ export function Sidebar({ onNavClick }: SidebarProps) {
 
       </div>
 
-      <div className="shrink-0 space-y-1 pt-4 mt-2 border-t border-border/50 pr-2">
+      <div className="shrink-0 space-y-1 pt-4 mt-2 border-t border-border/50">
         {/* Settings Link */}
       <Link
         href={`/${locale}/vault/settings`}

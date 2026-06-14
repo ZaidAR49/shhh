@@ -53,7 +53,7 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
         {/* Main content with sidebar */}
         <div className="flex-1 min-h-0 flex w-full max-w-[1400px] mx-auto overflow-hidden">
         {/* Desktop sidebar */}
-        <div className="hidden md:flex flex-col border-border border-e ltr:pr-6 rtl:pl-6 lg:ltr:pr-8 lg:rtl:pl-8 overflow-y-auto h-full shrink-0 w-[260px] scrollbar-thin">
+        <div className="hidden md:flex flex-col border-border border-e px-3 lg:px-4 overflow-y-auto h-full shrink-0 w-60 lg:w-64 scrollbar-thin">
           <Sidebar />
         </div>
 

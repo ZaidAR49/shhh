@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { Providers } from '@/components/providers';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from 'sonner';
 import '../globals.css';
 
 const inter = Inter({
@@ -51,6 +52,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           <NextIntlClientProvider messages={messages} locale={locale}>
             <TooltipProvider delay={300}>
               {children}
+              <Toaster position="bottom-center" richColors theme="system" />
             </TooltipProvider>
           </NextIntlClientProvider>
         </Providers>

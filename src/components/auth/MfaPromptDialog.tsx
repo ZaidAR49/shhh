@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface MfaPromptDialogProps {
   open: boolean;
@@ -42,11 +43,15 @@ export function MfaPromptDialog({ open, onOpenChange, onSuccess, actionName }: M
         onSuccess(token);
         onOpenChange(false);
         setToken('');
+        toast.success('Identity verified');
       } else {
-        setError(data.error || 'Invalid code');
+        const errMsg = data.error || 'Invalid code';
+        setError(errMsg);
+        toast.error(errMsg);
       }
     } catch (err) {
       setError('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
     } finally {
       setIsVerifying(false);
     }

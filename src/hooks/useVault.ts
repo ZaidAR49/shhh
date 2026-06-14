@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import type { Secret, CreateSecretPayload, UpdateSecretPayload } from '@/types';
+import { toast } from 'sonner';
 
 interface UseVaultReturn {
   secrets: Secret[];
@@ -79,9 +80,15 @@ export function useVault(): UseVaultReturn {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) throw new Error('Failed to create secret');
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const message = errorData.error || 'Failed to create secret';
+      toast.error(message);
+      throw new Error(message);
+    }
     const newSecret = await res.json();
     setSecrets((prev) => [newSecret, ...prev]);
+    toast.success('Secret created successfully');
     return newSecret;
   }, []);
 
@@ -92,9 +99,15 @@ export function useVault(): UseVaultReturn {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error('Failed to update secret');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const message = errorData.error || 'Failed to update secret';
+        toast.error(message);
+        throw new Error(message);
+      }
       const updated = await res.json();
       setSecrets((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      toast.success('Secret updated successfully');
       return updated;
     },
     []
@@ -104,8 +117,14 @@ export function useVault(): UseVaultReturn {
     const res = await fetch(`/api/secrets/${id}`, {
       method: 'DELETE'
     });
-    if (!res.ok) throw new Error('Failed to delete secret');
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const message = errorData.error || 'Failed to delete secret';
+      toast.error(message);
+      throw new Error(message);
+    }
     setSecrets((prev) => prev.filter((s) => s.id !== id));
+    toast.success('Secret deleted successfully');
   }, []);
 
   const searchSecrets = useCallback(async (query: string): Promise<void> => {
@@ -129,9 +148,15 @@ export function useVault(): UseVaultReturn {
     const res = await fetch(`/api/secrets/${id}/favorite`, {
       method: 'PATCH'
     });
-    if (!res.ok) throw new Error('Failed to toggle favorite');
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const message = errorData.error || 'Failed to toggle favorite';
+      toast.error(message);
+      throw new Error(message);
+    }
     const updated = await res.json();
     setSecrets((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    toast.success(updated.is_favorite ? 'Added to favorites' : 'Removed from favorites');
   }, []);
 
   return {

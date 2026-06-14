@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSession as useNextAuthSession, signIn, signOut } from 'next-auth/react';
 import { useLocale } from 'next-intl';
+import { toast } from 'sonner';
 import type { Session } from '@/types';
 
 interface UseSessionReturn {
@@ -105,9 +106,14 @@ export function useSession(): UseSessionReturn {
             localStorage.setItem('shhh_remembered_user', JSON.stringify(parsed));
           } catch (e) {}
         }
+        toast.success('Name updated successfully');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || 'Failed to update name');
       }
     } catch (e) {
       console.error("Failed to update name", e);
+      toast.error('Network error while updating name');
     }
   };
 
