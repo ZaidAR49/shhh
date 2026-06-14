@@ -292,17 +292,17 @@
     "badge": "مشرف",
     "superAdmin": "مشرف عام",
     "dashboardAccess": "صلاحية لوحة التحكم",
-    "mockData": "بيانات تجريبية",
-    "allActionsMock": "جميع الإجراءات تجريبية — لا تعديل فعلي على البيانات",
+    "mockData": "البيانات الحية",
+    "allActionsMock": "جلسة نشطة — يتم تطبيق جميع التعديلات مباشرة على قاعدة البيانات",
     "nav": {
       "overview": "نظرة عامة",
       "users": "إدارة المستخدمين"
     },
     "header": {
       "overview": "نظرة تحليلية شاملة",
-      "overviewSub": "صحة المنصة في لمحة — جميع البيانات تجريبية.",
+      "overviewSub": "نظرة شاملة على نشاط وتحليلات المنصة.",
       "users": "إدارة المستخدمين",
-      "usersSub": "يُعرض {shown} من {total} مستخدم — جميع الإجراءات تجريبية."
+      "usersSub": "إدارة صلاحيات وأدوار وأمان المستخدمين (يُعرض {shown} من {total} مستخدم)."
     },
     "overview": {
       "totalUsers": "إجمالي المستخدمين",
@@ -317,10 +317,6 @@
       "administratorsSub": "مشرفو المنصة",
       "inactiveUsers": "المستخدمون غير النشطون",
       "inactiveUsersSub": "لا نشاط مؤخراً",
-      "trendThisMonth": "+2 هذا الشهر",
-      "trendSecretsWeek": "+14 هذا الأسبوع",
-      "trendMfaMonth": "+5% هذا الشهر",
-      "trendLockedWeek": "1 هذا الأسبوع",
       "monthlySignups": "التسجيلات الشهرية (2024)",
       "secretTypes": "توزيع أنواع الأسرار",
       "recentUsers": "أحدث المستخدمين"
@@ -394,7 +390,7 @@
       "removeAdminTitle": "إلغاء دور المشرف",
       "saveTitle": "حفظ التغييرات",
       "deleteBody": "هل أنت متأكد من حذف {name}؟",
-      "deleteSub": "لا يمكن التراجع عن هذا الإجراء. ستُحذف جميع أسراره نهائيًا. (تجريبي — لا حذف فعلي)",
+      "deleteSub": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع أسراره وبيانات حسابه نهائيًا.",
       "lockBody": "هل أنت متأكد من قفل حساب {name}؟",
       "lockSub": "لن يتمكن من الوصول إلى خزنته حتى يتم فتح الحساب.",
       "unlockBody": "هل أنت متأكد من فتح حساب {name}؟",
@@ -404,7 +400,7 @@
       "removeAdminBody": "هل أنت متأكد من إلغاء صلاحيات المشرف من {name}؟",
       "removeAdminSub": "سيفقد صلاحية الوصول إلى هذه لوحة التحكم.",
       "saveBody": "حفظ التغييرات على ملف {name} الشخصي؟",
-      "saveSub": "سيتم تحديث اسمه وبريده ودوره وحالته وتفضيلاته. (تجريبي — لا تغيير فعلي)",
+      "saveSub": "سيتم حفظ التفاصيل المحدثة في قاعدة البيانات.",
       "confirmDelete": "نعم، احذف",
       "confirmLock": "نعم، اقفل",
       "confirmUnlock": "نعم، افتح",
@@ -437,17 +433,16 @@
       "notificationsEnabled": "تفعيل الإشعارات"
     },
     "toast": {
-      "userUpdated": "تم تحديث {name} (تجريبي).",
-      "userDeleted": "تم حذف {name} (تجريبي).",
-      "userLocked": "{name} مقفل الآن (تجريبي).",
-      "userUnlocked": "{name} نشط الآن (تجريبي).",
-      "madeAdmin": "{name} مشرف الآن (تجريبي).",
-      "removedAdmin": "{name} مستخدم عادي الآن (تجريبي)."
+      "userUpdated": "تم تحديث {name} بنجاح.",
+      "userDeleted": "تم حذف {name} بنجاح.",
+      "userLocked": "{name} مقفل الآن.",
+      "userUnlocked": "{name} نشط الآن.",
+      "madeAdmin": "تم تحديث دور {name}.",
+      "removedAdmin": "تم تحديث دور {name}."
     },
     "donut": {
       "secrets": "أسرار"
-    },
-    "simulateRole": "محاكاة الدور"
+    }
   },
   "notifications": {
     "sensitiveAccessedTitle": "تم الوصول إلى سر حساس",

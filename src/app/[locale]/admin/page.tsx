@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { useSession } from '@/hooks/useSession';
 import { Bar, BarChart, XAxis, Pie, PieChart, Cell, Label } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import {
   RiShieldCheckLine,
   RiGroupLine,
@@ -30,8 +32,9 @@ import {
   RiRefreshLine,
   RiCalendarLine,
   RiMailLine,
-  RiGlobeLine,
   RiShieldStarLine,
+  RiAddLine,
+  RiShieldKeyholeLine,
 } from 'react-icons/ri';
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
@@ -39,7 +42,7 @@ import {
 type UserRole = 'admin' | 'supervisor' | 'viewer' | 'user';
 type UserStatus = 'active' | 'locked' | 'inactive';
 
-interface MockUser {
+interface AdminUser {
   id: string;
   name: string;
   email: string;
@@ -50,177 +53,11 @@ interface MockUser {
   mfaEnabled: boolean;
   preferredLocale: 'en' | 'ar';
   notificationsEnabled: boolean;
-  joinedAt: string;
-  lastActive: string;
+  joinedAt: string | null;
+  lastActive: string | null;
 }
 
-const MOCK_USERS: MockUser[] = [
-  {
-    id: 'usr_001',
-    name: 'Zaid Al-Rashidi',
-    email: 'zaid.rashidi@gmail.com',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Zaid&backgroundColor=b6e3f4',
-    role: 'admin',
-    status: 'active',
-    secretsCount: 42,
-    mfaEnabled: true,
-    preferredLocale: 'ar',
-    notificationsEnabled: true,
-    joinedAt: '2024-01-15',
-    lastActive: '2026-06-14',
-  },
-  {
-    id: 'usr_002',
-    name: 'Sara Al-Khalidi',
-    email: 'sara.khalidi@outlook.com',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Sara&backgroundColor=ffd5dc',
-    role: 'supervisor',
-    status: 'active',
-    secretsCount: 18,
-    mfaEnabled: true,
-    preferredLocale: 'en',
-    notificationsEnabled: true,
-    joinedAt: '2024-03-22',
-    lastActive: '2026-06-13',
-  },
-  {
-    id: 'usr_003',
-    name: 'Ahmed Hassan',
-    email: 'ahmed.hassan@proton.me',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Ahmed&backgroundColor=c0aede',
-    role: 'user',
-    status: 'locked',
-    secretsCount: 7,
-    mfaEnabled: false,
-    preferredLocale: 'ar',
-    notificationsEnabled: false,
-    joinedAt: '2024-05-10',
-    lastActive: '2026-05-28',
-  },
-  {
-    id: 'usr_004',
-    name: 'Lina Mansour',
-    email: 'lina.m@company.io',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Lina&backgroundColor=d1f4d4',
-    role: 'viewer',
-    status: 'active',
-    secretsCount: 31,
-    mfaEnabled: true,
-    preferredLocale: 'en',
-    notificationsEnabled: true,
-    joinedAt: '2024-07-05',
-    lastActive: '2026-06-14',
-  },
-  {
-    id: 'usr_005',
-    name: 'Omar Farouk',
-    email: 'omar.farouk@gmail.com',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Omar&backgroundColor=ffd5a0',
-    role: 'user',
-    status: 'inactive',
-    secretsCount: 3,
-    mfaEnabled: false,
-    preferredLocale: 'ar',
-    notificationsEnabled: false,
-    joinedAt: '2024-09-18',
-    lastActive: '2025-11-02',
-  },
-  {
-    id: 'usr_006',
-    name: 'Nour Jabr',
-    email: 'nour.jabr@hotmail.com',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Nour&backgroundColor=c0e8ff',
-    role: 'user',
-    status: 'active',
-    secretsCount: 24,
-    mfaEnabled: true,
-    preferredLocale: 'en',
-    notificationsEnabled: true,
-    joinedAt: '2024-11-03',
-    lastActive: '2026-06-12',
-  },
-  {
-    id: 'usr_007',
-    name: 'Karim Saleh',
-    email: 'k.saleh@enterprise.com',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Karim&backgroundColor=ffeaa0',
-    role: 'admin',
-    status: 'active',
-    secretsCount: 56,
-    mfaEnabled: true,
-    preferredLocale: 'en',
-    notificationsEnabled: true,
-    joinedAt: '2024-02-01',
-    lastActive: '2026-06-14',
-  },
-  {
-    id: 'usr_008',
-    name: 'Dina Ramadan',
-    email: 'dina.ramadan@yahoo.com',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Dina&backgroundColor=e8c0ff',
-    role: 'user',
-    status: 'locked',
-    secretsCount: 12,
-    mfaEnabled: false,
-    preferredLocale: 'ar',
-    notificationsEnabled: false,
-    joinedAt: '2025-01-14',
-    lastActive: '2026-04-20',
-  },
-  {
-    id: 'usr_009',
-    name: 'Faris Al-Amin',
-    email: 'faris.amin@tech.dev',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Faris&backgroundColor=b6f4d4',
-    role: 'user',
-    status: 'active',
-    secretsCount: 9,
-    mfaEnabled: true,
-    preferredLocale: 'en',
-    notificationsEnabled: true,
-    joinedAt: '2025-03-30',
-    lastActive: '2026-06-10',
-  },
-  {
-    id: 'usr_010',
-    name: 'Hana Qasim',
-    email: 'hana.q@startup.co',
-    image: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Hana&backgroundColor=ffd5f4',
-    role: 'user',
-    status: 'active',
-    secretsCount: 15,
-    mfaEnabled: false,
-    preferredLocale: 'ar',
-    notificationsEnabled: true,
-    joinedAt: '2025-06-01',
-    lastActive: '2026-06-11',
-  },
-];
 
-const MONTHLY_SIGNUPS = [
-  { month: 'Jan', count: 2 },
-  { month: 'Feb', count: 1 },
-  { month: 'Mar', count: 1 },
-  { month: 'Apr', count: 0 },
-  { month: 'May', count: 1 },
-  { month: 'Jun', count: 2 },
-  { month: 'Jul', count: 1 },
-  { month: 'Aug', count: 0 },
-  { month: 'Sep', count: 1 },
-  { month: 'Oct', count: 0 },
-  { month: 'Nov', count: 1 },
-  { month: 'Dec', count: 0 },
-];
-
-const SECRET_TYPE_BREAKDOWN = [
-  { type: 'Password', count: 68, color: 'var(--accent)' },
-  { type: 'API Key', count: 45, color: '#8b5cf6' },
-  { type: 'Bank Account', count: 32, color: '#06b6d4' },
-  { type: 'Secure Note', count: 28, color: 'var(--vault-unlocked)' },
-  { type: 'Identity', count: 19, color: 'var(--vault-warning)' },
-  { type: 'Wi-Fi', count: 14, color: 'var(--vault-locked)' },
-  { type: 'Others', count: 11, color: 'var(--muted-foreground)' },
-];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -229,11 +66,12 @@ type ConfirmActionType = 'delete' | 'lock' | 'unlock' | 'makeAdmin' | 'removeAdm
 
 interface ConfirmState {
   type: ConfirmActionType;
-  user: MockUser;
-  editDraft?: MockUser; // only for 'save'
+  user: AdminUser;
+  editDraft?: AdminUser; // only for 'save'
 }
 
-function fmtDate(d: string, locale: string) {
+function fmtDate(d: string | null, locale: string) {
+  if (!d) return '-';
   return new Date(d).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
@@ -298,7 +136,7 @@ const chartConfigBar = {
   count: { label: "Signups", color: "var(--accent)" },
 };
 
-function MiniBarChart({ data }: { data: typeof MONTHLY_SIGNUPS }) {
+function MiniBarChart({ data }: { data: { month: string; count: number }[] }) {
   return (
     <div className="h-40 w-full mt-2">
       <ChartContainer config={chartConfigBar} className="h-full w-full">
@@ -318,7 +156,7 @@ const chartConfigPie = {
   count: { label: "Secrets" },
 };
 
-function SecretDonut({ data, secretsLabel }: { data: typeof SECRET_TYPE_BREAKDOWN; secretsLabel: string }) {
+function SecretDonut({ data, secretsLabel }: { data: { type: string; count: number; color: string }[]; secretsLabel: string }) {
   const total = data.reduce((s, d) => s + d.count, 0);
   
   return (
@@ -494,7 +332,7 @@ function ViewModal({
   onClose,
   t,
 }: {
-  user: MockUser;
+  user: AdminUser;
   onClose: () => void;
   t: ReturnType<typeof useTranslations<'admin'>>;
 }) {
@@ -587,13 +425,13 @@ function EditModal({
   t,
   simulatedRole,
 }: {
-  user: MockUser;
+  user: AdminUser;
   onClose: () => void;
-  onRequestSave: (draft: MockUser) => void;
+  onRequestSave: (draft: AdminUser) => void;
   t: ReturnType<typeof useTranslations<'admin'>>;
   simulatedRole: UserRole;
 }) {
-  const [draft, setDraft] = useState<MockUser>({ ...user });
+  const [draft, setDraft] = useState<AdminUser>({ ...user });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
@@ -733,6 +571,136 @@ function EditModal({
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
+// ─── MFA Re-Verify Modal ─────────────────────────────────────────────────────
+
+const MFA_DIGITS = 6;
+
+function MfaReVerifyModal({
+  title,
+  description,
+  onVerified,
+  onCancel,
+}: {
+  title: string;
+  description: string;
+  onVerified: (code: string) => void;
+  onCancel: () => void;
+}) {
+  const [code, setCode] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (codeToSubmit: string) => {
+    if (codeToSubmit.length !== MFA_DIGITS) return;
+    setIsChecking(true);
+    setError('');
+    // Pass the code back to the parent — the parent will include it as a header in the actual API call
+    // We do a lightweight pre-check here to give immediate feedback before the real operation fires
+    try {
+      const res = await fetch('/api/admin/mfa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: code }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Invalid code.');
+        setDigits(Array(MFA_DIGITS).fill(''));
+        inputRefs.current[0]?.focus();
+        return;
+      }
+      onVerified(code);
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-5 bg-black/70 backdrop-blur-sm animate-fade-in"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+        style={{ animation: 'modal-in 0.2s ease' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 60%, var(--vault-unlocked)))' }} />
+
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--primary) 12%, transparent)', color: 'var(--primary)' }}>
+              <RiShieldKeyholeLine size={16} />
+            </div>
+            <span className="text-sm font-bold text-foreground">{title}</span>
+          </div>
+          <button
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            onClick={onCancel}
+          >
+            <RiCloseLine size={15} />
+          </button>
+        </div>
+
+        <div className="px-5 py-5 flex flex-col gap-4">
+          <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+
+          <div className="flex items-center justify-center mb-4" dir="ltr">
+            <InputOTP
+              maxLength={MFA_DIGITS}
+              value={code}
+              onChange={(val) => {
+                setCode(val);
+                setError('');
+                if (val.length === MFA_DIGITS) handleSubmit(val);
+              }}
+              disabled={isChecking}
+              autoFocus
+            >
+              <InputOTPGroup className="gap-2.5">
+                {Array.from({ length: MFA_DIGITS }).map((_, i) => (
+                  <InputOTPSlot
+                    key={i}
+                    index={i}
+                    className={`w-10 h-12 text-center text-lg font-bold rounded-xl border-2 transition-all duration-150 ${
+                      error
+                        ? 'border-destructive/70 text-destructive'
+                        : code.length > i && !error
+                        ? 'border-primary text-primary shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]'
+                        : 'border-border focus-visible:border-ring'
+                    }`}
+                  />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+
+          {error && (
+            <div className="flex items-center justify-center gap-1.5 text-xs text-destructive">
+              <RiAlertLine size={12} />
+              {error}
+            </div>
+          )}
+
+          <button
+            id="mfa-reverify-submit"
+            onClick={() => handleSubmit(code)}
+            disabled={code.length !== MFA_DIGITS || isChecking}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none"
+            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          >
+            {isChecking ? <><RiRefreshLine size={14} className="animate-spin" /> Verifying…</> : <><RiCheckLine size={14} /> Confirm</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+
 function Toast({ msg, type }: { msg: string; type: 'success' | 'error' }) {
   return (
     <div
@@ -745,6 +713,202 @@ function Toast({ msg, type }: { msg: string; type: 'success' | 'error' }) {
       {type === 'success' ? <RiCheckLine size={16} /> : <RiAlertLine size={16} />}
       {msg}
     </div>
+  );
+}
+
+// ─── Add User Modal ───────────────────────────────────────────────────────────
+
+function AddUserModal({
+  onClose,
+  onCreated,
+  t,
+}: {
+  onClose: () => void;
+  onCreated: (user: AdminUser) => void;
+  t: ReturnType<typeof useTranslations<'admin'>>;
+}) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<UserRole>('admin');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [pendingMfa, setPendingMfa] = useState(false);
+
+  const isAdminTier = ['admin', 'supervisor', 'viewer'].includes(role);
+
+  const handleSubmit = async (mfaCode?: string) => {
+    setError('');
+    if (!email.trim() || !email.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    // If admin-tier role and no MFA code yet, show the MFA gate
+    if (isAdminTier && !mfaCode) {
+      setPendingMfa(true);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (mfaCode) headers['x-admin-mfa-token'] = mfaCode;
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: name.trim() || undefined, email: email.trim(), role }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to create user.');
+        return;
+      }
+      const u = data.user;
+      onCreated({
+        id: u.id,
+        name: u.name || 'Unknown',
+        email: u.email,
+        image: `https://api.dicebear.com/9.x/avataaars/svg?seed=${u.name || u.email}&backgroundColor=b6e3f4`,
+        role: u.role,
+        status: 'active',
+        secretsCount: 0,
+        mfaEnabled: false,
+        preferredLocale: u.preferredLocale || 'en',
+        notificationsEnabled: true,
+        joinedAt: new Date().toISOString(),
+        lastActive: new Date().toISOString(),
+      });
+      onClose();
+    } catch {
+      setError('An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {pendingMfa && (
+        <MfaReVerifyModal
+          title="Confirm Admin Creation"
+          description="Creating an admin-tier account is a sensitive operation. Enter your 6-digit authenticator code to confirm."
+          onVerified={(code) => { setPendingMfa(false); handleSubmit(code); }}
+          onCancel={() => setPendingMfa(false)}
+        />
+      )}
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/60 backdrop-blur-sm animate-fade-in"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+          style={{ animation: 'modal-in 0.2s ease' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary">
+                <RiAddLine size={16} />
+              </div>
+              <span className="text-base font-bold text-foreground">Create User</span>
+            </div>
+            <button
+              className="w-7 h-7 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={onClose}
+            >
+              <RiCloseLine size={16} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="px-6 py-5 flex flex-col gap-4">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Create a user account manually. The user can sign in via their email through any linked OAuth provider (Google, GitHub).
+            </p>
+
+            {error && (
+              <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2.5">
+                <RiAlertLine size={14} />
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Display Name <span className="normal-case font-normal">(optional)</span>
+              </label>
+              <input
+                className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
+                placeholder="e.g. John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                id="add-user-name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Email <span className="text-destructive">*</span>
+              </label>
+              <div className="relative">
+                <RiMailLine size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <input
+                  type="email"
+                  className="w-full ps-9 pe-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
+                  placeholder="user@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  id="add-user-email"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                />
+              </div>
+            </div>
+
+            {/* Role selector */}
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Role
+              </label>
+              <select
+                className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-ring transition-colors cursor-pointer"
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole)}
+              >
+                <option value="admin">{t('role.admin')}</option>
+                <option value="supervisor">{t('role.supervisor')}</option>
+                <option value="viewer">{t('role.viewer')}</option>
+                <option value="user">{t('role.user')}</option>
+              </select>
+              {isAdminTier && (
+                <p className="flex items-center gap-1 mt-1.5 text-[10px] text-primary">
+                  <RiShieldKeyholeLine size={11} />
+                  Admin-tier role — you will be asked for your 2FA code to confirm.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-2 px-6 pb-5 pt-3 border-t border-border">
+            <button
+              className="px-4 py-2 rounded-lg text-sm font-semibold bg-muted text-muted-foreground border border-border hover:text-foreground hover:bg-muted/80 transition-all"
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-60 disabled:pointer-events-none"
+              onClick={() => handleSubmit()}
+              disabled={isLoading}
+              id="add-user-submit"
+            >
+              {isLoading ? <RiRefreshLine size={14} className="animate-spin" /> : <RiAddLine size={14} />}
+              {isLoading ? 'Creating...' : isAdminTier ? 'Continue →' : 'Create User'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -764,20 +928,20 @@ function UserTable({
   onView,
   onEdit,
   onRequestLockToggle,
-  onRequestAdminToggle,
+  onRoleChange,
   onRequestDelete,
   t,
   simulatedRole,
 }: {
-  users: MockUser[];
+  users: AdminUser[];
   sortBy: string;
   sortDir: 'asc' | 'desc';
   onToggleSort: (col: 'name' | 'joinedAt' | 'secretsCount' | 'lastActive') => void;
-  onView: (u: MockUser) => void;
-  onEdit: (u: MockUser) => void;
-  onRequestLockToggle: (u: MockUser) => void;
-  onRequestAdminToggle: (u: MockUser) => void;
-  onRequestDelete: (u: MockUser) => void;
+  onView: (u: AdminUser) => void;
+  onEdit: (u: AdminUser) => void;
+  onRequestLockToggle: (u: AdminUser) => void;
+  onRoleChange: (u: AdminUser, role: UserRole) => void;
+  onRequestDelete: (u: AdminUser) => void;
   t: ReturnType<typeof useTranslations<'admin'>>;
   simulatedRole: UserRole;
 }) {
@@ -926,18 +1090,22 @@ function UserTable({
                         </ActionBtn>
                       )}
 
-                      {/* Only admins can manage admin roles */}
+                      {/* Only admins can change roles via dropdown */}
                       {simulatedRole === 'admin' && (
-                        <ActionBtn
-                          title={user.role === 'admin' ? t('actions.removeAdmin') : t('actions.makeAdmin')}
-                          onClick={() => onRequestAdminToggle(user)}
-                          id={`action-admin-${user.id}`}
-                          active={user.role === 'admin'}
-                          activeClass="bg-primary/10 text-primary border-primary/20"
-                          hoverClass="hover:bg-primary/10 hover:text-primary hover:border-primary/30"
-                        >
-                          <RiAdminLine size={16} />
-                        </ActionBtn>
+                        <div className="relative">
+                          <select
+                            id={`action-role-${user.id}`}
+                            value={user.role}
+                            onChange={(e) => onRoleChange(user, e.target.value as UserRole)}
+                            className="appearance-none h-9 ps-2.5 pe-7 rounded-md border border-border bg-muted/10 text-muted-foreground text-xs font-semibold focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all cursor-pointer hover:bg-muted/30 hover:text-foreground"
+                          >
+                            <option value="user">{t('role.user')}</option>
+                            <option value="viewer">{t('role.viewer')}</option>
+                            <option value="supervisor">{t('role.supervisor')}</option>
+                            <option value="admin">{t('role.admin')}</option>
+                          </select>
+                          <RiAdminLine size={11} className="absolute end-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
+                        </div>
                       )}
 
                       {canDeleteLock && (
@@ -998,36 +1166,110 @@ function ActionBtn({
 
 export default function AdminDashboard() {
   const t = useTranslations('admin');
+  const { session } = useSession();
 
-  // Simulated active user role (to showcase RBAC functionality)
-  const [simulatedRole, setSimulatedRole] = useState<UserRole>('admin');
+  // Active user role
+  const simulatedRole = (session?.user?.role || 'viewer') as UserRole;
 
   const [activeTab, setActiveTab] = useState<TabId>('overview');
-  const [users, setUsers] = useState<MockUser[]>(MOCK_USERS);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Filter / sort state
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | UserStatus>('all');
   const [filterMfa, setFilterMfa] = useState<'all' | 'enabled' | 'disabled'>('all');
+  const [filterRole, setFilterRole] = useState<'all' | UserRole>('all');
   const [sortBy, setSortBy] = useState<'name' | 'joinedAt' | 'secretsCount' | 'lastActive'>('joinedAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
+  // Reset filters when activeTab changes
+  useEffect(() => {
+    setFilterRole('all');
+    setFilterStatus('all');
+    setFilterMfa('all');
+    setSearch('');
+  }, [activeTab]);
+
   // Modal state
-  const [viewUser, setViewUser] = useState<MockUser | null>(null);
-  const [editUser, setEditUser] = useState<MockUser | null>(null);
+  const [viewUser, setViewUser] = useState<AdminUser | null>(null);
+  const [editUser, setEditUser] = useState<AdminUser | null>(null);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+  const [showAddUser, setShowAddUser] = useState(false);
+
+  // MFA gate — holds a pending sensitive action waiting for 2FA confirmation
+  const [mfaGate, setMfaGate] = useState<{
+    title: string;
+    description: string;
+    onVerified: (code: string) => void;
+  } | null>(null);
 
   // Toast
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  const [stats, setStats] = useState<{ secretTypes: { type: string; count: number; color: string }[] } | null>(null);
+
+  useEffect(() => {
+    const fetchUsersAndStats = async () => {
+      try {
+        const [usersRes, statsRes] = await Promise.all([
+          fetch('/api/admin/users'),
+          fetch('/api/admin/stats')
+        ]);
+        
+        if (usersRes.ok) {
+          const usersData = await usersRes.json();
+          setUsers(usersData);
+        } else {
+          throw new Error('Failed to fetch users');
+        }
+        
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData);
+        }
+      } catch (err) {
+        setToast({ msg: 'Failed to load dashboard data', type: 'error' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsersAndStats();
+  }, []);
 
   // Analytics
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.status === 'active').length;
   const lockedUsers = users.filter((u) => u.status === 'locked').length;
   const adminUsers = users.filter((u) => u.role === 'admin' || u.role === 'supervisor').length;
-  const mfaRate = Math.round((users.filter((u) => u.mfaEnabled).length / totalUsers) * 100);
+  const mfaRate = totalUsers > 0 ? Math.round((users.filter((u) => u.mfaEnabled).length / totalUsers) * 100) : 0;
   const totalSecrets = users.reduce((s, u) => s + u.secretsCount, 0);
-  const avgSecrets = (totalSecrets / totalUsers).toFixed(1);
+  const avgSecrets = totalUsers > 0 ? (totalSecrets / totalUsers).toFixed(1) : '0';
+
+  const monthlySignups = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const counts = months.map(m => ({ month: m, count: 0 }));
+    
+    users.forEach(user => {
+      if (user.joinedAt) {
+        const date = new Date(user.joinedAt);
+        const monthIndex = date.getMonth(); // 0-11
+        if (monthIndex >= 0 && monthIndex < 12) {
+          counts[monthIndex].count += 1;
+        }
+      }
+    });
+    return counts;
+  }, [users]);
+
+  const secretTypesData = useMemo(() => {
+    if (stats?.secretTypes && stats.secretTypes.length > 0) {
+      return stats.secretTypes;
+    }
+    return [
+      { type: 'No secrets found', count: 0, color: 'var(--muted-foreground)' }
+    ];
+  }, [stats]);
 
   // Filtered + sorted list for the current tab
   const filteredUsers = useMemo(() => {
@@ -1049,16 +1291,20 @@ export default function AdminDashboard() {
     if (filterStatus !== 'all') list = list.filter((u) => u.status === filterStatus);
     // MFA filter
     if (filterMfa !== 'all') list = list.filter((u) => (filterMfa === 'enabled' ? u.mfaEnabled : !u.mfaEnabled));
+    // Role filter
+    if (filterRole !== 'all') list = list.filter((u) => u.role === filterRole);
     // Sort
     list.sort((a, b) => {
-      let av: string | number = a[sortBy] as string | number;
-      let bv: string | number = b[sortBy] as string | number;
+      let av: string | number | null = a[sortBy];
+      let bv: string | number | null = b[sortBy];
+      if (av === null) av = '';
+      if (bv === null) bv = '';
       if (typeof av === 'string') av = av.toLowerCase();
       if (typeof bv === 'string') bv = bv.toLowerCase();
       return sortDir === 'asc' ? (av < bv ? -1 : 1) : (av > bv ? -1 : 1);
     });
     return list;
-  }, [users, activeTab, search, filterStatus, filterMfa, sortBy, sortDir]);
+  }, [users, activeTab, search, filterStatus, filterMfa, filterRole, sortBy, sortDir]);
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type });
@@ -1070,30 +1316,68 @@ export default function AdminDashboard() {
     else { setSortBy(col); setSortDir('desc'); }
   };
 
-  // ── Action handlers (called AFTER confirmation) ──────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  const executeConfirm = () => {
+  const isAdminTier = (role: UserRole) => ['admin', 'supervisor', 'viewer'].includes(role);
+
+  // ── Action handlers (called AFTER confirmation, optionally with MFA code) ────
+
+  const executeConfirm = async (mfaCode?: string) => {
     if (!confirmState) return;
     const { type, user, editDraft } = confirmState;
 
-    if (type === 'delete') {
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      showToast(t('toast.userDeleted', { name: user.name }));
-    } else if (type === 'lock') {
-      setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: 'locked' } : u));
-      showToast(t('toast.userLocked', { name: user.name }));
-    } else if (type === 'unlock') {
-      setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: 'active' } : u));
-      showToast(t('toast.userUnlocked', { name: user.name }));
-    } else if (type === 'makeAdmin') {
-      setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, role: 'admin' } : u));
-      showToast(t('toast.madeAdmin', { name: user.name }));
-    } else if (type === 'removeAdmin') {
-      setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, role: 'user' } : u));
-      showToast(t('toast.removedAdmin', { name: user.name }));
-    } else if (type === 'save' && editDraft) {
-      setUsers((prev) => prev.map((u) => u.id === editDraft.id ? editDraft : u));
-      showToast(t('toast.userUpdated', { name: editDraft.name }));
+    try {
+      if (type === 'delete') {
+        // Admin-tier deletions require MFA — intercept and show gate if no code yet
+        if (isAdminTier(user.role) && !mfaCode) {
+          setMfaGate({
+            title: 'Confirm Admin Deletion',
+            description: `Deleting "${user.name}" (${user.role}) is irreversible. Enter your authenticator code to confirm.`,
+            onVerified: (code) => { setMfaGate(null); executeConfirm(code); },
+          });
+          return;
+        }
+        const headers: Record<string, string> = {};
+        if (mfaCode) headers['x-admin-mfa-token'] = mfaCode;
+        const res = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE', headers });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error || 'Failed to delete', 'error'); return; }
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+        showToast(t('toast.userDeleted', { name: user.name }));
+      } else if (type === 'lock') {
+        const res = await fetch(`/api/admin/users/${user.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'locked' }) });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error || 'Failed to lock', 'error'); return; }
+        setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: 'locked' } : u));
+        showToast(t('toast.userLocked', { name: user.name }));
+      } else if (type === 'unlock') {
+        const res = await fetch(`/api/admin/users/${user.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'active' }) });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error || 'Failed to unlock', 'error'); return; }
+        setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: 'active' } : u));
+        showToast(t('toast.userUnlocked', { name: user.name }));
+      } else if (type === 'save' && editDraft) {
+        // Saving an edit that changes to/from admin tier requires MFA
+        const roleChangingToAdmin = isAdminTier(editDraft.role) && !isAdminTier(users.find(u => u.id === editDraft.id)?.role ?? 'user' as UserRole);
+        const roleChangingFromAdmin = !isAdminTier(editDraft.role) && isAdminTier(users.find(u => u.id === editDraft.id)?.role ?? 'user' as UserRole);
+        if ((roleChangingToAdmin || roleChangingFromAdmin) && !mfaCode) {
+          setMfaGate({
+            title: 'Confirm Role Change',
+            description: `Changing ${editDraft.name}'s role requires 2FA verification. Enter your authenticator code.`,
+            onVerified: (code) => { setMfaGate(null); executeConfirm(code); },
+          });
+          return;
+        }
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (mfaCode) headers['x-admin-mfa-token'] = mfaCode;
+        const res = await fetch(`/api/admin/users/${editDraft.id}`, { method: 'PATCH', headers, body: JSON.stringify(editDraft) });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error || 'Failed to update', 'error'); return; }
+        setUsers((prev) => prev.map((u) => u.id === editDraft.id ? editDraft : u));
+        showToast(t('toast.userUpdated', { name: editDraft.name }));
+      }
+    } catch {
+      showToast('Action failed. Please try again.', 'error');
     }
 
     setConfirmState(null);
@@ -1102,19 +1386,56 @@ export default function AdminDashboard() {
 
   // ── Pending action request handlers ─────────────────────────────────────────
 
-  const handleRequestLockToggle = (user: MockUser) => {
+  const handleRequestLockToggle = (user: AdminUser) => {
     setConfirmState({ type: user.status === 'locked' ? 'unlock' : 'lock', user });
   };
 
-  const handleRequestAdminToggle = (user: MockUser) => {
-    setConfirmState({ type: user.role === 'admin' ? 'removeAdmin' : 'makeAdmin', user });
+  const handleRoleChange = async (user: AdminUser, newRole: UserRole) => {
+    if (user.role === newRole) return;
+    // Admin-tier role changes require MFA confirmation
+    const needsMfa = isAdminTier(user.role) || isAdminTier(newRole);
+    if (needsMfa) {
+      setMfaGate({
+        title: 'Confirm Role Change',
+        description: `Changing ${user.name}'s role from ${user.role} to ${newRole} requires 2FA verification.`,
+        onVerified: async (code) => {
+          setMfaGate(null);
+          try {
+            const res = await fetch(`/api/admin/users/${user.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'x-admin-mfa-token': code },
+              body: JSON.stringify({ role: newRole }),
+            });
+            const data = await res.json();
+            if (!res.ok) { showToast(data.error || 'Failed to change role', 'error'); return; }
+            setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, role: newRole } : u));
+            showToast(t('toast.userUpdated', { name: user.name }));
+          } catch { showToast('Failed to change role', 'error'); }
+        },
+      });
+      return;
+    }
+    // Non-admin role changes proceed without MFA
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error || 'Failed to change role', 'error'); return; }
+      setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, role: newRole } : u));
+      showToast(t('toast.userUpdated', { name: user.name }));
+    } catch {
+      showToast('Failed to change role', 'error');
+    }
   };
 
-  const handleRequestDelete = (user: MockUser) => {
+  const handleRequestDelete = (user: AdminUser) => {
     setConfirmState({ type: 'delete', user });
   };
 
-  const handleRequestSaveEdit = (draft: MockUser) => {
+  const handleRequestSaveEdit = (draft: AdminUser) => {
     setEditUser(null); // close edit modal
     setConfirmState({ type: 'save', user: draft, editDraft: draft });
   };
@@ -1168,6 +1489,27 @@ export default function AdminDashboard() {
           confirm={confirmState}
           onConfirm={executeConfirm}
           onCancel={() => setConfirmState(null)}
+          t={t}
+        />
+      )}
+
+      {/* MFA re-verification gate for sensitive admin operations */}
+      {mfaGate && (
+        <MfaReVerifyModal
+          title={mfaGate.title}
+          description={mfaGate.description}
+          onVerified={mfaGate.onVerified}
+          onCancel={() => setMfaGate(null)}
+        />
+      )}
+
+      {showAddUser && (
+        <AddUserModal
+          onClose={() => setShowAddUser(false)}
+          onCreated={(newUser) => {
+            setUsers((prev) => [newUser, ...prev]);
+            showToast(`User "${newUser.email}" created successfully.`);
+          }}
           t={t}
         />
       )}
@@ -1230,24 +1572,6 @@ export default function AdminDashboard() {
             })}
           </nav>
 
-          {/* Sidebar footer: Simulated Role Viewer */}
-          <div className="px-4 py-5 border-t border-border bg-muted/10">
-            <div className="flex items-center gap-3 mb-3">
-              <img
-                src="https://api.dicebear.com/9.x/avataaars/svg?seed=Admin&backgroundColor=b6e3f4"
-                alt="Active User"
-                className="w-10 h-10 rounded-full border border-border flex-shrink-0"
-              />
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {t(`role.${simulatedRole}` as Parameters<typeof t>[0])}
-                </p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                  {t('dashboardAccess')}
-                </p>
-              </div>
-            </div>
-          </div>
         </aside>
 
         {/* Main Content Area */}
@@ -1267,22 +1591,6 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex items-center gap-3">
-              {/* Simulate Role Dropdown */}
-              <div className="flex items-center gap-2 bg-muted/40 px-3 py-1.5 rounded-lg border border-border">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {t('simulateRole')}:
-                </span>
-                <select
-                  value={simulatedRole}
-                  onChange={(e) => setSimulatedRole(e.target.value as UserRole)}
-                  className="bg-transparent text-sm font-semibold text-foreground focus:outline-none cursor-pointer"
-                >
-                  <option value="admin">{t('role.admin')}</option>
-                  <option value="supervisor">{t('role.supervisor')}</option>
-                  <option value="viewer">{t('role.viewer')}</option>
-                </select>
-              </div>
-
               {/* Main App Toggles */}
               <div className="h-6 w-px bg-border mx-1" />
               <ThemeToggle />
@@ -1305,7 +1613,6 @@ export default function AdminDashboard() {
                     value={totalUsers}
                     sub={t('overview.totalUsersActive', { count: activeUsers })}
                     accentColor="var(--accent)"
-                    trend={{ value: t('overview.trendThisMonth'), up: true }}
                   />
                   <StatCard
                     icon={RiKeyLine}
@@ -1313,7 +1620,6 @@ export default function AdminDashboard() {
                     value={totalSecrets}
                     sub={t('overview.totalSecretsAvg', { avg: avgSecrets })}
                     accentColor="#8b5cf6"
-                    trend={{ value: t('overview.trendSecretsWeek'), up: true }}
                   />
                   <StatCard
                     icon={RiShieldCheckLine}
@@ -1321,7 +1627,6 @@ export default function AdminDashboard() {
                     value={`${mfaRate}%`}
                     sub={t('overview.mfaAdoptionSub', { count: users.filter((u) => u.mfaEnabled).length })}
                     accentColor="var(--vault-unlocked)"
-                    trend={{ value: t('overview.trendMfaMonth'), up: true }}
                   />
                   <StatCard
                     icon={RiLockLine}
@@ -1329,7 +1634,6 @@ export default function AdminDashboard() {
                     value={lockedUsers}
                     sub={t('overview.lockedAccountsSub')}
                     accentColor="var(--vault-locked)"
-                    trend={{ value: t('overview.trendLockedWeek'), up: false }}
                   />
                   <StatCard
                     icon={RiShieldStarLine}
@@ -1354,14 +1658,14 @@ export default function AdminDashboard() {
                       <RiCalendarLine size={16} className="text-muted-foreground" />
                       {t('overview.monthlySignups')}
                     </h2>
-                    <MiniBarChart data={MONTHLY_SIGNUPS} />
+                    <MiniBarChart data={monthlySignups} />
                   </div>
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
                     <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-6">
                       <RiKeyLine size={16} className="text-muted-foreground" />
                       {t('overview.secretTypes')}
                     </h2>
-                    <SecretDonut data={SECRET_TYPE_BREAKDOWN} secretsLabel={t('donut.secrets')} />
+                    <SecretDonut data={secretTypesData} secretsLabel={t('donut.secrets')} />
                   </div>
                 </div>
               </div>
@@ -1388,9 +1692,33 @@ export default function AdminDashboard() {
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center gap-2 text-muted-foreground flex-shrink-0">
+                    {/* Add Admin button — only admins, only in admins tab */}
+                    {simulatedRole === 'admin' && activeTab === 'admins' && (
+                      <button
+                        id="admin-add-admin"
+                        onClick={() => setShowAddUser(true)}
+                        className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-px active:translate-y-0 transition-all shadow-sm"
+                      >
+                        <RiAddLine size={16} />
+                        Add Admin
+                      </button>
+                    )}
                     <RiFilterLine size={16} />
+                    {activeTab === 'admins' && (
+                      <select
+                        className="px-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring shadow-sm transition-all cursor-pointer"
+                        value={filterRole}
+                        onChange={(e) => setFilterRole(e.target.value as any)}
+                        id="admin-filter-role"
+                      >
+                        <option value="all">{t('filter.allRoles')}</option>
+                        <option value="admin">{t('role.admin')}</option>
+                        <option value="supervisor">{t('role.supervisor')}</option>
+                        <option value="viewer">{t('role.viewer')}</option>
+                      </select>
+                    )}
                     <select
                       className="px-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring shadow-sm transition-all cursor-pointer"
                       value={filterStatus}
@@ -1416,27 +1744,30 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Table */}
-                <UserTable
-                  users={filteredUsers}
-                  sortBy={sortBy}
-                  sortDir={sortDir}
-                  onToggleSort={toggleSort}
-                  onView={setViewUser}
-                  onEdit={setEditUser}
-                  onRequestLockToggle={handleRequestLockToggle}
-                  onRequestAdminToggle={handleRequestAdminToggle}
-                  onRequestDelete={handleRequestDelete}
-                  t={t}
-                  simulatedRole={simulatedRole}
-                />
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-20 text-muted-foreground bg-card border border-border rounded-xl">
+                    <RiRefreshLine size={32} className="animate-spin" />
+                  </div>
+                ) : (
+                  <UserTable
+                    users={filteredUsers}
+                    sortBy={sortBy}
+                    sortDir={sortDir}
+                    onToggleSort={toggleSort}
+                    onView={setViewUser}
+                    onEdit={setEditUser}
+                    onRequestLockToggle={handleRequestLockToggle}
+                    onRoleChange={handleRoleChange}
+                    onRequestDelete={handleRequestDelete}
+                    t={t}
+                    simulatedRole={simulatedRole}
+                  />
+                )}
 
                 {/* Table footer */}
                 <div className="flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-2 pt-2">
                   <span>
                     {t('table.showing', { shown: filteredUsers.length, total: users.length })}
-                  </span>
-                  <span className="flex items-center gap-1.5 opacity-80 bg-muted px-2 py-1 rounded-md border border-border">
-                    <RiAlertLine size={12} /> {t('allActionsMock')}
                   </span>
                 </div>
               </div>

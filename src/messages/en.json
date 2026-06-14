@@ -292,17 +292,17 @@
     "badge": "Admin",
     "superAdmin": "Super Admin",
     "dashboardAccess": "Dashboard Access",
-    "mockData": "Mock Data",
-    "allActionsMock": "All actions are mock — no real data modified",
+    "mockData": "Live Data",
+    "allActionsMock": "Active Session — changes apply directly to database",
     "nav": {
       "overview": "Overview",
       "users": "User Management"
     },
     "header": {
       "overview": "Analytics Overview",
-      "overviewSub": "Platform health at a glance — all data is mock.",
+      "overviewSub": "Platform health and security analytics.",
       "users": "User Management",
-      "usersSub": "{shown} of {total} users shown — all actions are mock."
+      "usersSub": "Manage user access, roles, and security policies ({shown} of {total} users shown)."
     },
     "overview": {
       "totalUsers": "Total Users",
@@ -317,10 +317,6 @@
       "administratorsSub": "Platform admins",
       "inactiveUsers": "Inactive Users",
       "inactiveUsersSub": "No recent activity",
-      "trendThisMonth": "+2 this month",
-      "trendSecretsWeek": "+14 this week",
-      "trendMfaMonth": "+5% this month",
-      "trendLockedWeek": "1 this week",
       "monthlySignups": "Monthly Signups (2024)",
       "secretTypes": "Secret Types Breakdown",
       "recentUsers": "Recent Users"
@@ -394,7 +390,7 @@
       "removeAdminTitle": "Revoke Admin Role",
       "saveTitle": "Save Changes",
       "deleteBody": "Are you sure you want to delete {name}?",
-      "deleteSub": "This action cannot be undone. All their secrets will be permanently removed. (Mock — no real deletion)",
+      "deleteSub": "This action cannot be undone. All their secrets and account data will be permanently removed.",
       "lockBody": "Are you sure you want to lock {name}'s account?",
       "lockSub": "They will not be able to access their vault until unlocked.",
       "unlockBody": "Are you sure you want to unlock {name}'s account?",
@@ -404,7 +400,7 @@
       "removeAdminBody": "Are you sure you want to revoke admin rights from {name}?",
       "removeAdminSub": "They will lose access to this admin dashboard.",
       "saveBody": "Save changes to {name}'s profile?",
-      "saveSub": "This will update their display name, email, role, status, and preferences. (Mock — no real change)",
+      "saveSub": "This will save the updated details to the database.",
       "confirmDelete": "Yes, Delete",
       "confirmLock": "Yes, Lock",
       "confirmUnlock": "Yes, Unlock",
@@ -437,17 +433,16 @@
       "notificationsEnabled": "Notifications Enabled"
     },
     "toast": {
-      "userUpdated": "{name} updated (mock).",
-      "userDeleted": "{name} deleted (mock).",
-      "userLocked": "{name} is now locked (mock).",
-      "userUnlocked": "{name} is now active (mock).",
-      "madeAdmin": "{name} is now an admin (mock).",
-      "removedAdmin": "{name} is now a regular user (mock)."
+      "userUpdated": "{name} updated successfully.",
+      "userDeleted": "{name} deleted successfully.",
+      "userLocked": "{name} is now locked.",
+      "userUnlocked": "{name} is now active.",
+      "madeAdmin": "{name} role updated.",
+      "removedAdmin": "{name} role updated."
     },
     "donut": {
       "secrets": "secrets"
-    },
-    "simulateRole": "Simulate Role"
+    }
   },
   "notifications": {
     "sensitiveAccessedTitle": "Sensitive Secret Accessed",
