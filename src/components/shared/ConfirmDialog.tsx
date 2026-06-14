@@ -91,7 +91,6 @@ export function ConfirmDialog({
               onChange={(e) => setConfirmInput(e.target.value.replace(/\D/g, ''))}
               placeholder="000000"
               maxLength={6}
-              maxLength={6}
               className="font-mono text-sm tracking-widest text-center"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !isConfirmDisabled) {

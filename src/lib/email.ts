@@ -55,8 +55,8 @@ export async function sendNotification(
     const messages = locale === 'ar' ? arMessages : enMessages;
 
     // Resolve translations
-    const titleKey = `${notificationKey}Title`;
-    const messageKey = `${notificationKey}Message`;
+    const titleKey = `${String(notificationKey)}Title`;
+    const messageKey = `${String(notificationKey)}Message`;
     
     const title = messages.notifications[titleKey];
     let message = messages.notifications[messageKey];

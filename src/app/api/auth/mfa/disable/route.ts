@@ -5,7 +5,6 @@ import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
 import { UserService } from '@/lib/services/user.service';
 import { verify } from 'otplib';
 import { sendNotification } from '@/lib/email';
-import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {

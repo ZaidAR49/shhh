@@ -38,7 +38,7 @@ export class SecretService {
       try {
         title = decryptString(secret.title);
       } catch (e) {
-        console.error('Failed to decrypt title', e);
+        console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
         title = '[Encrypted - Key mismatch]';
       }
 
@@ -46,7 +46,7 @@ export class SecretService {
         try {
           data = decryptPayload(secret.encryptedData, secret.encryptedDek);
         } catch (e) {
-          console.error('Failed to decrypt secret', e);
+          console.error('Failed to decrypt secret:', e instanceof Error ? e.message : 'Unknown error');
           data = { error: 'Failed to decrypt data' };
         }
       }
@@ -74,14 +74,14 @@ export class SecretService {
     try {
       title = decryptString(secret.title);
     } catch (e) {
-      console.error('Failed to decrypt title', e);
+      console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
       title = '[Encrypted - Key mismatch]';
     }
 
     try {
       data = decryptPayload(secret.encryptedData, secret.encryptedDek);
     } catch (e) {
-      console.error('Failed to decrypt secret', e);
+      console.error('Failed to decrypt secret:', e instanceof Error ? e.message : 'Unknown error');
       data = { error: 'Failed to decrypt data' };
     }
 
@@ -173,14 +173,14 @@ export class SecretService {
     try {
       title = decryptString(updatedSecret[0].title);
     } catch (e) {
-      console.error('Failed to decrypt title', e);
+      console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
       title = '[Encrypted - Key mismatch]';
     }
 
     try {
       data = decryptPayload(updatedSecret[0].encryptedData, updatedSecret[0].encryptedDek);
     } catch (e) {
-      console.error('Failed to decrypt secret', e);
+      console.error('Failed to decrypt secret:', e instanceof Error ? e.message : 'Unknown error');
     }
 
     return { ...updatedSecret[0], title, data };

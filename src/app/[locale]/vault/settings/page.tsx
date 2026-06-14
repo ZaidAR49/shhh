@@ -109,7 +109,8 @@ export default function SettingsPage() {
     }
   };
 
-  const handleNotificationLocaleChange = async (newLocale: 'en' | 'ar') => {
+  const handleNotificationLocaleChange = async (newLocale: 'en' | 'ar' | null) => {
+    if (!newLocale) return;
     const prev = notificationLocale;
     setNotificationLocale(newLocale);
     try {

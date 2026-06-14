@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       parsedData = SECRET_SCHEMAS[type as SecretType].parse(data);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        return NextResponse.json({ error: 'Validation failed', details: e.errors }, { status: 400 });
+        return NextResponse.json({ error: 'Validation failed', details: e.issues }, { status: 400 });
       }
       return NextResponse.json({ error: 'Invalid data format' }, { status: 400 });
     }

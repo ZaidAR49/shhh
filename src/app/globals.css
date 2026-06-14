@@ -125,8 +125,8 @@
   --destructive-foreground: oklch(0.96 0.01 260);
 
   /* Border / input */
-  --border:              oklch(0.25 0.03 260);    /* More visible borders */
-  --input:               oklch(0.25 0.03 260);
+  --border:              oklch(0.45 0.05 260);    /* More visible borders */
+  --input:               oklch(0.45 0.05 260);
   --ring:                oklch(0.75 0.18 260);
 
   /* ── Security status tokens ────── */

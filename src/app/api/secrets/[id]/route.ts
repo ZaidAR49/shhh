@@ -119,7 +119,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       parsedData = SECRET_SCHEMAS[existingSecret.type as SecretType].parse(data);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        return NextResponse.json({ error: 'Validation failed', details: e.errors }, { status: 400 });
+        return NextResponse.json({ error: 'Validation failed', details: e.issues }, { status: 400 });
       }
       return NextResponse.json({ error: 'Invalid data format' }, { status: 400 });
     }
