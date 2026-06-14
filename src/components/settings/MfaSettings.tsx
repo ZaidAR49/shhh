@@ -150,8 +150,11 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
                 placeholder="000000"
                 maxLength={6}
                 value={token}
-                onChange={(e) => setToken(e.target.value.replace(/\\D/g, ''))}
+                onChange={(e) => setToken(e.target.value.replace(/\D/g, ''))}
                 className="text-center tracking-widest font-mono"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && token.length === 6) handleEnable();
+                }}
               />
               <Button onClick={handleEnable} disabled={loading || token.length !== 6}>
                 Verify

@@ -11,9 +11,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
+    }
+
     const user = await UserService.getMfaStatus(session.user.id);
 
-    return NextResponse.json({ mfaEnabled: user?.mfaEnabled ?? false });
+    return NextResponse.json({ 
+      mfaEnabled: user?.mfaEnabled ?? false,
+      notificationsEnabled: user?.notificationsEnabled ?? true,
+      preferredLocale: user?.preferredLocale ?? 'en'
+    });
   } catch (error) {
     console.error('Error fetching MFA status:', error);
     return NextResponse.json(

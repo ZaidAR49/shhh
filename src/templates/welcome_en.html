@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Shhh</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333333;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #eaeaea;
+    }
+    .header {
+      background-color: #000000;
+      padding: 30px 40px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+    .header p {
+      color: #a1a1aa;
+      margin: 8px 0 0 0;
+      font-size: 14px;
+    }
+    .content {
+      padding: 40px;
+    }
+    .content h2 {
+      margin-top: 0;
+      color: #18181b;
+      font-size: 22px;
+    }
+    .content p {
+      color: #52525b;
+      font-size: 16px;
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+    .best-practices {
+      background-color: #f4f4f5;
+      padding: 24px;
+      border-radius: 6px;
+      margin-top: 20px;
+      border-left: 4px solid #000000;
+    }
+    .best-practices h3 {
+      margin-top: 0;
+      color: #18181b;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+    .best-practices ul {
+      margin: 0;
+      padding-left: 20px;
+      color: #3f3f46;
+    }
+    .best-practices li {
+      margin-bottom: 12px;
+    }
+    .best-practices li:last-child {
+      margin-bottom: 0;
+    }
+    .footer {
+      background-color: #fafafa;
+      padding: 20px 40px;
+      text-align: center;
+      border-top: 1px solid #eaeaea;
+    }
+    .footer p {
+      color: #a1a1aa;
+      font-size: 12px;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SHHH</h1>
+      <p>The Passwordless Secrets Vault</p>
+    </div>
+    
+    <div class="content">
+      <h2>Welcome to your secure vault!</h2>
+      <p>
+        Hi <strong>{{name}}</strong>,
+      </p>
+      <p>
+        Thank you for choosing Shhh to protect your most valuable secrets. We are thrilled to have you on board! To ensure your data remains absolutely secure, we highly recommend setting up your account with these best practices:
+      </p>
+      
+      <div class="best-practices">
+        <h3>Security Best Practices</h3>
+        <ul>
+          <li><strong>Enable Multi-Factor Authentication (MFA):</strong> Add an extra layer of defense to your vault by requiring a time-based code from an authenticator app.</li>
+          <li><strong>Keep Security Notifications Enabled:</strong> By keeping notifications on, you'll receive instant email alerts whenever sensitive actions occur on your account.</li>
+          <li><strong>Mark Secrets as Sensitive:</strong> When adding crucial data like bank accounts or master passwords, toggle the "Sensitive" switch. This requires MFA verification before anyone can view or delete the secret.</li>
+        </ul>
+      </div>
+      
+      <p style="margin-top: 30px; font-size: 14px; color: #71717a;">
+        You can configure all of these settings directly from your Vault Dashboard. Stay secure!
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>&copy; Shhh. You are receiving this because you registered a new account.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -62,14 +62,22 @@ CREATE TABLE IF NOT EXISTS drizzle.__drizzle_migrations (
 );
 
 -- 4b. public."user"
-CREATE TABLE IF NOT EXISTS public."user" (
-  id              text        NOT NULL DEFAULT (gen_random_uuid())::text,
-  name            text,
-  email           text        NOT NULL,
-  "emailVerified" timestamp,
-  image           text,
-  mfa_enabled     bool        NOT NULL DEFAULT false,
-  mfa_secret      text
+CREATE TYPE user_role AS ENUM ('user', 'admin');
+CREATE TYPE lang AS ENUM ('en', 'ar');
+
+CREATE TABLE public."user" (
+  id                   text        NOT NULL DEFAULT (gen_random_uuid())::text,
+  name                 text,
+  email                text        NOT NULL UNIQUE,
+  "emailVerified"      timestamp,
+  image                text,
+  mfa_enabled          boolean     NOT NULL DEFAULT false,
+  mfa_secret           text,
+  role                 user_role   NOT NULL DEFAULT 'user',
+  is_locked            boolean     NOT NULL DEFAULT false,
+  notifications_enabled boolean    NOT NULL DEFAULT true,
+  preferred_locale     lang        NOT NULL DEFAULT 'ar',
+  PRIMARY KEY (id)
 );
 
 -- 4c. public.account  (OAuth accounts linked to a user)

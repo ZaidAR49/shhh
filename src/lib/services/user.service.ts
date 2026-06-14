@@ -11,6 +11,14 @@ export class UserService {
         });
     }
 
+    static async isLocked(id: string): Promise<boolean> {
+        const user = await db.query.users.findFirst({
+            where: (users, { eq }) => eq(users.id, id),
+            columns: { isLocked: true },
+        });
+        return user?.isLocked ?? false;
+    }
+
     static async updateName(id: string, name: string) {
         const updatedUser = await db.update(users)
             .set({ name })
@@ -25,6 +33,8 @@ export class UserService {
             columns: {
                 mfaEnabled: true,
                 mfaSecret: true,
+                notificationsEnabled: true,
+                preferredLocale: true,
             },
         });
         

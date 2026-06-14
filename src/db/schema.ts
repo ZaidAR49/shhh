@@ -22,6 +22,8 @@ export const secretTypeEnum = pgEnum('secret_type', [
   'wifi'
 ]);
 
+export const langEnum = pgEnum('lang', ['en', 'ar']);
+
 export const users = pgTable('user', {
   id: text('id')
     .primaryKey()
@@ -32,6 +34,9 @@ export const users = pgTable('user', {
   image: text('image'),
   mfaEnabled: boolean('mfa_enabled').notNull().default(false),
   mfaSecret: text('mfa_secret'),
+  isLocked: boolean('is_locked').notNull().default(false),
+  notificationsEnabled: boolean('notifications_enabled').notNull().default(true),
+  preferredLocale: langEnum('preferred_locale').notNull().default('ar'),
 });
 
 export const accounts = pgTable(

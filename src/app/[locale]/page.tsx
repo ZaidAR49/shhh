@@ -7,7 +7,11 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
+import { TypewriterText } from '@/components/shared/TypewriterText';
+import { LandingHeader } from '@/components/layout/LandingHeader';
+import { LandingFooter } from '@/components/layout/LandingFooter';
 import { cn } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
 
 
 
@@ -16,6 +20,7 @@ export default function LandingPage() {
   const locale = useLocale();
   const t = useTranslations();
   const tc = useTranslations('common');
+  const { status } = useSession();
 
   const handleUnlock = () => {
     router.push(`/${locale}/auth`);
@@ -28,26 +33,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-[96px] bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Image src="/icon.png" alt="Shhh Logo" width={80} height={80} priority className="shrink-0" />
-            <span className="text-2xl font-bold tracking-tight">{tc('appName')}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <ThemeToggle />
-            <LanguageSwitcher />
-            <Button
-              size="sm"
-              onClick={handleUnlock}
-              aria-label={t('auth.unlockVault')}
-              className="ltr:ml-2 rtl:mr-2"
-            >
-              {t('auth.unlockVault')}
-            </Button>
-          </div>
-        </div>
-      </header>
+      <LandingHeader />
 
       {/* Hero */}
       <main className="flex-1 pt-[96px]">
@@ -55,7 +41,7 @@ export default function LandingPage() {
           {/* Shield */}
           <div className="flex justify-center mb-8" aria-hidden="true">
             <div className="relative">
-              <Image src="/icon.png" alt="Shhh Logo" width={200} height={200} priority className="shrink-0" />
+              <Image src="/icon.png" alt="Shhh Logo" width={200} height={200} priority className="shrink-0" style={{ width: 'auto', height: 'auto' }} />
               <div className="absolute inset-0 rounded-full bg-primary/5 blur-2xl scale-150" />
             </div>
           </div>
@@ -63,30 +49,34 @@ export default function LandingPage() {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6 max-w-3xl mx-auto leading-tight">
             {tc('appName')}
           </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            {tc('tagline')}
-          </p>
+          <div className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed h-[80px] sm:h-[60px] flex items-start sm:items-center justify-center">
+            <TypewriterText texts={tc.raw('taglines') as string[]} />
+          </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button
-              size="lg"
-              onClick={handleUnlock}
-              aria-label={t('auth.unlockVault')}
-              className="h-12 px-8 text-sm font-medium"
-              id="hero-unlock-cta"
-            >
-              {t('auth.unlockVault')}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={handleVault}
-              aria-label={t('vault.myVault')}
-              className="h-12 px-8 text-sm"
-              id="hero-vault-cta"
-            >
-              {t('vault.myVault')}
-            </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 min-h-[48px]">
+            {status === 'loading' ? (
+              <div className="h-12 w-48 bg-muted animate-pulse rounded-md" />
+            ) : status === 'authenticated' ? (
+              <Button
+                size="lg"
+                onClick={handleVault}
+                aria-label={t('vault.myVault')}
+                className="h-12 px-8 text-sm font-medium"
+                id="hero-vault-cta"
+              >
+                {t('vault.myVault')}
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                onClick={handleUnlock}
+                aria-label={t('auth.unlockVault')}
+                className="h-12 px-8 text-sm font-medium"
+                id="hero-unlock-cta"
+              >
+                {t('auth.unlockVault')}
+              </Button>
+            )}
           </div>
 
           {/* Trust signal */}
@@ -105,7 +95,7 @@ export default function LandingPage() {
               {
                 icon: RiLockLine,
                 title: '100% Passwordless',
-                desc: 'Access your vault with your Google account and device biometrics — never a master password.',
+                desc: 'Access your vault with your Google account and Two-Factor Authentication — never a master password.',
               },
               {
                 icon: RiFileShieldLine,
@@ -133,12 +123,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-6 px-4 sm:px-6 lg:px-8">
-        <p className="text-xs text-muted-foreground text-center">
-          © 2026 {tc('appName')} — {tc('tagline')}
-        </p>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

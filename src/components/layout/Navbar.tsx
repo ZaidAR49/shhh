@@ -68,6 +68,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
                 width={80}
                 height={80}
                 className="shrink-0"
+                style={{ width: 'auto', height: 'auto' }}
                 priority
               />
             </div>

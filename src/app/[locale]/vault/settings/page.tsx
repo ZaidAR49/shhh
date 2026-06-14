@@ -5,9 +5,10 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { signOut } from 'next-auth/react';
-import { RiSunLine, RiMoonLine, RiComputerLine, RiGlobalLine, RiDeleteBinLine, RiShieldLine, RiEditLine, RiCheckLine, RiCloseLine, RiLogoutBoxRLine, RiUser3Line, RiSettings3Line, RiAlertLine } from 'react-icons/ri';
+import { RiSunLine, RiMoonLine, RiComputerLine, RiGlobalLine, RiDeleteBinLine, RiShieldLine, RiEditLine, RiCheckLine, RiCloseLine, RiLogoutBoxRLine, RiUser3Line, RiSettings3Line, RiAlertLine, RiMailSendLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -15,6 +16,7 @@ import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { useSession } from '@/hooks/useSession';
 import { cn } from '@/lib/utils';
 import { MfaSettings } from '@/components/settings/MfaSettings';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function SettingsCard({ title, icon: Icon, children, destructive }: { title: string, icon: React.ElementType, children: React.ReactNode, destructive?: boolean }) {
   return (
@@ -44,6 +46,8 @@ export default function SettingsPage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
   const [mfaEnabled, setMfaEnabled] = useState<boolean | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
+  const [notificationLocale, setNotificationLocale] = useState<'en' | 'ar'>('en');
   const [deleteError, setDeleteError] = useState('');
   const [clearError, setClearError] = useState('');
 
@@ -60,8 +64,14 @@ export default function SettingsPage() {
         if (data && typeof data.mfaEnabled === 'boolean') {
           setMfaEnabled(data.mfaEnabled);
         }
+        if (data && typeof data.notificationsEnabled === 'boolean') {
+          setNotificationsEnabled(data.notificationsEnabled);
+        }
+        if (data && data.preferredLocale) {
+          setNotificationLocale(data.preferredLocale);
+        }
       })
-      .catch((err) => console.error('Failed to fetch MFA status:', err));
+      .catch((err) => console.error('Failed to fetch MFA/Notification status:', err));
   }, []);
 
   const handleSignOut = () => {
@@ -74,6 +84,40 @@ export default function SettingsPage() {
       updateName(editNameValue.trim());
     }
     setIsEditingName(false);
+  };
+
+  const handleToggleNotifications = async (checked: boolean) => {
+    setNotificationsEnabled(checked);
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationsEnabled: checked }),
+      });
+      if (!res.ok) {
+        // Revert on failure
+        setNotificationsEnabled(!checked);
+      }
+    } catch (err) {
+      setNotificationsEnabled(!checked);
+    }
+  };
+
+  const handleNotificationLocaleChange = async (newLocale: 'en' | 'ar') => {
+    const prev = notificationLocale;
+    setNotificationLocale(newLocale);
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferredLocale: newLocale }),
+      });
+      if (!res.ok) {
+        setNotificationLocale(prev);
+      }
+    } catch (err) {
+      setNotificationLocale(prev);
+    }
   };
 
   const handleClearVaultClick = () => {
@@ -232,9 +276,42 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between gap-4 pt-2 border-t">
               <div className="flex items-center gap-3">
                 <RiGlobalLine size={18} className="text-muted-foreground" aria-hidden="true" />
-                <span className="text-sm font-medium">{t('language')}</span>
+                <div>
+                  <span className="text-sm font-medium">Application Language</span>
+                  <p className="text-xs text-muted-foreground mt-1">Changes the UI language immediately.</p>
+                </div>
               </div>
               <LanguageSwitcher />
+            </div>
+
+            <div className="flex items-center justify-between gap-4 pt-6 border-t">
+              <div className="flex items-center gap-3">
+                <RiGlobalLine size={18} className="text-muted-foreground" aria-hidden="true" />
+                <div>
+                  <span className="text-sm font-medium">Notification Language</span>
+                  <p className="text-xs text-muted-foreground mt-1">Language for security email alerts.</p>
+                </div>
+              </div>
+              <Select value={notificationLocale} onValueChange={handleNotificationLocaleChange}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{t('languageEnglish')}</SelectItem>
+                  <SelectItem value="ar">{t('languageArabic')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 pt-6 border-t">
+              <div className="flex items-center gap-3">
+                <RiMailSendLine size={18} className="text-muted-foreground" aria-hidden="true" />
+                <div>
+                  <p className="text-sm font-medium leading-none mb-1.5">Email Notifications</p>
+                  <p className="text-xs text-muted-foreground max-w-[200px] sm:max-w-none">Receive security alerts when sensitive actions occur.</p>
+                </div>
+              </div>
+              <Switch checked={notificationsEnabled} onCheckedChange={handleToggleNotifications} />
             </div>
           </div>
         </SettingsCard>

@@ -11,6 +11,10 @@ export async function DELETE(request: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
+    }
     const body = await request.json().catch(() => ({}));
     const { token } = body;
 

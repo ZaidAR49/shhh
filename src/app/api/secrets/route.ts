@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { SecretService } from '@/lib/services/secret.service';
+import { UserService } from '@/lib/services/user.service';
 import { SECRET_TYPE_CONFIG_MAP } from '@/lib/secret-types';
 import type { SecretType } from '@/lib/secret-types';
 import { SECRET_SCHEMAS } from '@/lib/validations';
@@ -12,6 +13,10 @@ export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -66,6 +71,10 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
     const body = await request.json();

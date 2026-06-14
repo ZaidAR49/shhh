@@ -193,7 +193,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
 
     // ── Step 2: Fill fields ───────────────────────────────────
     2: config ? (
-      <div className="animate-fade-in">
+      <form className="animate-fade-in" onSubmit={onStep2Submit}>
         <div className="mb-6">
           <h2 className="text-xl font-semibold">{t('wizard.fillDetails')}</h2>
           <p className="text-sm text-muted-foreground mt-1">{t('wizard.fillDetailsDescription')}</p>
@@ -346,6 +346,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
 
         <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-6 flex items-center justify-between z-10">
           <Button
+            type="button"
             variant="outline"
             onClick={() => initialSecret ? onCancel() : goBackToStep1()}
             aria-label={t('common.back')}
@@ -353,12 +354,12 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
             <RiArrowLeftLine size={16} className="ltr:mr-1.5 rtl:ml-1.5 rtl:rotate-180" />
             {t('common.back')}
           </Button>
-          <Button onClick={onStep2Submit} aria-label={t('common.next')}>
+          <Button type="submit" aria-label={t('common.next')}>
             {t('common.next')}
             <RiArrowRightLine size={16} className="ltr:ml-1.5 rtl:mr-1.5 rtl:rotate-180" />
           </Button>
         </div>
-      </div>
+      </form>
     ) : null,
 
     // ── Step 3: Confirm ───────────────────────────────────────

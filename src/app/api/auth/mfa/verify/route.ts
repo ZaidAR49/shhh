@@ -13,6 +13,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
+    }
+
     // Rate limit: 5 attempts per 15 minutes per user
     const rateLimit = checkRateLimit(`mfa_verify_${session.user.id}`, 5, 15 * 60 * 1000);
     if (!rateLimit.success) {

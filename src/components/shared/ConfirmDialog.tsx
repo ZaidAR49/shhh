@@ -70,6 +70,12 @@ export function ConfirmDialog({
               onChange={(e) => setConfirmInput(e.target.value)}
               placeholder={confirmTextRequired}
               className="font-mono text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isConfirmDisabled) {
+                  onConfirm(requireMfa ? confirmInput : undefined);
+                  if (!requireMfa) setConfirmInput('');
+                }
+              }}
               autoFocus
             />
           </div>
@@ -85,7 +91,14 @@ export function ConfirmDialog({
               onChange={(e) => setConfirmInput(e.target.value.replace(/\D/g, ''))}
               placeholder="000000"
               maxLength={6}
+              maxLength={6}
               className="font-mono text-sm tracking-widest text-center"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isConfirmDisabled) {
+                  onConfirm(requireMfa ? confirmInput : undefined);
+                  if (!requireMfa) setConfirmInput('');
+                }
+              }}
               autoFocus
             />
             {error && <p className="text-xs text-destructive mt-2">{error}</p>}

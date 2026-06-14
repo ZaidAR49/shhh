@@ -13,6 +13,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
+    }
+
     const userStatus = await UserService.getMfaStatus(session.user.id);
     if (userStatus?.mfaEnabled) {
       return NextResponse.json({ error: 'MFA is already enabled. Disable it first to set up a new device.' }, { status: 400 });

@@ -21,8 +21,8 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: 'Shhh — The Passwordless Secrets Vault',
   description:
-    'Your secrets, locked by who you are — not what you remember. 100% passwordless. Access via Google OAuth + device biometrics.',
-  keywords: ['password manager', 'secrets vault', 'passwordless', 'biometrics', 'security'],
+    'Your secrets, locked by who you are — not what you remember. 100% passwordless. Access via Google OAuth and 2FA.',
+  keywords: ['password manager', 'secrets vault', 'passwordless', '2fa', 'security'],
 };
 
 interface LocaleLayoutProps {

@@ -76,7 +76,7 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
             {tc('appName')}
           </h1>
           <p className="text-sm text-muted-foreground mb-12 max-w-xs text-center leading-relaxed">
-            {tc('tagline')}
+            {(tc.raw('taglines') as string[])[0]}
           </p>
         </>
       )}

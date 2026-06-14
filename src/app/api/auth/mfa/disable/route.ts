@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../[...nextauth]/route';
 import { UserService } from '@/lib/services/user.service';
 import { verify } from 'otplib';
+import { sendNotification } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +11,10 @@ export async function POST(request: Request) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
     const body = await request.json().catch(() => ({}));
@@ -36,6 +41,12 @@ export async function POST(request: Request) {
 
     // Disable MFA by setting mfaEnabled to false and clearing the secret
     await UserService.disableMfa(session.user.id);
+
+    // Send notification
+    await sendNotification(
+      session.user.id,
+      'mfaDisabled'
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -4,6 +4,7 @@ import { authOptions } from '../../[...nextauth]/route';
 import { verify } from 'otplib';
 import { UserService } from '@/lib/services/user.service';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { sendNotification } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +12,10 @@ export async function POST(request: Request) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
     // Rate limit: 5 attempts per 15 minutes per user
@@ -56,6 +61,12 @@ export async function POST(request: Request) {
 
     // If valid, enable MFA
     await UserService.enableMfa(session.user.id);
+
+    // Send notification
+    await sendNotification(
+      session.user.id,
+      'mfaEnabled'
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

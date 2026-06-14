@@ -6,6 +6,7 @@ import { verify } from 'otplib';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { sendNotification } from '@/lib/email';
 
 export async function PATCH(request: Request) {
   try {
@@ -15,19 +16,41 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json().catch(() => ({}));
-    const { name } = body;
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
+    }
 
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json({ error: 'Invalid name' }, { status: 400 });
+    const body = await request.json().catch(() => ({}));
+    
+    // We handle updates for name and notificationsEnabled
+    const updateData: any = {};
+    let isUpdating = false;
+
+    if (body.name && typeof body.name === 'string' && body.name.trim().length > 0) {
+      updateData.name = body.name.trim();
+      isUpdating = true;
+    }
+
+    if (typeof body.notificationsEnabled === 'boolean') {
+      updateData.notificationsEnabled = body.notificationsEnabled;
+      isUpdating = true;
+    }
+
+    if (body.preferredLocale && (body.preferredLocale === 'en' || body.preferredLocale === 'ar')) {
+      updateData.preferredLocale = body.preferredLocale;
+      isUpdating = true;
+    }
+
+    if (!isUpdating) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
     await db
       .update(users)
-      .set({ name: name.trim() })
+      .set(updateData)
       .where(eq(users.id, session.user.id));
 
-    return NextResponse.json({ success: true, name: name.trim() });
+    return NextResponse.json({ success: true, ...updateData });
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json(
@@ -43,6 +66,10 @@ export async function DELETE(request: Request) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
     const body = await request.json().catch(() => ({}));
@@ -69,6 +96,12 @@ export async function DELETE(request: Request) {
     if (!verificationResult.valid) {
       return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
     }
+
+    // Send notification BEFORE deleting the user (so they still exist in the DB)
+    await sendNotification(
+      session.user.id,
+      'accountDeleted'
+    );
 
     // Delete the user
     await db.delete(users).where(eq(users.id, session.user.id));

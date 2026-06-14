@@ -7,12 +7,17 @@ import { verify } from 'otplib';
 import { SECRET_SCHEMAS } from '@/lib/validations';
 import type { SecretType } from '@/lib/secret-types';
 import { z } from 'zod';
+import { sendNotification } from '@/lib/email';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
     const { id } = await params;
@@ -39,6 +44,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       if (!isValid.valid) {
         return NextResponse.json({ error: 'Invalid MFA token' }, { status: 403 });
       }
+
+      // Send notification for exposing sensitive secret
+      await sendNotification(
+        session.user.id,
+        'sensitiveAccessed',
+        { secretTitle: secret.title }
+      );
     }
 
     const mappedSecret = {
@@ -67,6 +79,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
     }
 
     const { id } = await params;
@@ -139,11 +155,31 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (await UserService.isLocked(session.user.id)) {
+      return NextResponse.json({ error: 'Account is locked' }, { status: 423 });
+    }
+
     const { id } = await params;
+    
+    // Fetch first to see if it's sensitive
+    const secret = await SecretService.findById(session.user.id, id);
+    if (!secret) {
+      return NextResponse.json({ error: 'Secret not found or unauthorized' }, { status: 404 });
+    }
+
     const success = await SecretService.deleteSecret(session.user.id, id);
 
     if (!success) {
-      return NextResponse.json({ error: 'Secret not found or unauthorized' }, { status: 404 });
+      return NextResponse.json({ error: 'Failed to delete secret' }, { status: 500 });
+    }
+
+    if (secret.isSensitive) {
+      // Send notification for deleting sensitive secret
+      await sendNotification(
+        session.user.id,
+        'sensitiveDeleted',
+        { secretTitle: secret.title }
+      );
     }
 
     return NextResponse.json({ success: true });

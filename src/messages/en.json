@@ -1,7 +1,13 @@
 {
   "common": {
     "appName": "Shhh",
-    "tagline": "Your secrets, locked by who you are — not what you remember.",
+    "taglines": [
+      "Your secrets, locked by who you are — not what you remember.",
+      "Military-grade encryption for your most sensitive credentials.",
+      "Access anywhere. Secure everywhere. 100% passwordless.",
+      "Your digital vault, safeguarded by OAuth and Two-Factor Authentication.",
+      "Zero-knowledge architecture. We can't see your data."
+    ],
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -36,7 +42,7 @@
     "sessionExpiresIn": "Session expires in {minutes} min",
     "lockVault": "Lock Vault",
     "signingIn": "Unlocking vault...",
-    "securedBy": "Secured by biometrics + Google OAuth",
+    "securedBy": "Secured by Google OAuth",
     "noPassword": "No password required",
     "sessionActive": "Vault unlocked",
     "sessionWarning": "Session expiring soon"
@@ -184,6 +190,104 @@
   "nav": {
     "vault": "Vault",
     "settings": "Settings",
-    "lockVault": "Lock Vault"
+    "lockVault": "Lock Vault",
+    "about": "About",
+    "security": "Security",
+    "help": "Help & FAQ",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Us"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "Have a question, feedback, or need support? Fill out the form below and we'll get back to you as soon as possible.",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "success": "Your message has been sent successfully!",
+    "error": "Failed to send message. Please try again."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: {date}",
+    "introTitle": "1. Introduction",
+    "introContent": "Shhh (\"we\", \"our\", or \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our zero-knowledge password manager and secrets vault.",
+    "zkTitle": "2. Zero-Knowledge Architecture",
+    "zkContent": "Our core principle is zero-knowledge encryption. This means all of your secrets, passwords, and sensitive data are encrypted on your device <important>before</important> they are ever sent to our servers. We do not have the decryption keys and therefore cannot read, access, or share your stored secrets under any circumstances.",
+    "dataTitle": "3. Data We Collect",
+    "dataContent": "To provide the service, we collect the minimum amount of data necessary:",
+    "dataAuth": "<bold>Authentication Data:</bold> When you sign in with Google OAuth, we receive your email address, name, and profile picture to create and identify your account.",
+    "dataVault": "<bold>Encrypted Vault Data:</bold> We store the encrypted blobs of your secrets. We cannot read the contents of these blobs.",
+    "dataSettings": "<bold>Security Settings:</bold> Preferences such as your chosen 2FA method status.",
+    "usageTitle": "4. How We Use Your Data",
+    "usageContent": "Your email is used strictly for authentication and account recovery purposes. Your encrypted vault data is stored solely for the purpose of synchronizing it across your devices. We do not sell, rent, or share your personal information with third parties for marketing purposes.",
+    "deletionTitle": "5. Data Deletion",
+    "deletionContent": "You have the right to request the deletion of your data at any time. You can delete your entire account and all associated encrypted vault data directly from the settings page within the app. Upon deletion, your data is permanently removed from our active servers.",
+    "changesTitle": "6. Changes to This Policy",
+    "changesContent": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last updated\" date."
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: {date}",
+    "acceptanceTitle": "1. Acceptance of Terms",
+    "acceptanceContent": "By accessing and using Shhh (\"the Service\"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.",
+    "descriptionTitle": "2. Description of Service",
+    "descriptionContent": "Shhh is a zero-knowledge secrets vault and password manager. We provide a platform for you to securely encrypt, store, and manage sensitive information. Because we use a zero-knowledge architecture, you are solely responsible for the master keys (derived from your authentication methods) used to encrypt and decrypt your data.",
+    "responsibilitiesTitle": "3. User Responsibilities",
+    "responsibilitiesAuth": "You are responsible for maintaining the security of your Google account and any Two-Factor Authentication (2FA) methods associated with it.",
+    "responsibilitiesRecovery": "If you lose access to your Google account and backup authentication methods, we cannot recover your encrypted data.",
+    "responsibilitiesIllegal": "You agree not to use the Service for any illegal or unauthorized purpose.",
+    "liabilityTitle": "4. Limitation of Liability",
+    "liabilityContent": "To the maximum extent permitted by law, Shhh and its developers shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from (a) your access to or use of or inability to access or use the Service; (b) any conduct or content of any third party on the Service; or (c) unauthorized access, use, or alteration of your transmissions or content.",
+    "terminationTitle": "5. Termination",
+    "terminationContent": "We may terminate or suspend your access to the Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease."
+  },
+  "help": {
+    "title": "Help & FAQ",
+    "q1": "How does \"100% passwordless\" work?",
+    "a1": "Instead of forcing you to memorize a master password, Shhh relies on modern authentication standards. We use your Google Account (via OAuth) to verify your identity, combined with Two-Factor Authentication to ensure that only you can access your vault.",
+    "q2": "What happens if I lose access to my Google account?",
+    "a2": "Because your vault is tied directly to your Google Identity, losing access to your Google account means you will lose access to your vault. We highly recommend securing your Google account with robust Two-Factor Authentication and saving your Google backup codes in a safe physical location.",
+    "q3": "Can Shhh read my passwords?",
+    "a3": "No. Shhh is built on a zero-knowledge architecture. All of your secrets are encrypted locally on your device before they are ever transmitted to our database. We store the encrypted blobs, but we do not have the keys to decrypt them. Only you can unlock your vault.",
+    "q4": "Why does my session expire after 1 hour?",
+    "a4": "Security is our top priority. To prevent unauthorized access if you leave your device unattended, all vault sessions are strictly limited to a maximum of 60 minutes. Once the session expires, your vault automatically locks itself and purges decrypted data from memory."
+  },
+  "security": {
+    "title": "Security Architecture",
+    "intro": "Trust is earned through transparency. Here is a detailed look at how Shhh protects your most sensitive data.",
+    "zkTitle": "Zero-Knowledge Encryption",
+    "zkContent1": "Shhh is a zero-knowledge platform. The data you store in your vault (passwords, secure notes, credit cards) is encrypted entirely on your client device (your browser or mobile phone) before it is sent over the network to our servers.",
+    "zkContent2": "We only store the resulting encrypted ciphertexts. The decryption keys never leave your device, meaning that even if our databases were completely compromised, the attackers would only find indecipherable mathematical noise.",
+    "authTitle": "Authentication & Identity",
+    "authContent1": "Traditional password managers rely on a single Master Password. If this password is weak, reused, or captured by a keylogger, your entire vault is compromised. Shhh eliminates the Master Password entirely.",
+    "authContent2": "Instead, we delegate identity verification to Google OAuth. We trust the security engineers at Google to handle login security, suspicious login detection, and account recovery. To add an extra layer of defense, we enforce an internal Two-Factor Authentication (2FA) check before allowing access to the vault.",
+    "sessionTitle": "Strict Session Management",
+    "sessionContent": "Decrypted secrets are held purely in your device's volatile memory (RAM) while your vault is unlocked. We enforce a strict, non-negotiable 60-minute session limit. Once the session expires, the vault locks, and the memory containing your decrypted secrets is cleared."
+  },
+  "about": {
+    "title": "About Shhh",
+    "p1": "Shhh was built on a simple premise: <important>humans are terrible at remembering passwords.</important>",
+    "p2": "Traditional password managers solve one problem (creating strong passwords) but introduce another massive single point of failure: the Master Password. If you forget your master password, you lose everything. If someone steals it, they gain everything.",
+    "p3": "We believe the future of security is passwordless. By combining enterprise-grade identity providers (like Google) with local device security and strict two-factor authentication, Shhh offers a vault that is mathematically secure, yet completely frictionless to open.",
+    "missionTitle": "Our Mission",
+    "missionContent": "To provide a seamless, zero-knowledge secrets manager that protects your digital life without forcing you to memorize a 24-character string of random symbols.",
+    "missionTagline": "Your secrets, locked by who you are — not what you remember."
+  },
+  "notifications": {
+    "sensitiveAccessedTitle": "Sensitive Secret Accessed",
+    "sensitiveAccessedMessage": "Your sensitive secret \"{secretTitle}\" was just viewed. If this was not you, please secure your account.",
+    "sensitiveDeletedTitle": "Sensitive Secret Deleted",
+    "sensitiveDeletedMessage": "Your sensitive secret \"{secretTitle}\" has been successfully deleted.",
+    "mfaEnabledTitle": "MFA Enabled",
+    "mfaEnabledMessage": "Two-Factor Authentication has been successfully enabled on your account.",
+    "mfaDisabledTitle": "MFA Disabled",
+    "mfaDisabledMessage": "Two-Factor Authentication has been disabled on your account. Your account is now less secure.",
+    "accountDeletedTitle": "Account Deleted",
+    "accountDeletedMessage": "Your Shhh account has been successfully deleted. All your secrets have been permanently removed.",
+    "welcomeSubject": "Welcome to Shhh - Secure your vault"
   }
 }
