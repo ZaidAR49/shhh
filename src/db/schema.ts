@@ -24,6 +24,8 @@ export const secretTypeEnum = pgEnum('secret_type', [
 
 export const langEnum = pgEnum('lang', ['en', 'ar']);
 
+export const userRoleEnum = pgEnum('user_role', ['user', 'admin', 'supervisor', 'viewer']);
+
 export const users = pgTable('user', {
   id: text('id')
     .primaryKey()
@@ -34,6 +36,7 @@ export const users = pgTable('user', {
   image: text('image'),
   mfaEnabled: boolean('mfa_enabled').notNull().default(false),
   mfaSecret: text('mfa_secret'),
+  role: userRoleEnum('role').notNull().default('user'),
   isLocked: boolean('is_locked').notNull().default(false),
   notificationsEnabled: boolean('notifications_enabled').notNull().default(true),
   preferredLocale: langEnum('preferred_locale').notNull().default('ar'),

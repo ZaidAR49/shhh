@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { NextAuthOptions } from "next-auth";
@@ -15,6 +16,10 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID || "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -23,8 +28,19 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
+        console.log('--- NEXTAUTH JWT CALLBACK USER ---', user);
         token.id = user.id;
         token.picture = user.image;
+        
+        // Ensure role is fetched correctly from db if adapter misses it
+        if (user.id) {
+          const dbUser = await db.select({ role: users.role }).from(users).where(eq(users.id, user.id)).limit(1);
+          if (dbUser.length > 0) {
+            token.role = dbUser[0].role;
+          } else {
+            token.role = (user as any).role || 'user';
+          }
+        }
       }
       if (trigger === "update" && session) {
         if (session.name) {
@@ -40,6 +56,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user && token) {
         session.user.id = token.id as string || token.sub as string;
         session.user.image = token.picture as string | undefined;
+        (session.user as any).role = token.role as string | undefined;
       }
       return session;
     },

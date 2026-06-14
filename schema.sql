@@ -62,7 +62,12 @@ CREATE TABLE IF NOT EXISTS drizzle.__drizzle_migrations (
 );
 
 -- 4b. public."user"
-CREATE TYPE user_role AS ENUM ('user', 'admin');
+CREATE TYPE public.user_role AS ENUM (
+  'user',
+  'admin',
+  'supervisor',
+  'viewer'
+);
 CREATE TYPE lang AS ENUM ('en', 'ar');
 
 CREATE TABLE public."user" (

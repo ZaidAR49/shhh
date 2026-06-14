@@ -38,8 +38,12 @@ export class SecretService {
       try {
         title = decryptString(secret.title);
       } catch (e) {
-        console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
-        title = '[Encrypted - Key mismatch]';
+        if (e instanceof Error && e.message === 'Invalid encrypted data format') {
+          title = secret.title;
+        } else {
+          console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
+          title = '[Encrypted - Key mismatch]';
+        }
       }
 
       if (!secret.isSensitive) {
@@ -74,8 +78,12 @@ export class SecretService {
     try {
       title = decryptString(secret.title);
     } catch (e) {
-      console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
-      title = '[Encrypted - Key mismatch]';
+      if (e instanceof Error && e.message === 'Invalid encrypted data format') {
+        title = secret.title;
+      } else {
+        console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
+        title = '[Encrypted - Key mismatch]';
+      }
     }
 
     try {
@@ -173,8 +181,12 @@ export class SecretService {
     try {
       title = decryptString(updatedSecret[0].title);
     } catch (e) {
-      console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
-      title = '[Encrypted - Key mismatch]';
+      if (e instanceof Error && e.message === 'Invalid encrypted data format') {
+        title = updatedSecret[0].title;
+      } else {
+        console.error('Failed to decrypt title:', e instanceof Error ? e.message : 'Unknown error');
+        title = '[Encrypted - Key mismatch]';
+      }
     }
 
     try {

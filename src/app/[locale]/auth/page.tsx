@@ -18,8 +18,8 @@ export default function AuthPage() {
     }
   }, [session, isLoading, locale, router]);
 
-  const handleUnlock = async () => {
-    await unlock();
+  const handleUnlock = async (provider: 'google' | 'github' = 'google') => {
+    await unlock(provider);
     router.push(`/${locale}/vault`);
   };
 

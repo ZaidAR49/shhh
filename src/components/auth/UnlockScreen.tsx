@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { RiGoogleLine, RiFingerprint2Line } from 'react-icons/ri';
+import { RiGoogleLine, RiGithubLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface UnlockScreenProps {
-  onUnlock: () => Promise<void>;
+  onUnlock: (provider?: 'google' | 'github') => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -17,6 +17,7 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
   const tc = useTranslations('common');
 
   const [rememberedUser, setRememberedUser] = useState<{name: string, email: string} | null>(null);
+  const [activeProvider, setActiveProvider] = useState<'google' | 'github' | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('shhh_remembered_user');
@@ -31,6 +32,12 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
       } catch (e) {}
     }
   }, []);
+
+  const handleClick = async (provider: 'google' | 'github') => {
+    setActiveProvider(provider);
+    await onUnlock(provider);
+    setActiveProvider(null);
+  };
 
   const formatEmail = (email: string) => {
     if (!email) return '';
@@ -50,11 +57,11 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
         )}
         aria-hidden="true"
       >
-        <Image 
-          src="/icon.png" 
-          alt="Shhh Logo" 
-          width={240} 
-          height={240} 
+        <Image
+          src="/icon.png"
+          alt="Shhh Logo"
+          width={240}
+          height={240}
           style={{ width: 'auto', height: 'auto' }}
           priority
         />
@@ -81,22 +88,47 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
         </>
       )}
 
-      {/* Primary action */}
+      {/* Primary actions */}
       <div className="w-full max-w-xs space-y-3">
         <Button
           id="unlock-with-google"
           size="lg"
-          onClick={onUnlock}
+          onClick={() => handleClick('google')}
           disabled={isLoading}
           aria-label={t('continueWithGoogle')}
           className="w-full gap-2.5 h-12 text-sm font-medium"
         >
-          {isLoading ? (
+          {activeProvider === 'google' ? (
             t('signingIn')
           ) : (
             <>
               <RiGoogleLine size={18} />
               {t('continueWithGoogle')}
+            </>
+          )}
+        </Button>
+
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground">{t('or')}</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <Button
+          id="unlock-with-github"
+          size="lg"
+          variant="outline"
+          onClick={() => handleClick('github')}
+          disabled={isLoading}
+          aria-label={t('continueWithGitHub')}
+          className="w-full gap-2.5 h-12 text-sm font-medium"
+        >
+          {activeProvider === 'github' ? (
+            t('signingIn')
+          ) : (
+            <>
+              <RiGithubLine size={18} />
+              {t('continueWithGitHub')}
             </>
           )}
         </Button>

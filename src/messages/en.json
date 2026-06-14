@@ -36,13 +36,15 @@
     "unlockVaultDescription": "Sign in with Google to access your secrets securely.",
     "welcomeBack": "Hi {name}, be quiet Shhh",
     "continueWithGoogle": "Unlock with Google",
+    "continueWithGitHub": "Unlock with GitHub",
+    "or": "or",
     "useFingerprint": "Use Fingerprint",
     "useFaceId": "Use Face ID",
     "sessionExpired": "Your session has expired",
     "sessionExpiresIn": "Session expires in {minutes} min",
     "lockVault": "Lock Vault",
     "signingIn": "Unlocking vault...",
-    "securedBy": "Secured by Google OAuth",
+    "securedBy": "Secured by Google & GitHub OAuth",
     "noPassword": "No password required",
     "sessionActive": "Vault unlocked",
     "sessionWarning": "Session expiring soon"
@@ -284,6 +286,168 @@
     "missionTitle": "Our Mission",
     "missionContent": "To provide a seamless, zero-knowledge secrets manager that protects your digital life without forcing you to memorize a 24-character string of random symbols.",
     "missionTagline": "Your secrets, locked by who you are — not what you remember."
+  },
+  "admin": {
+    "title": "Shhh Admin",
+    "badge": "Admin",
+    "superAdmin": "Super Admin",
+    "dashboardAccess": "Dashboard Access",
+    "mockData": "Mock Data",
+    "allActionsMock": "All actions are mock — no real data modified",
+    "nav": {
+      "overview": "Overview",
+      "users": "User Management"
+    },
+    "header": {
+      "overview": "Analytics Overview",
+      "overviewSub": "Platform health at a glance — all data is mock.",
+      "users": "User Management",
+      "usersSub": "{shown} of {total} users shown — all actions are mock."
+    },
+    "overview": {
+      "totalUsers": "Total Users",
+      "totalUsersActive": "{count} active",
+      "totalSecrets": "Total Secrets",
+      "totalSecretsAvg": "{avg} avg/user",
+      "mfaAdoption": "MFA Adoption",
+      "mfaAdoptionSub": "{count} users secured",
+      "lockedAccounts": "Locked Accounts",
+      "lockedAccountsSub": "Require review",
+      "administrators": "Administrators",
+      "administratorsSub": "Platform admins",
+      "inactiveUsers": "Inactive Users",
+      "inactiveUsersSub": "No recent activity",
+      "trendThisMonth": "+2 this month",
+      "trendSecretsWeek": "+14 this week",
+      "trendMfaMonth": "+5% this month",
+      "trendLockedWeek": "1 this week",
+      "monthlySignups": "Monthly Signups (2024)",
+      "secretTypes": "Secret Types Breakdown",
+      "recentUsers": "Recent Users"
+    },
+    "stats": {
+      "arUsers": "AR Users",
+      "notificationsOn": "Notifications On",
+      "googleOAuth": "Google OAuth",
+      "avgSessionAge": "Avg Session Age",
+      "avgSessionValue": "1h max"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "mfa": "MFA",
+      "secrets": "Secrets",
+      "lang": "Lang",
+      "joined": "Joined",
+      "lastActive": "Last Active",
+      "actions": "Actions",
+      "noResults": "No users match your filters.",
+      "showing": "Showing {shown} of {total} users"
+    },
+    "filter": {
+      "searchPlaceholder": "Search by name, email or ID…",
+      "allRoles": "All Roles",
+      "allStatuses": "All Statuses",
+      "allMfa": "All MFA",
+      "mfaOn": "MFA On",
+      "mfaOff": "MFA Off"
+    },
+    "sort": {
+      "name": "Name",
+      "joinedAt": "Joined",
+      "secretsCount": "Secrets",
+      "lastActive": "Last Active"
+    },
+    "userTabs": {
+      "overview": "Overview",
+      "regular": "Manage Users",
+      "admins": "Manage Admins"
+    },
+    "status": {
+      "active": "Active",
+      "locked": "Locked",
+      "inactive": "Inactive"
+    },
+    "role": {
+      "admin": "Admin",
+      "supervisor": "Supervisor",
+      "viewer": "Viewer",
+      "user": "User"
+    },
+    "actions": {
+      "view": "View Profile",
+      "edit": "Edit User",
+      "lock": "Lock User",
+      "unlock": "Unlock User",
+      "makeAdmin": "Make Admin",
+      "removeAdmin": "Remove Admin",
+      "delete": "Delete User"
+    },
+    "modals": {
+      "viewTitle": "User Profile",
+      "editTitle": "Edit User",
+      "deleteTitle": "Delete User",
+      "lockTitle": "Lock Account",
+      "unlockTitle": "Unlock Account",
+      "makeAdminTitle": "Grant Admin Role",
+      "removeAdminTitle": "Revoke Admin Role",
+      "saveTitle": "Save Changes",
+      "deleteBody": "Are you sure you want to delete {name}?",
+      "deleteSub": "This action cannot be undone. All their secrets will be permanently removed. (Mock — no real deletion)",
+      "lockBody": "Are you sure you want to lock {name}'s account?",
+      "lockSub": "They will not be able to access their vault until unlocked.",
+      "unlockBody": "Are you sure you want to unlock {name}'s account?",
+      "unlockSub": "They will immediately regain access to their vault.",
+      "makeAdminBody": "Are you sure you want to grant admin rights to {name}?",
+      "makeAdminSub": "They will gain full access to this admin dashboard.",
+      "removeAdminBody": "Are you sure you want to revoke admin rights from {name}?",
+      "removeAdminSub": "They will lose access to this admin dashboard.",
+      "saveBody": "Save changes to {name}'s profile?",
+      "saveSub": "This will update their display name, email, role, status, and preferences. (Mock — no real change)",
+      "confirmDelete": "Yes, Delete",
+      "confirmLock": "Yes, Lock",
+      "confirmUnlock": "Yes, Unlock",
+      "confirmMakeAdmin": "Yes, Grant Admin",
+      "confirmRemoveAdmin": "Yes, Revoke Admin",
+      "confirmSave": "Yes, Save Changes",
+      "cancel": "Cancel",
+      "close": "Close",
+      "saveChanges": "Save Changes"
+    },
+    "profile": {
+      "userId": "User ID",
+      "language": "Language",
+      "secrets": "Secrets",
+      "notifications": "Notifications",
+      "joined": "Joined",
+      "lastActive": "Last Active",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "form": {
+      "displayName": "Display Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "language": "Language",
+      "english": "English",
+      "arabic": "Arabic",
+      "mfaEnabled": "MFA Enabled",
+      "notificationsEnabled": "Notifications Enabled"
+    },
+    "toast": {
+      "userUpdated": "{name} updated (mock).",
+      "userDeleted": "{name} deleted (mock).",
+      "userLocked": "{name} is now locked (mock).",
+      "userUnlocked": "{name} is now active (mock).",
+      "madeAdmin": "{name} is now an admin (mock).",
+      "removedAdmin": "{name} is now a regular user (mock)."
+    },
+    "donut": {
+      "secrets": "secrets"
+    },
+    "simulateRole": "Simulate Role"
   },
   "notifications": {
     "sensitiveAccessedTitle": "Sensitive Secret Accessed",

@@ -47,6 +47,7 @@ export interface User {
   email: string;
   image?: string;
   provider: 'google';
+  role?: 'user' | 'admin' | 'supervisor' | 'viewer';
 }
 
 export interface Session {

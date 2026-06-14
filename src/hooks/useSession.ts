@@ -11,7 +11,7 @@ interface UseSessionReturn {
   isLoading: boolean;
   minutesRemaining: number;
   isExpired: boolean;
-  unlock: () => Promise<void>;
+  unlock: (provider?: 'google' | 'github') => Promise<void>;
   lock: () => void;
   updateName: (name: string) => void;
 }
@@ -30,7 +30,8 @@ export function useSession(): UseSessionReturn {
       name: authSession.user?.name || '',
       email: authSession.user?.email || '',
       image: authSession.user?.image || undefined,
-      provider: 'google'
+      provider: 'google',
+      role: (authSession.user as any)?.role,
     },
     expires_at: authSession.expires,
     created_at: new Date(Date.now() - 3600000).toISOString(), // Fallback for UI
@@ -79,8 +80,8 @@ export function useSession(): UseSessionReturn {
     };
   }, [authSession, locale]);
 
-  const unlock = async () => {
-    await signIn('google');
+  const unlock = async (provider: 'google' | 'github' = 'google') => {
+    await signIn(provider);
   };
 
   const lock = () => {

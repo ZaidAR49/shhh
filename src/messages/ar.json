@@ -36,13 +36,15 @@
     "unlockVaultDescription": "سجّل دخولك بحساب Google للوصول إلى أسرارك بأمان.",
     "welcomeBack": "أهلاً {name}، كن هادئاً Shhh",
     "continueWithGoogle": "فتح الخزنة بـ Google",
+    "continueWithGitHub": "فتح الخزنة بـ GitHub",
+    "or": "أو",
     "useFingerprint": "استخدام بصمة الإصبع",
     "useFaceId": "استخدام التعرف على الوجه",
     "sessionExpired": "انتهت مدة جلستك",
     "sessionExpiresIn": "تنتهي الجلسة خلال {minutes} دقيقة",
     "lockVault": "قفل الخزنة",
     "signingIn": "جارٍ فتح الخزنة...",
-    "securedBy": "محمية بواسطة Google OAuth",
+    "securedBy": "محمية بواسطة Google و GitHub OAuth",
     "noPassword": "لا يلزم كلمة مرور",
     "sessionActive": "الخزنة مفتوحة",
     "sessionWarning": "الجلسة على وشك الانتهاء"
@@ -284,6 +286,168 @@
     "missionTitle": "مهمتنا",
     "missionContent": "توفير مدير أسرار سلس وببنية المعرفة الصفرية يحمي حياتك الرقمية دون إجبارك على حفظ سلسلة مكونة من 24 حرفًا من الرموز العشوائية.",
     "missionTagline": "أسرارك محمية بهويتك، لا بما تتذكره."
+  },
+  "admin": {
+    "title": "Shhh للمشرفين",
+    "badge": "مشرف",
+    "superAdmin": "مشرف عام",
+    "dashboardAccess": "صلاحية لوحة التحكم",
+    "mockData": "بيانات تجريبية",
+    "allActionsMock": "جميع الإجراءات تجريبية — لا تعديل فعلي على البيانات",
+    "nav": {
+      "overview": "نظرة عامة",
+      "users": "إدارة المستخدمين"
+    },
+    "header": {
+      "overview": "نظرة تحليلية شاملة",
+      "overviewSub": "صحة المنصة في لمحة — جميع البيانات تجريبية.",
+      "users": "إدارة المستخدمين",
+      "usersSub": "يُعرض {shown} من {total} مستخدم — جميع الإجراءات تجريبية."
+    },
+    "overview": {
+      "totalUsers": "إجمالي المستخدمين",
+      "totalUsersActive": "{count} نشط",
+      "totalSecrets": "إجمالي الأسرار",
+      "totalSecretsAvg": "{avg} متوسط/مستخدم",
+      "mfaAdoption": "نسبة تفعيل MFA",
+      "mfaAdoptionSub": "{count} مستخدم محمي",
+      "lockedAccounts": "الحسابات المقفلة",
+      "lockedAccountsSub": "تحتاج إلى مراجعة",
+      "administrators": "المشرفون",
+      "administratorsSub": "مشرفو المنصة",
+      "inactiveUsers": "المستخدمون غير النشطون",
+      "inactiveUsersSub": "لا نشاط مؤخراً",
+      "trendThisMonth": "+2 هذا الشهر",
+      "trendSecretsWeek": "+14 هذا الأسبوع",
+      "trendMfaMonth": "+5% هذا الشهر",
+      "trendLockedWeek": "1 هذا الأسبوع",
+      "monthlySignups": "التسجيلات الشهرية (2024)",
+      "secretTypes": "توزيع أنواع الأسرار",
+      "recentUsers": "أحدث المستخدمين"
+    },
+    "stats": {
+      "arUsers": "مستخدمو AR",
+      "notificationsOn": "الإشعارات مفعّلة",
+      "googleOAuth": "Google OAuth",
+      "avgSessionAge": "متوسط عمر الجلسة",
+      "avgSessionValue": "ساعة كحد أقصى"
+    },
+    "table": {
+      "user": "المستخدم",
+      "role": "الدور",
+      "status": "الحالة",
+      "mfa": "MFA",
+      "secrets": "الأسرار",
+      "lang": "اللغة",
+      "joined": "تاريخ الانضمام",
+      "lastActive": "آخر نشاط",
+      "actions": "الإجراءات",
+      "noResults": "لا يوجد مستخدمون يطابقون الفلاتر.",
+      "showing": "يُعرض {shown} من {total} مستخدم"
+    },
+    "filter": {
+      "searchPlaceholder": "ابحث بالاسم أو البريد أو المعرف...",
+      "allRoles": "جميع الأدوار",
+      "allStatuses": "جميع الحالات",
+      "allMfa": "جميع MFA",
+      "mfaOn": "MFA مفعّل",
+      "mfaOff": "MFA معطّل"
+    },
+    "sort": {
+      "name": "الاسم",
+      "joinedAt": "تاريخ الانضمام",
+      "secretsCount": "الأسرار",
+      "lastActive": "آخر نشاط"
+    },
+    "userTabs": {
+      "overview": "نظرة عامة",
+      "regular": "إدارة المستخدمين",
+      "admins": "إدارة المشرفين"
+    },
+    "status": {
+      "active": "نشط",
+      "locked": "مقفل",
+      "inactive": "غير نشط"
+    },
+    "role": {
+      "admin": "مشرف",
+      "supervisor": "مشرف فرعي",
+      "viewer": "مراقب",
+      "user": "مستخدم"
+    },
+    "actions": {
+      "view": "عرض الملف الشخصي",
+      "edit": "تعديل المستخدم",
+      "lock": "قفل الحساب",
+      "unlock": "فتح الحساب",
+      "makeAdmin": "منح صلاحية المشرف",
+      "removeAdmin": "إلغاء صلاحية المشرف",
+      "delete": "حذف المستخدم"
+    },
+    "modals": {
+      "viewTitle": "الملف الشخصي",
+      "editTitle": "تعديل المستخدم",
+      "deleteTitle": "حذف المستخدم",
+      "lockTitle": "قفل الحساب",
+      "unlockTitle": "فتح الحساب",
+      "makeAdminTitle": "منح دور المشرف",
+      "removeAdminTitle": "إلغاء دور المشرف",
+      "saveTitle": "حفظ التغييرات",
+      "deleteBody": "هل أنت متأكد من حذف {name}؟",
+      "deleteSub": "لا يمكن التراجع عن هذا الإجراء. ستُحذف جميع أسراره نهائيًا. (تجريبي — لا حذف فعلي)",
+      "lockBody": "هل أنت متأكد من قفل حساب {name}؟",
+      "lockSub": "لن يتمكن من الوصول إلى خزنته حتى يتم فتح الحساب.",
+      "unlockBody": "هل أنت متأكد من فتح حساب {name}؟",
+      "unlockSub": "سيستعيد وصوله إلى خزنته فورًا.",
+      "makeAdminBody": "هل أنت متأكد من منح صلاحيات المشرف لـ {name}؟",
+      "makeAdminSub": "سيحصل على صلاحية وصول كاملة لهذه لوحة التحكم.",
+      "removeAdminBody": "هل أنت متأكد من إلغاء صلاحيات المشرف من {name}؟",
+      "removeAdminSub": "سيفقد صلاحية الوصول إلى هذه لوحة التحكم.",
+      "saveBody": "حفظ التغييرات على ملف {name} الشخصي؟",
+      "saveSub": "سيتم تحديث اسمه وبريده ودوره وحالته وتفضيلاته. (تجريبي — لا تغيير فعلي)",
+      "confirmDelete": "نعم، احذف",
+      "confirmLock": "نعم، اقفل",
+      "confirmUnlock": "نعم، افتح",
+      "confirmMakeAdmin": "نعم، منح الصلاحية",
+      "confirmRemoveAdmin": "نعم، إلغاء الصلاحية",
+      "confirmSave": "نعم، احفظ التغييرات",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "saveChanges": "حفظ التغييرات"
+    },
+    "profile": {
+      "userId": "معرف المستخدم",
+      "language": "اللغة",
+      "secrets": "الأسرار",
+      "notifications": "الإشعارات",
+      "joined": "تاريخ الانضمام",
+      "lastActive": "آخر نشاط",
+      "enabled": "مفعّل",
+      "disabled": "معطّل"
+    },
+    "form": {
+      "displayName": "الاسم المعروض",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "language": "اللغة",
+      "english": "الإنجليزية",
+      "arabic": "العربية",
+      "mfaEnabled": "تفعيل MFA",
+      "notificationsEnabled": "تفعيل الإشعارات"
+    },
+    "toast": {
+      "userUpdated": "تم تحديث {name} (تجريبي).",
+      "userDeleted": "تم حذف {name} (تجريبي).",
+      "userLocked": "{name} مقفل الآن (تجريبي).",
+      "userUnlocked": "{name} نشط الآن (تجريبي).",
+      "madeAdmin": "{name} مشرف الآن (تجريبي).",
+      "removedAdmin": "{name} مستخدم عادي الآن (تجريبي)."
+    },
+    "donut": {
+      "secrets": "أسرار"
+    },
+    "simulateRole": "محاكاة الدور"
   },
   "notifications": {
     "sensitiveAccessedTitle": "تم الوصول إلى سر حساس",
