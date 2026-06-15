@@ -296,7 +296,8 @@
     "allActionsMock": "جلسة نشطة — يتم تطبيق جميع التعديلات مباشرة على قاعدة البيانات",
     "nav": {
       "overview": "نظرة عامة",
-      "users": "إدارة المستخدمين"
+      "users": "إدارة المستخدمين",
+      "openVault": "فتح الخزنة"
     },
     "header": {
       "overview": "نظرة تحليلية شاملة",
@@ -317,9 +318,21 @@
       "administratorsSub": "مشرفو المنصة",
       "inactiveUsers": "المستخدمون غير النشطون",
       "inactiveUsersSub": "لا نشاط مؤخراً",
-      "monthlySignups": "التسجيلات الشهرية (2024)",
+      "staleSecrets": "أسرار قديمة",
+      "staleSecretsSub": "لم تُحدَّث منذ +90 يوم",
+      "highRiskUsers": "مستخدمون عاليو الخطورة",
+      "highRiskUsersSub": "أسرار حساسة بدون MFA",
+      "monthlySignups": "التسجيلات الشهرية ({year})",
       "secretTypes": "توزيع أنواع الأسرار",
-      "recentUsers": "أحدث المستخدمين"
+      "recentUsers": "أحدث المستخدمين",
+      "authMethods": "طرق المصادقة",
+      "demographics": "التوزيع الديموغرافي",
+      "usersLabel": "مستخدمون",
+      "noSecretsFound": "لا توجد أسرار",
+      "english": "الإنجليزية",
+      "arabic": "العربية",
+      "addAdmin": "إضافة مشرف",
+      "months": ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"]
     },
     "stats": {
       "arUsers": "مستخدمو AR",

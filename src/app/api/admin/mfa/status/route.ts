@@ -40,3 +40,19 @@ export async function GET() {
     return NextResponse.json({ verified: false, reason: 'error' });
   }
 }
+
+/**
+ * DELETE /api/admin/mfa/status
+ * Clears the admin_mfa_ok cookie to log out of the MFA session.
+ */
+export async function DELETE() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete(ADMIN_MFA_COOKIE_NAME);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error clearing admin MFA status:', error);
+    return NextResponse.json({ error: 'Failed to clear MFA session' }, { status: 500 });
+  }
+}
+

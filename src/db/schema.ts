@@ -40,6 +40,7 @@ export const users = pgTable('user', {
   isLocked: boolean('is_locked').notNull().default(false),
   notificationsEnabled: boolean('notifications_enabled').notNull().default(true),
   preferredLocale: langEnum('preferred_locale').notNull().default('ar'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 export const accounts = pgTable(

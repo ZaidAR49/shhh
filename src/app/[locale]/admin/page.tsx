@@ -3,12 +3,14 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
+import Link from 'next/link';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { useSession } from '@/hooks/useSession';
 import { Bar, BarChart, XAxis, Pie, PieChart, Cell, Label } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   RiShieldCheckLine,
   RiGroupLine,
@@ -35,6 +37,7 @@ import {
   RiShieldStarLine,
   RiAddLine,
   RiShieldKeyholeLine,
+  RiLogoutBoxRLine,
 } from 'react-icons/ri';
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
@@ -201,6 +204,89 @@ function SecretDonut({ data, secretsLabel }: { data: { type: string; count: numb
           <div key={d.type} className="flex items-center gap-2 text-xs">
             <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: d.color }} />
             <span className="text-muted-foreground flex-1">{d.type}</span>
+            <span className="font-semibold text-foreground">{d.count}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Auth Bar Chart ───────────────────────────────────────────────────────────
+
+const chartConfigAuthBar = {
+  count: { label: "Accounts" },
+};
+
+function AuthBarChart({ data }: { data: { provider: string; count: number; color: string }[] }) {
+  return (
+    <div className="h-40 w-full mt-2">
+      <ChartContainer config={chartConfigAuthBar} className="h-full w-full">
+        <BarChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <XAxis dataKey="provider" tickLine={false} tickMargin={10} axisLine={false} fontSize={10} />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+          <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ChartContainer>
+    </div>
+  );
+}
+
+// ─── Demographics Donut ───────────────────────────────────────────────────────
+
+const chartConfigDemographics = {
+  count: { label: "Users" },
+};
+
+function DemographicsDonut({ data, label }: { data: { label: string; count: number; color: string }[]; label: string }) {
+  const total = data.reduce((s, d) => s + d.count, 0);
+  
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-5">
+      <div className="h-44 w-44">
+        <ChartContainer config={chartConfigDemographics} className="h-full w-full aspect-square">
+          <PieChart>
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+            <Pie
+              data={data}
+              dataKey="count"
+              nameKey="label"
+              innerRadius={60}
+              outerRadius={80}
+              strokeWidth={0}
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    return (
+                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                        <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-3xl font-bold">
+                          {total}
+                        </tspan>
+                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-muted-foreground text-[10px] uppercase tracking-wider">
+                          {label}
+                        </tspan>
+                      </text>
+                    );
+                  }
+                }}
+              />
+            </Pie>
+          </PieChart>
+        </ChartContainer>
+      </div>
+      <div className="flex-1 flex flex-col gap-1.5 w-full">
+        {data.map((d) => (
+          <div key={d.label} className="flex items-center gap-2 text-xs">
+            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: d.color }} />
+            <span className="text-muted-foreground flex-1">{d.label}</span>
             <span className="font-semibold text-foreground">{d.count}</span>
           </div>
         ))}
@@ -583,7 +669,7 @@ function MfaReVerifyModal({
 }: {
   title: string;
   description: string;
-  onVerified: (code: string) => void;
+  onVerified: (code: string) => Promise<string | void> | void;
   onCancel: () => void;
 }) {
   const [code, setCode] = useState('');
@@ -594,24 +680,15 @@ function MfaReVerifyModal({
     if (codeToSubmit.length !== MFA_DIGITS) return;
     setIsChecking(true);
     setError('');
-    // Pass the code back to the parent — the parent will include it as a header in the actual API call
-    // We do a lightweight pre-check here to give immediate feedback before the real operation fires
     try {
-      const res = await fetch('/api/admin/mfa/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: code }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Invalid code.');
-        setDigits(Array(MFA_DIGITS).fill(''));
-        inputRefs.current[0]?.focus();
-        return;
+      const err = await onVerified(codeToSubmit);
+      if (typeof err === 'string') {
+        setError(err);
+        setCode('');
       }
-      onVerified(code);
     } catch {
-      setError('Network error. Please try again.');
+      setError('An error occurred. Please try again.');
+      setCode('');
     } finally {
       setIsChecking(false);
     }
@@ -1166,7 +1243,9 @@ function ActionBtn({
 
 export default function AdminDashboard() {
   const t = useTranslations('admin');
-  const { session } = useSession();
+  const tSettings = useTranslations('settings');
+  const locale = useLocale();
+  const { session, lock } = useSession();
 
   // Active user role
   const simulatedRole = (session?.user?.role || 'viewer') as UserRole;
@@ -1201,13 +1280,13 @@ export default function AdminDashboard() {
   const [mfaGate, setMfaGate] = useState<{
     title: string;
     description: string;
-    onVerified: (code: string) => void;
+    onVerified: (code: string) => Promise<string | void> | void;
   } | null>(null);
 
   // Toast
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
-  const [stats, setStats] = useState<{ secretTypes: { type: string; count: number; color: string }[] } | null>(null);
+  const [stats, setStats] = useState<{ secretTypes: { type: string; count: number; color: string }[]; analytics?: any } | null>(null);
 
   useEffect(() => {
     const fetchUsersAndStats = async () => {
@@ -1238,38 +1317,64 @@ export default function AdminDashboard() {
   }, []);
 
   // Analytics
-  const totalUsers = users.length;
+  const totalUsers = stats?.analytics ? parseInt(stats.analytics.total_users || '0', 10) : users.length;
   const activeUsers = users.filter((u) => u.status === 'active').length;
-  const lockedUsers = users.filter((u) => u.status === 'locked').length;
-  const adminUsers = users.filter((u) => u.role === 'admin' || u.role === 'supervisor').length;
-  const mfaRate = totalUsers > 0 ? Math.round((users.filter((u) => u.mfaEnabled).length / totalUsers) * 100) : 0;
-  const totalSecrets = users.reduce((s, u) => s + u.secretsCount, 0);
-  const avgSecrets = totalUsers > 0 ? (totalSecrets / totalUsers).toFixed(1) : '0';
+  const lockedUsers = stats?.analytics ? parseInt(stats.analytics.locked_accounts || '0', 10) : users.filter((u) => u.status === 'locked').length;
+  const adminUsers = stats?.analytics ? parseInt(stats.analytics.total_admins || '0', 10) : users.filter((u) => u.role === 'admin' || u.role === 'supervisor').length;
+  const mfaRate = stats?.analytics ? parseFloat(stats.analytics.pct_users_with_2fa || '0') : (totalUsers > 0 ? Math.round((users.filter((u) => u.mfaEnabled).length / totalUsers) * 100) : 0);
+  const totalSecrets = stats?.analytics ? parseInt(stats.analytics.total_secrets || '0', 10) : users.reduce((s, u) => s + u.secretsCount, 0);
+  const avgSecrets = stats?.analytics ? parseFloat(stats.analytics.avg_secrets_per_user || '0').toFixed(1) : (totalUsers > 0 ? (totalSecrets / totalUsers).toFixed(1) : '0');
+
+  const activeSessions = stats?.analytics ? parseInt(stats.analytics.total_active_sessions || '0', 10) : 0;
+  const usersWithActiveSession = stats?.analytics ? parseInt(stats.analytics.users_with_active_session || '0', 10) : 0;
+  
+  const staleSecrets = stats?.analytics ? parseInt(stats.analytics.stale_secrets_90_days || '0', 10) : 0;
+  const highRiskUsers = stats?.analytics ? parseInt(stats.analytics.high_risk_users || '0', 10) : 0;
 
   const monthlySignups = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const counts = months.map(m => ({ month: m, count: 0 }));
+    const monthKeys = t.raw('overview.months') as string[];
+    const counts = monthKeys.map(m => ({ month: m, count: 0 }));
+    const currentYear = new Date().getFullYear();
     
     users.forEach(user => {
       if (user.joinedAt) {
         const date = new Date(user.joinedAt);
-        const monthIndex = date.getMonth(); // 0-11
-        if (monthIndex >= 0 && monthIndex < 12) {
-          counts[monthIndex].count += 1;
+        if (date.getFullYear() === currentYear) {
+          const monthIndex = date.getMonth(); // 0-11
+          if (monthIndex >= 0 && monthIndex < 12) {
+            counts[monthIndex].count += 1;
+          }
         }
       }
     });
     return counts;
-  }, [users]);
+  }, [users, t]);
 
   const secretTypesData = useMemo(() => {
     if (stats?.secretTypes && stats.secretTypes.length > 0) {
       return stats.secretTypes;
     }
     return [
-      { type: 'No secrets found', count: 0, color: 'var(--muted-foreground)' }
+      { type: t('overview.noSecretsFound'), count: 0, color: 'var(--muted-foreground)' }
     ];
   }, [stats]);
+
+  const authMethodsData = useMemo(() => {
+    if (!stats?.analytics) return [];
+    return [
+      { provider: 'Credentials', count: parseInt(stats.analytics.accounts_credentials || '0', 10), color: 'var(--primary)' },
+      { provider: 'Google', count: parseInt(stats.analytics.accounts_google || '0', 10), color: '#ea4335' },
+      { provider: 'GitHub', count: parseInt(stats.analytics.accounts_github || '0', 10), color: '#333333' }
+    ].filter(d => d.count > 0);
+  }, [stats]);
+
+  const demographicsData = useMemo(() => {
+    if (!stats?.analytics) return [];
+    return [
+      { label: t('overview.english'), count: parseInt(stats.analytics.users_english || '0', 10), color: '#3b82f6' },
+      { label: t('overview.arabic'), count: parseInt(stats.analytics.users_arabic || '0', 10), color: '#10b981' }
+    ].filter(d => d.count > 0);
+  }, [stats, t]);
 
   // Filtered + sorted list for the current tab
   const filteredUsers = useMemo(() => {
@@ -1322,7 +1427,7 @@ export default function AdminDashboard() {
 
   // ── Action handlers (called AFTER confirmation, optionally with MFA code) ────
 
-  const executeConfirm = async (mfaCode?: string) => {
+  const executeConfirm = async (mfaCode?: string): Promise<string | void> => {
     if (!confirmState) return;
     const { type, user, editDraft } = confirmState;
 
@@ -1333,7 +1438,11 @@ export default function AdminDashboard() {
           setMfaGate({
             title: 'Confirm Admin Deletion',
             description: `Deleting "${user.name}" (${user.role}) is irreversible. Enter your authenticator code to confirm.`,
-            onVerified: (code) => { setMfaGate(null); executeConfirm(code); },
+            onVerified: async (code) => {
+               const err = await executeConfirm(code);
+               if (err) return err;
+               setMfaGate(null);
+            },
           });
           return;
         }
@@ -1341,7 +1450,11 @@ export default function AdminDashboard() {
         if (mfaCode) headers['x-admin-mfa-token'] = mfaCode;
         const res = await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE', headers });
         const data = await res.json();
-        if (!res.ok) { showToast(data.error || 'Failed to delete', 'error'); return; }
+        if (!res.ok) { 
+            if (mfaCode) return data.error || 'Failed to delete';
+            showToast(data.error || 'Failed to delete', 'error'); 
+            return; 
+        }
         setUsers((prev) => prev.filter((u) => u.id !== user.id));
         showToast(t('toast.userDeleted', { name: user.name }));
       } else if (type === 'lock') {
@@ -1364,7 +1477,11 @@ export default function AdminDashboard() {
           setMfaGate({
             title: 'Confirm Role Change',
             description: `Changing ${editDraft.name}'s role requires 2FA verification. Enter your authenticator code.`,
-            onVerified: (code) => { setMfaGate(null); executeConfirm(code); },
+            onVerified: async (code) => {
+               const err = await executeConfirm(code);
+               if (err) return err;
+               setMfaGate(null);
+            },
           });
           return;
         }
@@ -1372,11 +1489,16 @@ export default function AdminDashboard() {
         if (mfaCode) headers['x-admin-mfa-token'] = mfaCode;
         const res = await fetch(`/api/admin/users/${editDraft.id}`, { method: 'PATCH', headers, body: JSON.stringify(editDraft) });
         const data = await res.json();
-        if (!res.ok) { showToast(data.error || 'Failed to update', 'error'); return; }
+        if (!res.ok) { 
+            if (mfaCode) return data.error || 'Failed to update';
+            showToast(data.error || 'Failed to update', 'error'); 
+            return; 
+        }
         setUsers((prev) => prev.map((u) => u.id === editDraft.id ? editDraft : u));
         showToast(t('toast.userUpdated', { name: editDraft.name }));
       }
     } catch {
+      if (mfaCode) return 'Action failed. Please try again.';
       showToast('Action failed. Please try again.', 'error');
     }
 
@@ -1399,7 +1521,6 @@ export default function AdminDashboard() {
         title: 'Confirm Role Change',
         description: `Changing ${user.name}'s role from ${user.role} to ${newRole} requires 2FA verification.`,
         onVerified: async (code) => {
-          setMfaGate(null);
           try {
             const res = await fetch(`/api/admin/users/${user.id}`, {
               method: 'PATCH',
@@ -1407,10 +1528,11 @@ export default function AdminDashboard() {
               body: JSON.stringify({ role: newRole }),
             });
             const data = await res.json();
-            if (!res.ok) { showToast(data.error || 'Failed to change role', 'error'); return; }
+            if (!res.ok) { return data.error || 'Failed to change role'; }
+            setMfaGate(null);
             setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, role: newRole } : u));
             showToast(t('toast.userUpdated', { name: user.name }));
-          } catch { showToast('Failed to change role', 'error'); }
+          } catch { return 'Failed to change role'; }
         },
       });
       return;
@@ -1520,7 +1642,7 @@ export default function AdminDashboard() {
         {/* Sidebar */}
         <aside className="w-72 flex-shrink-0 sticky top-0 h-screen flex flex-col bg-card border-e border-border overflow-y-auto">
           {/* Logo matches main application */}
-          <div className="flex items-center gap-4 px-8 py-6 border-b border-border min-h-[96px]">
+          <Link href={`/${locale}`} className="flex items-center gap-4 px-8 py-6 border-b border-border min-h-[96px] hover:opacity-80 transition-opacity">
             <Image
               src="/icon.png"
               alt="Shhh Logo"
@@ -1537,7 +1659,7 @@ export default function AdminDashboard() {
                 {t('badge')}
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Nav */}
           <nav className="flex-1 px-4 py-6 flex flex-col gap-2">
@@ -1572,6 +1694,22 @@ export default function AdminDashboard() {
             })}
           </nav>
 
+          <div className="p-4 mt-auto border-t border-border flex flex-col gap-2">
+            <Link
+              href={`/${locale}/vault`}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-sm hover:shadow-md"
+            >
+              <RiShieldKeyholeLine size={18} />
+              {t('nav.openVault')}
+            </Link>
+            <button
+              onClick={lock}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all shadow-sm hover:shadow-md"
+            >
+              <RiLogoutBoxRLine size={18} />
+              {tSettings('signOut')}
+            </button>
+          </div>
         </aside>
 
         {/* Main Content Area */}
@@ -1591,6 +1729,20 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex items-center gap-3">
+              {session?.user && (
+                <div className="flex items-center gap-3 pe-2">
+                  <div className="text-end hidden sm:block">
+                    <p className="text-sm font-bold text-foreground leading-tight">{session.user.name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                  </div>
+                  <Avatar className="w-10 h-10 border-2 border-border">
+                    <AvatarImage src={session.user.image || undefined} alt={session.user.name || 'User'} className="object-cover" />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                      {session.user.name ? session.user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : <RiUserLine size={20} />}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              )}
               {/* Main App Toggles */}
               <div className="h-6 w-px bg-border mx-1" />
               <ThemeToggle />
@@ -1606,7 +1758,7 @@ export default function AdminDashboard() {
               <div className="flex flex-col gap-6 animate-fade-in w-full">
 
                 {/* Stat cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   <StatCard
                     icon={RiGroupLine}
                     label={t('overview.totalUsers')}
@@ -1649,6 +1801,20 @@ export default function AdminDashboard() {
                     sub={t('overview.inactiveUsersSub')}
                     accentColor="var(--muted-foreground)"
                   />
+                  <StatCard
+                    icon={RiKeyLine}
+                    label={t('overview.staleSecrets')}
+                    value={staleSecrets}
+                    sub={t('overview.staleSecretsSub')}
+                    accentColor="var(--vault-warning)"
+                  />
+                  <StatCard
+                    icon={RiShieldCheckLine}
+                    label={t('overview.highRiskUsers')}
+                    value={highRiskUsers}
+                    sub={t('overview.highRiskUsersSub')}
+                    accentColor="var(--vault-locked)"
+                  />
                 </div>
 
                 {/* Charts row */}
@@ -1656,7 +1822,7 @@ export default function AdminDashboard() {
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
                     <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-6">
                       <RiCalendarLine size={16} className="text-muted-foreground" />
-                      {t('overview.monthlySignups')}
+                      {t('overview.monthlySignups', { year: new Date().getFullYear() })}
                     </h2>
                     <MiniBarChart data={monthlySignups} />
                   </div>
@@ -1667,6 +1833,24 @@ export default function AdminDashboard() {
                     </h2>
                     <SecretDonut data={secretTypesData} secretsLabel={t('donut.secrets')} />
                   </div>
+                  {authMethodsData.length > 0 && (
+                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-6">
+                        <RiShieldStarLine size={16} className="text-muted-foreground" />
+                        {t('overview.authMethods')}
+                      </h2>
+                      <AuthBarChart data={authMethodsData} />
+                    </div>
+                  )}
+                  {demographicsData.length > 0 && (
+                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-6">
+                        <RiUserLine size={16} className="text-muted-foreground" />
+                        {t('overview.demographics')}
+                      </h2>
+                      <DemographicsDonut data={demographicsData} label={t('overview.usersLabel')} />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1702,7 +1886,7 @@ export default function AdminDashboard() {
                         className="flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-px active:translate-y-0 transition-all shadow-sm"
                       >
                         <RiAddLine size={16} />
-                        Add Admin
+                        {t('overview.addAdmin')}
                       </button>
                     )}
                     <RiFilterLine size={16} />

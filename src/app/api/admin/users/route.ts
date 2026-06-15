@@ -83,8 +83,8 @@ export async function GET() {
       mfaEnabled: user.mfaEnabled,
       preferredLocale: user.preferredLocale,
       notificationsEnabled: user.notificationsEnabled,
-      joinedAt: user.emailVerified
-        ? new Date(user.emailVerified).toISOString()
+      joinedAt: user.createdAt
+        ? new Date(user.createdAt).toISOString()
         : null,
       lastActive: null,
     }));

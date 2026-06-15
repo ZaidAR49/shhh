@@ -296,7 +296,8 @@
     "allActionsMock": "Active Session — changes apply directly to database",
     "nav": {
       "overview": "Overview",
-      "users": "User Management"
+      "users": "User Management",
+      "openVault": "Open Vault"
     },
     "header": {
       "overview": "Analytics Overview",
@@ -317,9 +318,21 @@
       "administratorsSub": "Platform admins",
       "inactiveUsers": "Inactive Users",
       "inactiveUsersSub": "No recent activity",
-      "monthlySignups": "Monthly Signups (2024)",
+      "staleSecrets": "Stale Secrets",
+      "staleSecretsSub": "Not updated >90d",
+      "highRiskUsers": "High-Risk Users",
+      "highRiskUsersSub": "Sensitive, no MFA",
+      "monthlySignups": "Monthly Signups ({year})",
       "secretTypes": "Secret Types Breakdown",
-      "recentUsers": "Recent Users"
+      "recentUsers": "Recent Users",
+      "authMethods": "Authentication Methods",
+      "demographics": "User Demographics",
+      "usersLabel": "Users",
+      "noSecretsFound": "No secrets found",
+      "english": "English",
+      "arabic": "Arabic",
+      "addAdmin": "Add Admin",
+      "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     },
     "stats": {
       "arUsers": "AR Users",

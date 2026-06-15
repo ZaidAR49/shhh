@@ -1,6 +1,5 @@
 import { db } from "@/db";
-import { secrets } from "@/db/schema";
-import { count } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -12,10 +11,8 @@ export async function GET() {
   }
 
   try {
-    const typeCounts = await db
-      .select({ type: secrets.type, count: count() })
-      .from(secrets)
-      .groupBy(secrets.type);
+    const res = await db.execute(sql`SELECT * FROM admin_analytics LIMIT 1`);
+    const analytics = res.rows[0];
 
     const colors: Record<string, string> = {
       password: "var(--accent)",
@@ -41,13 +38,13 @@ export async function GET() {
       wifi: "Wi-Fi"
     };
 
-    const breakdown = typeCounts.map((tc) => ({
-      type: friendlyNames[tc.type] || tc.type,
-      count: tc.count,
-      color: colors[tc.type] || "var(--muted-foreground)"
-    }));
+    const secretTypes = Object.keys(colors).map(type => ({
+      type: friendlyNames[type] || type,
+      count: parseInt(analytics?.[`secrets_${type}`] as string || "0", 10),
+      color: colors[type] || "var(--muted-foreground)"
+    })).filter(t => t.count > 0);
 
-    return NextResponse.json({ secretTypes: breakdown });
+    return NextResponse.json({ secretTypes, analytics });
   } catch (error) {
     console.error("Failed to fetch admin stats:", error);
     return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });

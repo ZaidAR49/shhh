@@ -84,8 +84,13 @@ export function useSession(): UseSessionReturn {
     await signIn(provider);
   };
 
-  const lock = () => {
+  const lock = async () => {
     localStorage.removeItem('shhh_remembered_user');
+    try {
+      await fetch('/api/admin/mfa/status', { method: 'DELETE' });
+    } catch (e) {
+      console.error('Failed to clear MFA session', e);
+    }
     signOut({ callbackUrl: `/${locale}/auth` });
   };
 
