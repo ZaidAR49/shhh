@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       tags: (secret.data as any)?.tags || []
     };
 
-    return NextResponse.json(mappedSecret, { 
+    return NextResponse.json(mappedSecret, {
       status: 201,
       headers: { 'Cache-Control': 'no-store' }
     });

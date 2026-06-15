@@ -8,6 +8,7 @@ import { sendWelcomeEmail } from "@/lib/email";
 import { headers } from "next/headers";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db),
@@ -74,6 +75,21 @@ export const authOptions: NextAuthOptions = {
       if (user.email) {
         await sendWelcomeEmail(user.email, user.name || 'User', detectedLocale);
       }
+
+      if (user.id) {
+        const posthog = getPostHogClient();
+        posthog.identify({
+          distinctId: user.id,
+          properties: {
+            email: user.email,
+            name: user.name,
+            locale: detectedLocale,
+          },
+        });
+      }
+    },
+    async signIn({ user }) {
+      // Nothing needed on sign in currently
     },
   },
 };

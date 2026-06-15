@@ -39,7 +39,7 @@ export function CopyButton({ value, className, size = 'sm', label }: CopyButtonP
         }
       >
         {copied ? (
-          <RiCheckLine size={size === 'sm' ? 14 : 16} className="text-[var(--vault-unlocked)]" />
+          <RiCheckLine size={size === 'sm' ? 14 : 16} className="text-vault-unlocked" />
         ) : (
           <RiFileCopyLine size={size === 'sm' ? 14 : 16} />
         )}

@@ -106,7 +106,7 @@ function StatCard({
       />
       {/* Icon bubble */}
       <div
-        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
         style={{ background: `color-mix(in srgb, ${accentColor} 15%, transparent)`, color: accentColor }}
       >
         <Icon size={18} />
@@ -202,7 +202,7 @@ function SecretDonut({ data, secretsLabel }: { data: { type: string; count: numb
       <div className="flex-1 flex flex-col gap-1.5 w-full">
         {data.map((d) => (
           <div key={d.type} className="flex items-center gap-2 text-xs">
-            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: d.color }} />
+            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: d.color }} />
             <span className="text-muted-foreground flex-1">{d.type}</span>
             <span className="font-semibold text-foreground">{d.count}</span>
           </div>
@@ -285,7 +285,7 @@ function DemographicsDonut({ data, label }: { data: { label: string; count: numb
       <div className="flex-1 flex flex-col gap-1.5 w-full">
         {data.map((d) => (
           <div key={d.label} className="flex items-center gap-2 text-xs">
-            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: d.color }} />
+            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: d.color }} />
             <span className="text-muted-foreground flex-1">{d.label}</span>
             <span className="font-semibold text-foreground">{d.count}</span>
           </div>
@@ -448,7 +448,7 @@ function ViewModal({
         <div className="px-6 py-5 overflow-y-auto">
           {/* Profile row */}
           <div className="flex items-center gap-4 pb-4 mb-4 border-b border-border">
-            <img src={user.image} alt={user.name} className="w-14 h-14 rounded-full border-2 border-border flex-shrink-0" />
+            <img src={user.image} alt={user.name} className="w-14 h-14 rounded-full border-2 border-border shrink-0" />
             <div>
               <h3 className="text-base font-bold text-foreground">{user.name}</h3>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
@@ -538,7 +538,7 @@ function EditModal({
         <div className="px-6 py-5 overflow-y-auto">
           {/* Avatar row */}
           <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border">
-            <img src={draft.image} alt={draft.name} className="w-11 h-11 rounded-full border-2 border-border flex-shrink-0" />
+            <img src={draft.image} alt={draft.name} className="w-11 h-11 rounded-full border-2 border-border shrink-0" />
             <div>
               <p className="text-sm font-semibold text-foreground">{draft.name}</p>
               <p className="text-xs text-muted-foreground">{draft.email}</p>
@@ -696,7 +696,7 @@ function MfaReVerifyModal({
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center p-5 bg-black/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-70 flex items-center justify-center p-5 bg-black/70 backdrop-blur-sm animate-fade-in"
       onClick={onCancel}
     >
       <div
@@ -781,7 +781,7 @@ function MfaReVerifyModal({
 function Toast({ msg, type }: { msg: string; type: 'success' | 'error' }) {
   return (
     <div
-      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium shadow-xl animate-fade-in ${
+      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-60 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium shadow-xl animate-fade-in ${
         type === 'success'
           ? 'bg-card border-vault-unlocked/30 text-vault-unlocked'
           : 'bg-card border-destructive/30 text-destructive'
@@ -927,7 +927,7 @@ function AddUserModal({
                 Email <span className="text-destructive">*</span>
               </label>
               <div className="relative">
-                <RiMailLine size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <RiMailLine size={14} className="absolute inset-s-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
                   type="email"
                   className="w-full ps-9 pe-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
@@ -1074,7 +1074,7 @@ function UserTable({
                   {/* User */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <img src={user.image} alt={user.name} className="w-10 h-10 rounded-full border-2 border-border flex-shrink-0" />
+                      <img src={user.image} alt={user.name} className="w-10 h-10 rounded-full border-2 border-border shrink-0" />
                       <div>
                         <p className="font-bold text-foreground text-sm leading-tight">{user.name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
@@ -1181,7 +1181,7 @@ function UserTable({
                             <option value="supervisor">{t('role.supervisor')}</option>
                             <option value="admin">{t('role.admin')}</option>
                           </select>
-                          <RiAdminLine size={11} className="absolute end-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
+                          <RiAdminLine size={11} className="absolute inset-e-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
                         </div>
                       )}
 
@@ -1640,7 +1640,7 @@ export default function AdminDashboard() {
       <div className="flex min-h-screen bg-background text-foreground">
 
         {/* Sidebar */}
-        <aside className="w-72 flex-shrink-0 sticky top-0 h-screen flex flex-col bg-card border-e border-border overflow-y-auto">
+        <aside className="w-72 shrink-0 sticky top-0 h-screen flex flex-col bg-card border-e border-border overflow-y-auto">
           {/* Logo matches main application */}
           <Link href={`/${locale}`} className="flex items-center gap-4 px-8 py-6 border-b border-border min-h-[96px] hover:opacity-80 transition-opacity">
             <Image
@@ -1716,7 +1716,7 @@ export default function AdminDashboard() {
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
           
           {/* Top Header with App Toggles */}
-          <header className="flex items-center justify-between px-10 border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-10 min-h-[96px] flex-shrink-0">
+          <header className="flex items-center justify-between px-10 border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-10 min-h-[96px] shrink-0">
             <div>
               <h1 className="text-2xl font-bold text-foreground tracking-tight">
                 {activeTab === 'overview' ? t('header.overview') : t('header.users')}
@@ -1862,7 +1862,7 @@ export default function AdminDashboard() {
                 {/* Filters */}
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div className="relative w-full max-w-sm">
-                    <RiSearchLine className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={16} />
+                    <RiSearchLine className="absolute inset-s-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={16} />
                     <input
                       className="w-full ps-10 pe-8 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all shadow-sm"
                       placeholder={t('filter.searchPlaceholder')}
@@ -1871,13 +1871,13 @@ export default function AdminDashboard() {
                       id="admin-user-search"
                     />
                     {search && (
-                      <button className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setSearch('')}>
+                      <button className="absolute inset-e-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setSearch('')}>
                         <RiCloseLine size={16} />
                       </button>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 text-muted-foreground flex-shrink-0">
+                  <div className="flex items-center gap-2 text-muted-foreground shrink-0">
                     {/* Add Admin button — only admins, only in admins tab */}
                     {simulatedRole === 'admin' && activeTab === 'admins' && (
                       <button

@@ -5,6 +5,7 @@ import { useSession as useNextAuthSession, signIn, signOut } from 'next-auth/rea
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import type { Session } from '@/types';
+import posthog from 'posthog-js';
 
 interface UseSessionReturn {
   session: Session | null;
@@ -44,6 +45,10 @@ export function useSession(): UseSessionReturn {
         expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
       };
       localStorage.setItem('shhh_remembered_user', JSON.stringify(rememberedUser));
+      posthog.identify(mappedSession.user.id, {
+        email: mappedSession.user.email,
+        name: mappedSession.user.name,
+      });
     }
 
     if (!mappedSession) return;
@@ -86,6 +91,7 @@ export function useSession(): UseSessionReturn {
 
   const lock = async () => {
     localStorage.removeItem('shhh_remembered_user');
+    posthog.reset();
     try {
       await fetch('/api/admin/mfa/status', { method: 'DELETE' });
     } catch (e) {

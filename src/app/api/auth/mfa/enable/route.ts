@@ -74,6 +74,8 @@ export async function POST(request: Request) {
       'mfaEnabled'
     );
 
+    // Send notification
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error enabling MFA:', error);
