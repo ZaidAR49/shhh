@@ -43,9 +43,12 @@ export function ConfirmDialog({
   const t = useTranslations('common');
   const [confirmInput, setConfirmInput] = useState('');
 
-  const isConfirmDisabled = isPending || 
-    (confirmTextRequired && confirmInput !== confirmTextRequired) ||
-    (requireMfa && confirmInput.length !== 6);
+  let isConfirmDisabled = isPending;
+  if (requireMfa) {
+    isConfirmDisabled = isConfirmDisabled || confirmInput.length !== 6;
+  } else if (confirmTextRequired) {
+    isConfirmDisabled = isConfirmDisabled || confirmInput !== confirmTextRequired;
+  }
 
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !o && onCancel()}>

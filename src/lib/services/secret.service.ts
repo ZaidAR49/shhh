@@ -64,8 +64,9 @@ export class SecretService {
 
   /**
    * Retrieves a single secret by ID, ensuring it belongs to the user, with payload decrypted.
+   * @param decryptSensitive If false, skip decrypting the payload for sensitive secrets.
    */
-  static async findById(userId: string, secretId: string) {
+  static async findById(userId: string, secretId: string, decryptSensitive: boolean = true) {
     const secret = await db.query.secrets.findFirst({
       where: (secrets, { eq, and }) => and(eq(secrets.id, secretId), eq(secrets.userId, userId)),
     });
@@ -86,11 +87,13 @@ export class SecretService {
       }
     }
 
-    try {
-      data = decryptPayload(secret.encryptedData, secret.encryptedDek);
-    } catch (e) {
-      console.error('Failed to decrypt secret:', e instanceof Error ? e.message : 'Unknown error');
-      data = { error: 'Failed to decrypt data' };
+    if (!secret.isSensitive || decryptSensitive) {
+      try {
+        data = decryptPayload(secret.encryptedData, secret.encryptedDek);
+      } catch (e) {
+        console.error('Failed to decrypt secret:', e instanceof Error ? e.message : 'Unknown error');
+        data = { error: 'Failed to decrypt data' };
+      }
     }
 
     return {

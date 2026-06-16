@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useTranslations } from 'next-intl';
 import { RiSearchLine, RiCloseLine } from 'react-icons/ri';
 import { Input } from '@/components/ui/input';
@@ -13,15 +14,19 @@ interface SearchBarProps {
 
 export function SearchBar({ onSearch, className }: SearchBarProps) {
   const [value, setValue] = useState('');
+  const debouncedValue = useDebounce(value, 300);
   const t = useTranslations('vault');
+
+  // Trigger search when debounced value changes
+  useEffect(() => {
+    onSearch(debouncedValue);
+  }, [debouncedValue, onSearch]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const q = e.target.value;
-      setValue(q);
-      onSearch(q);
+      setValue(e.target.value);
     },
-    [onSearch]
+    []
   );
 
   const handleClear = useCallback(() => {

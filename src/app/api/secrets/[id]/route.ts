@@ -110,7 +110,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const existingSecret = await SecretService.findById(session.user.id, id);
+    const existingSecret = await SecretService.findById(session.user.id, id, false);
     if (!existingSecret) {
       return NextResponse.json({ error: 'Secret not found or unauthorized' }, { status: 404 });
     }
@@ -173,7 +173,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const { id } = await params;
     
     // Fetch first to see if it's sensitive
-    const secret = await SecretService.findById(session.user.id, id);
+    const secret = await SecretService.findById(session.user.id, id, false);
     if (!secret) {
       return NextResponse.json({ error: 'Secret not found or unauthorized' }, { status: 404 });
     }

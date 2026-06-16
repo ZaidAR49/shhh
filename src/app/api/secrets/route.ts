@@ -27,21 +27,27 @@ export async function GET(request: Request) {
     const limit = Math.min(Math.max(parseInt(limitParam || '', 10) || 50, 1), 100);
     const offset = Math.max(parseInt(offsetParam || '', 10) || 0, 0);
 
-    // Fetch limit + 1 to determine if there is a next page
-    let secrets = await SecretService.findAllByUserId(session.user.id, limit + 1, offset);
-
+    let secrets;
     let nextOffset = null;
-    if (secrets.length > limit) {
-      nextOffset = offset + limit;
-      secrets.pop(); // Remove the extra record
-    }
 
     if (query) {
+      // If we have a query, we have to fetch all secrets and filter in memory
+      // because title is encrypted.
+      const allSecrets = await SecretService.findAllByUserId(session.user.id, 10000, 0); // High limit to act as 'all'
       const q = query.toLowerCase();
-      // Note: In-memory filtering after pagination might result in fewer results than `limit`.
-      // Since the title is encrypted in the database, we cannot perform an SQL `ilike` query 
-      // without implementing a blind index. In-memory is the only way for now.
-      secrets = secrets.filter(s => s.title.toLowerCase().includes(q));
+      const filteredSecrets = allSecrets.filter(s => s.title.toLowerCase().includes(q));
+
+      secrets = filteredSecrets.slice(offset, offset + limit);
+      if (filteredSecrets.length > offset + limit) {
+        nextOffset = offset + limit;
+      }
+    } else {
+      // Standard db pagination
+      secrets = await SecretService.findAllByUserId(session.user.id, limit + 1, offset);
+      if (secrets.length > limit) {
+        nextOffset = offset + limit;
+        secrets.pop(); // Remove the extra record
+      }
     }
 
     // Map to frontend expected Secret interface

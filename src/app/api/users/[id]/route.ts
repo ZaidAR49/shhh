@@ -18,7 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
     try {
         const foundUser = await UserService.findById(id);
-        return NextResponse.json({ users: foundUser }, { status: 200 });
+        return NextResponse.json({ user: foundUser }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch user" }, { status: 400 });
     }
