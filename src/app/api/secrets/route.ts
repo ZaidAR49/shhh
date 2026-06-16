@@ -54,7 +54,7 @@ export async function GET(request: Request) {
     const mappedSecrets = secrets.map(s => ({
       id: s.id,
       user_id: s.userId,
-      name: s.isSensitive ? '[Sensitive]' : s.title,
+      name: s.title,
       secret_type: s.type,
       decrypted_fields: s.data,
       created_at: s.createdAt.toISOString(),

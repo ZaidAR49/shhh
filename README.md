@@ -16,6 +16,12 @@ Whether you need to store login credentials, API keys, payment cards, Wi-Fi pass
 
 ## ✨ Why Use Shhh?
 
+### 🛡️ Advanced Security & Encryption
+Shhh employs state-of-the-art security mechanisms to protect your data. It uses Envelope Encryption with Data Encryption Keys (DEK) to ensure your payloads are securely encrypted. Sensitive endpoints are protected by rate limiting to prevent brute-force attacks.
+
+### 👑 Admin Dashboard & RBAC
+Full Role-Based Access Control (RBAC) with `user`, `admin`, `supervisor`, and `viewer` roles. Admins have access to a dedicated dashboard to view system statistics, manage user accounts, lock/unlock users, and enforce global MFA requirements.
+
 ### 🔑 Truly Passwordless
 No master password to forget, leak, or get phished. Sign in with your Google account and you're in — frictionless and secure.
 
@@ -56,7 +62,7 @@ Get instant email alerts when sensitive secrets are accessed or important accoun
 Enable MFA on your account using an authenticator app for an added layer of protection when accessing sensitive secrets.
 
 ### ⏱️ Auto-Locking Sessions
-Your vault automatically locks after 60 minutes of activity. If you step away and forget, Shhh has your back.
+Your vault automatically locks after 60 minutes of inactivity. If you step away and forget, Shhh has your back.
 
 ### 🗑️ Full Account Control
 Delete individual secrets, clear your entire vault, or permanently delete your account — all from within the app. Your data is yours, and you can remove it any time.
