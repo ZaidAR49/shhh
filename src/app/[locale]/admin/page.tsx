@@ -286,10 +286,11 @@ export default function AdminDashboard() {
         setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: 'active' } : u));
         showToast(t('toast.userUnlocked', { name: user.name }));
       } else if (type === 'save' && editDraft) {
-        // Saving an edit that changes to/from admin tier requires MFA
-        const roleChangingToAdmin = isAdminTier(editDraft.role) && !isAdminTier(users.find(u => u.id === editDraft.id)?.role ?? 'user' as UserRole);
-        const roleChangingFromAdmin = !isAdminTier(editDraft.role) && isAdminTier(users.find(u => u.id === editDraft.id)?.role ?? 'user' as UserRole);
-        if ((roleChangingToAdmin || roleChangingFromAdmin) && !mfaCode) {
+        // Saving an edit that changes an admin role requires MFA
+        const originalRole = users.find(u => u.id === editDraft.id)?.role ?? ('user' as UserRole);
+        const roleIsChanging = editDraft.role !== originalRole;
+        const needsMfa = roleIsChanging && (isAdminTier(editDraft.role) || isAdminTier(originalRole));
+        if (needsMfa && !mfaCode) {
           setMfaGate({
             title: 'Confirm Role Change',
             description: `Changing ${editDraft.name}'s role requires 2FA verification. Enter your authenticator code.`,

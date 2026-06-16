@@ -113,26 +113,6 @@ export function EditModal({
                 <option value="ar">{t('form.arabic')}</option>
               </select>
             </div>
-            <div className="flex flex-col gap-2 pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded accent-primary cursor-pointer"
-                  checked={draft.mfaEnabled}
-                  onChange={(e) => setDraft({ ...draft, mfaEnabled: e.target.checked })}
-                />
-                <span className="text-sm text-foreground">{t('form.mfaEnabled')}</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded accent-primary cursor-pointer"
-                  checked={draft.notificationsEnabled}
-                  onChange={(e) => setDraft({ ...draft, notificationsEnabled: e.target.checked })}
-                />
-                <span className="text-sm text-foreground">{t('form.notificationsEnabled')}</span>
-              </label>
-            </div>
           </div>
         </div>
 

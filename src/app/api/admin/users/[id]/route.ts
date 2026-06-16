@@ -94,14 +94,16 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
     }
 
     // Enforce MFA for administrative roles
-    if (newRole && ["admin", "supervisor", "viewer"].includes(newRole)) {
-      const willHaveMfa = body.mfaEnabled !== undefined ? body.mfaEnabled : targetUser[0].mfaEnabled;
-      if (!willHaveMfa) {
-        return NextResponse.json(
-          { error: "Two-Factor Authentication (MFA) must be enabled on this account before granting an administrative role." },
-          { status: 400 }
-        );
-      }
+    const isChangingToAdmin = newRole !== undefined && isAdminRole(newRole) && !isAdminRole(targetUser[0].role);
+    const willHaveAdminRole = newRole !== undefined ? isAdminRole(newRole) : isAdminRole(targetUser[0].role);
+    const isDisablingMfa = body.mfaEnabled === false && targetUser[0].mfaEnabled === true;
+    const willHaveMfa = body.mfaEnabled !== undefined ? body.mfaEnabled : targetUser[0].mfaEnabled;
+
+    if ((isChangingToAdmin || (willHaveAdminRole && isDisablingMfa)) && !willHaveMfa) {
+      return NextResponse.json(
+        { error: "Two-Factor Authentication (MFA) must be enabled on this account before granting an administrative role." },
+        { status: 400 }
+      );
     }
 
     // Guard: prevent demoting the last admin (role change away from admin)
@@ -118,7 +120,9 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
     // Require MFA re-verification when granting or revoking an admin-tier role
     const targetIsAdmin = isAdminRole(targetUser[0].role);
     const newRoleIsAdmin = isAdminRole(newRole);
-    if (newRoleIsAdmin || (targetIsAdmin && newRole && !newRoleIsAdmin)) {
+    const roleIsChanging = newRole !== undefined && newRole !== targetUser[0].role;
+    
+    if (roleIsChanging && (newRoleIsAdmin || targetIsAdmin)) {
       const err = await requireMfaToken(request, session.user.id);
       if (err) return err;
     }
