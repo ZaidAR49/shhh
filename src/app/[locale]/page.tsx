@@ -41,7 +41,7 @@ export default function LandingPage() {
           {/* Shield */}
           <div className="flex justify-center mb-8" aria-hidden="true">
             <div className="relative">
-              <Image src="/icon.png" alt="Shhh Logo" width={300} height={300} priority className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 xl:w-[220px] xl:h-[220px] 2xl:w-[256px] 2xl:h-[256px] object-contain shrink-0 relative z-10" />
+              <Image src="/icon.png" alt="Shhh Logo" width={300} height={300} priority className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 xl:w-[180px] xl:h-[180px] 2xl:w-[220px] 2xl:h-[220px] object-contain shrink-0 relative z-10" />
               <div className="absolute inset-0 rounded-full bg-primary/5 blur-2xl scale-150" />
             </div>
           </div>

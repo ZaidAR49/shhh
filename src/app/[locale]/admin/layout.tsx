@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useSession } from '@/hooks/useSession';
+import { Loader } from '@/components/ui/loader';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -73,7 +74,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <Loader size={128} />
           {!isLoading && session && (
             <p className="text-xs text-muted-foreground animate-pulse">Checking security credentials…</p>
           )}
@@ -86,7 +87,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (!isMfaPage && !mfaVerified) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <Loader size={128} />
       </div>
     );
   }

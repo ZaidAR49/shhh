@@ -60,8 +60,8 @@ export function UnlockScreen({ onUnlock, isLoading = false }: UnlockScreenProps)
         <Image
           src="/icon.png"
           alt="Shhh Logo"
-          width={240}
-          height={240}
+          width={180}
+          height={180}
           style={{ width: 'auto', height: 'auto' }}
           priority
         />

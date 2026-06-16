@@ -10,6 +10,7 @@ import { SessionExpiry } from '@/components/auth/SessionExpiry';
 import { VaultProvider } from '@/components/vault/VaultProvider';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { LandingFooter } from '@/components/layout/LandingFooter';
+import { Loader } from '@/components/ui/loader';
 
 interface VaultLayoutProps {
   children: React.ReactNode;
@@ -35,7 +36,7 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <Loader size={128} />
       </div>
     );
   }

@@ -67,7 +67,7 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
                 alt="Shhh Logo"
                 width={80}
                 height={80}
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain shrink-0"
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 object-contain shrink-0"
                 priority
               />
             </div>

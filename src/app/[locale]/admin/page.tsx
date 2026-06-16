@@ -462,8 +462,8 @@ export default function AdminDashboard() {
             <Image
               src="/icon.png"
               alt="Shhh Logo"
-              width={72}
-              height={72}
+              width={56}
+              height={56}
               className="object-contain shrink-0"
               priority
             />

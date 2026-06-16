@@ -29,7 +29,7 @@ export function LandingHeader() {
     <header className="fixed top-0 left-0 right-0 z-50 h-[96px] bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <Link href={`/${locale}`} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
-          <Image src="/icon.png" alt="Shhh Logo" width={80} height={80} priority className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain shrink-0" />
+          <Image src="/icon.png" alt="Shhh Logo" width={80} height={80} priority className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 object-contain shrink-0" />
           <span className="text-xl sm:text-2xl font-bold tracking-tight">{tc('appName')}</span>
         </Link>
         <div className="flex items-center gap-4 sm:gap-6">

@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -86,24 +87,43 @@ export function ConfirmDialog({
 
         {requireMfa && (
           <div className="my-4">
-            <p className="text-sm text-foreground font-medium mb-2">
+            <p className="text-sm text-foreground font-medium mb-4 text-center">
               Enter 6-digit Authenticator Code to confirm
             </p>
-            <Input
-              value={confirmInput}
-              onChange={(e) => setConfirmInput(e.target.value.replace(/\D/g, ''))}
-              placeholder="000000"
-              maxLength={6}
-              className="font-mono text-sm tracking-widest text-center"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isConfirmDisabled) {
-                  onConfirm(requireMfa ? confirmInput : undefined);
-                  if (!requireMfa) setConfirmInput('');
-                }
-              }}
-              autoFocus
-            />
-            {error && <p className="text-xs text-destructive mt-2">{error}</p>}
+            <div className="flex justify-center mb-2" dir="ltr">
+              <InputOTP
+                maxLength={6}
+                value={confirmInput}
+                onChange={(val) => {
+                  setConfirmInput(val);
+                }}
+                disabled={isPending}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && confirmInput.length === 6 && !isConfirmDisabled) {
+                    onConfirm(confirmInput);
+                    setConfirmInput('');
+                  }
+                }}
+                autoFocus
+              >
+                <InputOTPGroup className="gap-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <InputOTPSlot
+                      key={i}
+                      index={i}
+                      className={`w-10 h-12 text-center text-lg font-bold rounded-xl border-2 transition-all duration-150 ${
+                        error
+                          ? 'border-destructive/70 text-destructive'
+                          : confirmInput.length > i && !error
+                          ? 'border-primary text-primary shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]'
+                          : 'border-border focus-visible:border-ring'
+                      }`}
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            {error && <p className="text-xs text-destructive text-center mt-2">{error}</p>}
           </div>
         )}
 

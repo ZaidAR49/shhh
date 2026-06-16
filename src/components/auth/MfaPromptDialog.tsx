@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { toast } from 'sonner';
 
 interface MfaPromptDialogProps {
@@ -70,23 +70,37 @@ export function MfaPromptDialog({ open, onOpenChange, onSuccess, actionName }: M
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
-          <Input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            placeholder="000000"
-            value={token}
-            onChange={(e) => {
-              const val = e.target.value.replace(/\D/g, '');
-              setToken(val);
-              setError(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleVerify();
-            }}
-            className="text-center tracking-[0.5em] font-mono text-lg"
-          />
+          <div className="flex justify-center" dir="ltr">
+            <InputOTP
+              maxLength={6}
+              value={token}
+              onChange={(val) => {
+                setToken(val);
+                setError(null);
+              }}
+              disabled={isVerifying}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && token.length === 6) handleVerify();
+              }}
+              autoFocus
+            >
+              <InputOTPGroup className="gap-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <InputOTPSlot
+                    key={i}
+                    index={i}
+                    className={`w-10 h-12 text-center text-lg font-bold rounded-xl border-2 transition-all duration-150 ${
+                      error
+                        ? 'border-destructive/70 text-destructive'
+                        : token.length > i && !error
+                        ? 'border-primary text-primary shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]'
+                        : 'border-border focus-visible:border-ring'
+                    }`}
+                  />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
         </div>
         <DialogFooter>
