@@ -7,12 +7,14 @@ import Link from 'next/link';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { useSession } from '@/hooks/useSession';
-import { Bar, BarChart, XAxis, Pie, PieChart, Cell, Label } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, Pie, PieChart, Cell, Label, AreaChart, Area, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/shared/UserAvatar';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import {
   RiShieldCheckLine,
+  RiLineChartLine,
   RiGroupLine,
   RiLockLine,
   RiKeyLine,
@@ -236,6 +238,65 @@ function AuthBarChart({ data }: { data: { provider: string; count: number; color
   );
 }
 
+// ─── PostHog Bar Chart ────────────────────────────────────────────────────────
+
+const chartConfigPosthog = {
+  count: { label: "Visits" },
+};
+
+function PosthogBarChart({ data, dataKey = "count", nameKey = "name", color = "var(--primary)" }: { data: any[]; dataKey?: string; nameKey?: string; color?: string }) {
+  if (!data || data.length === 0) {
+    return <div className="text-muted-foreground text-sm flex items-center justify-center h-40">No data available</div>;
+  }
+  return (
+    <div className="h-64 w-full mt-2">
+      <ChartContainer config={chartConfigPosthog} className="h-full w-full">
+        <BarChart data={data} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} layout="vertical">
+          <XAxis type="number" hide />
+          <YAxis dataKey={nameKey} type="category" tickLine={false} tickMargin={10} axisLine={false} fontSize={11} width={100} />
+          <ChartTooltip cursor={{ fill: 'var(--muted)' }} content={<ChartTooltipContent hideLabel />} />
+          <Bar dataKey={dataKey} radius={[0, 4, 4, 0]}>
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ChartContainer>
+    </div>
+  );
+}
+
+// ─── PostHog Area Chart ───────────────────────────────────────────────────────
+
+const chartConfigArea = {
+  count: { label: "Visits" },
+};
+
+function PosthogAreaChart({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return <div className="text-muted-foreground text-sm flex items-center justify-center h-40">No data available</div>;
+  }
+  return (
+    <div className="h-64 w-full mt-2">
+      <ChartContainer config={chartConfigArea} className="h-full w-full">
+        <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} fontSize={11} minTickGap={30} stroke="var(--muted-foreground)" />
+          <YAxis tickLine={false} axisLine={false} tickMargin={10} fontSize={11} stroke="var(--muted-foreground)" />
+          <ChartTooltip cursor={{ stroke: 'var(--muted)', strokeWidth: 1, fill: 'transparent' }} content={<ChartTooltipContent />} />
+          <Area type="monotone" dataKey="count" stroke="var(--primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
+        </AreaChart>
+      </ChartContainer>
+    </div>
+  );
+}
+
 // ─── Demographics Donut ───────────────────────────────────────────────────────
 
 const chartConfigDemographics = {
@@ -378,7 +439,7 @@ function ConfirmModal({
 
         {/* Body */}
         <div className="px-6 py-5 text-center">
-          <img src={user.image} alt={user.name} className="w-14 h-14 rounded-full border-2 border-border mx-auto mb-4" />
+          <UserAvatar user={user} className="w-14 h-14 border-2 border-border mx-auto mb-4" />
           <p className="text-sm font-medium text-foreground leading-relaxed">
             {t(bodyKey, { name: user.name })}
           </p>
@@ -448,7 +509,7 @@ function ViewModal({
         <div className="px-6 py-5 overflow-y-auto">
           {/* Profile row */}
           <div className="flex items-center gap-4 pb-4 mb-4 border-b border-border">
-            <img src={user.image} alt={user.name} className="w-14 h-14 rounded-full border-2 border-border shrink-0" />
+            <UserAvatar user={user} className="w-14 h-14 border-2 border-border shrink-0" />
             <div>
               <h3 className="text-base font-bold text-foreground">{user.name}</h3>
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
@@ -538,7 +599,7 @@ function EditModal({
         <div className="px-6 py-5 overflow-y-auto">
           {/* Avatar row */}
           <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border">
-            <img src={draft.image} alt={draft.name} className="w-11 h-11 rounded-full border-2 border-border shrink-0" />
+            <UserAvatar user={draft} className="w-11 h-11 border-2 border-border shrink-0" />
             <div>
               <p className="text-sm font-semibold text-foreground">{draft.name}</p>
               <p className="text-xs text-muted-foreground">{draft.email}</p>
@@ -1074,7 +1135,7 @@ function UserTable({
                   {/* User */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <img src={user.image} alt={user.name} className="w-10 h-10 rounded-full border-2 border-border shrink-0" />
+                      <UserAvatar user={user} className="w-10 h-10 border-2 border-border shrink-0" />
                       <div>
                         <p className="font-bold text-foreground text-sm leading-tight">{user.name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
@@ -1287,13 +1348,15 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   const [stats, setStats] = useState<{ secretTypes: { type: string; count: number; color: string }[]; analytics?: any } | null>(null);
+  const [posthogData, setPosthogData] = useState<any>(null);
 
   useEffect(() => {
     const fetchUsersAndStats = async () => {
       try {
-        const [usersRes, statsRes] = await Promise.all([
+        const [usersRes, statsRes, posthogRes] = await Promise.all([
           fetch('/api/admin/users'),
-          fetch('/api/admin/stats')
+          fetch('/api/admin/stats'),
+          fetch('/api/admin/analytics/posthog')
         ]);
         
         if (usersRes.ok) {
@@ -1306,6 +1369,13 @@ export default function AdminDashboard() {
         if (statsRes.ok) {
           const statsData = await statsRes.json();
           setStats(statsData);
+        }
+
+        if (posthogRes.ok) {
+          const posthogResult = await posthogRes.json();
+          if (posthogResult.success) {
+            setPosthogData(posthogResult.data);
+          }
         }
       } catch (err) {
         setToast({ msg: 'Failed to load dashboard data', type: 'error' });
@@ -1735,12 +1805,10 @@ export default function AdminDashboard() {
                     <p className="text-sm font-bold text-foreground leading-tight">{session.user.name || 'User'}</p>
                     <p className="text-xs text-muted-foreground">{session.user.email}</p>
                   </div>
-                  <Avatar className="w-10 h-10 border-2 border-border">
-                    <AvatarImage src={session.user.image || undefined} alt={session.user.name || 'User'} className="object-cover" />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                      {session.user.name ? session.user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : <RiUserLine size={20} />}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    user={{ name: session.user.name, email: session.user.email, image: session.user.image }}
+                    className="w-10 h-10 border-2 border-border" 
+                  />
                 </div>
               )}
               {/* Main App Toggles */}
@@ -1852,6 +1920,77 @@ export default function AdminDashboard() {
                     </div>
                   )}
                 </div>
+
+                {/* PostHog Analytics UI */}
+                {posthogData && (
+                  <>
+                    <h2 className="text-xl font-bold text-foreground mt-4 mb-2">PostHog Analytics</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <StatCard
+                        icon={RiBarChartLine}
+                        label={t('overview.posthogVisits')}
+                        value={posthogData.visits?.total || 0}
+                        sub={t('overview.posthogVisitsSub')}
+                        accentColor="#3b82f6"
+                      />
+                      <StatCard
+                        icon={RiUserLine}
+                        label={t('overview.posthogUnique')}
+                        value={posthogData.uniqueVisitors?.total || 0}
+                        sub={t('overview.posthogUniqueSub')}
+                        accentColor="#10b981"
+                      />
+                      <StatCard
+                        icon={RiArrowUpLine}
+                        label={t('overview.posthogGrowth')}
+                        value={`${posthogData.trafficGrowth?.currentPeriodTotal || 0} visits`}
+                        sub={t('overview.posthogGrowthSub')}
+                        accentColor="#f59e0b"
+                        trend={{
+                          value: `${Math.abs(posthogData.trafficGrowth?.growthPercentage || 0).toFixed(1)}%`,
+                          up: posthogData.trafficGrowth?.isPositive ?? true
+                        }}
+                      />
+                      <StatCard
+                        icon={RiAlertLine}
+                        label={t('overview.posthogErrors')}
+                        value={`${posthogData.errorRates?.errorRatePercentage || 0}%`}
+                        sub={t('overview.posthogErrorsSub')}
+                        accentColor="var(--destructive)"
+                        trend={
+                          posthogData.errorRates?.errorRatePercentage > 5
+                            ? { value: "High", up: false } // using 'up: false' to show red styling for errors
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-2">
+                      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                        <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-6">
+                          <RiGroupLine size={16} className="text-muted-foreground" />
+                          {t('overview.posthogCountries')}
+                        </h2>
+                        <PosthogBarChart data={posthogData.sources?.countries || []} color="#3b82f6" />
+                      </div>
+                      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                        <div className="flex flex-col mb-6">
+                           <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                             <RiLineChartLine size={16} className="text-muted-foreground" />
+                             {t('overview.posthogTrafficTimeline')}
+                           </h2>
+                           <span className="text-xs text-muted-foreground mt-1 ps-6">{t('overview.posthogTrafficTimelineSub')}</span>
+                        </div>
+                        <PosthogAreaChart 
+                          data={posthogData.visits?.labels?.map((label: string, i: number) => ({
+                             date: label,
+                             count: posthogData.visits.timeline[i] || 0
+                          })) || []}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

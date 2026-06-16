@@ -7,7 +7,7 @@ import { verify } from 'otplib';
 import { SECRET_SCHEMAS } from '@/lib/validations';
 import type { SecretType } from '@/lib/secret-types';
 import { z } from 'zod';
-import { sendNotification } from '@/lib/services/notifications';
+import { sendNotification } from '@/lib/email';
 import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {

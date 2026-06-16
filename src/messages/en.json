@@ -332,6 +332,17 @@
       "english": "English",
       "arabic": "Arabic",
       "addAdmin": "Add Admin",
+      "posthogVisits": "Total Visits",
+      "posthogVisitsSub": "Last 30 days",
+      "posthogUnique": "Unique Visitors",
+      "posthogUniqueSub": "DAU (30d)",
+      "posthogGrowth": "Traffic Growth",
+      "posthogGrowthSub": "vs Previous 7d",
+      "posthogErrors": "Error Rate",
+      "posthogErrorsSub": "Exceptions / Events",
+      "posthogCountries": "Top Countries",
+      "posthogTrafficTimeline": "Website Traffic Growth",
+      "posthogTrafficTimelineSub": "Daily visits in the last 30 days",
       "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     },
     "stats": {

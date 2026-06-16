@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/shared/UserAvatar';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
@@ -229,10 +230,11 @@ export default function SettingsPage() {
         {/* Profile Card */}
         <SettingsCard title={t('profile')} icon={RiUser3Line}>
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 shadow-sm border">
-              <AvatarImage src={session?.user?.image} alt={session?.user?.name} />
-              <AvatarFallback className="text-lg">{session?.user?.name?.charAt(0) || 'U'}</AvatarFallback>
-            </Avatar>
+            <UserAvatar 
+              user={{ name: session?.user?.name, email: session?.user?.email, image: session?.user?.image }} 
+              className="h-16 w-16 shadow-sm border" 
+              fallbackClassName="text-lg bg-primary/10 text-primary font-bold"
+            />
             <div className="flex-1 min-w-0">
               {isEditingName ? (
                 <div className="flex items-center gap-2 mb-1">

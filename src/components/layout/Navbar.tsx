@@ -7,7 +7,7 @@ import { RiLockLine, RiMenuLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/shared/UserAvatar';
 import Image from 'next/image';
 import { ThemeToggle } from './ThemeToggle';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
@@ -113,12 +113,11 @@ export function Navbar({ session, minutesRemaining = 60, onLock }: NavbarProps) 
                 aria-label={t('settings.title')}
                 className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full hover:opacity-80 transition-opacity"
               >
-                <Avatar className="h-9 w-9" aria-label={session.user.name}>
-                  <AvatarImage src={session.user.image} alt={session.user.name} />
-                  <AvatarFallback className="text-sm font-medium">
-                    {session.user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  user={{ name: session.user.name, email: session.user.email, image: session.user.image }}
+                  className="h-9 w-9" 
+                  fallbackClassName="text-sm font-medium bg-primary/10 text-primary"
+                />
                 <span className="hidden sm:inline-flex text-sm font-medium text-foreground">
                   {session.user.name}
                 </span>
