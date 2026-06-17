@@ -29,7 +29,9 @@
     "favorite": "Favourite",
     "unfavorite": "Remove from Favourites",
     "all": "All",
-    "new": "New"
+    "new": "New",
+    "confirmDiscardTitle": "Discard Changes?",
+    "confirmDiscard": "Are you sure you want to go back? Unsaved changes will be lost."
   },
   "auth": {
     "unlockVault": "Unlock your vault",

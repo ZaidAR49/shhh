@@ -18,6 +18,7 @@ interface UseVaultReturn {
   searchSecrets: (query: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   mfaEnabled: boolean;
+  setMfaEnabled: (enabled: boolean) => void;
 }
 
 export function useVault(): UseVaultReturn {
@@ -173,5 +174,6 @@ export function useVault(): UseVaultReturn {
     searchSecrets,
     toggleFavorite,
     mfaEnabled,
+    setMfaEnabled,
   };
 }

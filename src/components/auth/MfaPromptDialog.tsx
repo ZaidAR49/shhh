@@ -12,9 +12,10 @@ interface MfaPromptDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: (token: string) => void;
   actionName?: string;
+  skipInternalVerify?: boolean;
 }
 
-export function MfaPromptDialog({ open, onOpenChange, onSuccess, actionName }: MfaPromptDialogProps) {
+export function MfaPromptDialog({ open, onOpenChange, onSuccess, actionName, skipInternalVerify }: MfaPromptDialogProps) {
   const tc = useTranslations('common');
   const t = useTranslations('settings'); // Reusing translation keys from MFA settings if possible
   const [token, setToken] = useState('');
@@ -29,6 +30,13 @@ export function MfaPromptDialog({ open, onOpenChange, onSuccess, actionName }: M
 
     setIsVerifying(true);
     setError(null);
+
+    if (skipInternalVerify) {
+      // Let the parent handle the verification
+      onSuccess(token);
+      setIsVerifying(false);
+      return;
+    }
 
     try {
       const res = await fetch('/api/auth/mfa/verify', {

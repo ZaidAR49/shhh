@@ -22,7 +22,7 @@ export function SecretCard({ secret, onView, onEdit, onDelete }: SecretCardProps
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations();
-  const { toggleFavorite } = useGlobalVault();
+  const { toggleFavorite, mfaEnabled } = useGlobalVault();
   const config = SECRET_TYPE_CONFIG_MAP[secret.secret_type];
 
   // Decode primary field for preview
@@ -74,7 +74,7 @@ export function SecretCard({ secret, onView, onEdit, onDelete }: SecretCardProps
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground truncate leading-tight flex items-center gap-1.5">
             {secret.name}
-            {secret.is_sensitive && (
+            {secret.is_sensitive && mfaEnabled && (
               <RiLock2Fill size={14} className="text-destructive shrink-0" aria-label="Sensitive Secret" />
             )}
           </p>

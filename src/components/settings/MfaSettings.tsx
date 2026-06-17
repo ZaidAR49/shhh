@@ -182,6 +182,7 @@ export function MfaSettings({ mfaEnabled, setMfaEnabled }: MfaSettingsProps) {
           onOpenChange={setIsDisablePromptOpen}
           onSuccess={handleDisable}
           actionName="disable MFA"
+          skipInternalVerify={true}
         />
       )}
     </div>

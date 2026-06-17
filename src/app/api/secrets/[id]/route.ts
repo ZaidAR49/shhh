@@ -31,34 +31,33 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     if (secret.isSensitive) {
-      const token = request.headers.get('x-mfa-token');
-      const cookieStore = await cookies();
-      const mfaCookie = cookieStore.get(VAULT_MFA_COOKIE_NAME)?.value;
-      const validCookieUserId = mfaCookie ? verifyVaultMfaCookie(mfaCookie) : null;
-      
       const userStatus = await UserService.getMfaStatus(session.user.id);
-      if (!userStatus?.mfaEnabled || !userStatus?.mfaSecret) {
-        return NextResponse.json({ error: 'MFA not enabled' }, { status: 403 });
-      }
+      
+      // Only require MFA if the user actually has it enabled
+      if (userStatus?.mfaEnabled && userStatus?.mfaSecret) {
+        const token = request.headers.get('x-mfa-token');
+        const cookieStore = await cookies();
+        const mfaCookie = cookieStore.get(VAULT_MFA_COOKIE_NAME)?.value;
+        const validCookieUserId = mfaCookie ? verifyVaultMfaCookie(mfaCookie) : null;
+        const hasValidCookie = validCookieUserId === session.user.id;
 
-      const hasValidCookie = validCookieUserId === session.user.id;
-
-      if (!token && !hasValidCookie) {
-        return NextResponse.json({ error: 'MFA token required for sensitive secret' }, { status: 403 });
-      }
-
-      if (token) {
-        const rateLimit = checkRateLimit(`mfa_sensitive_${session.user.id}`, 5, 15 * 60 * 1000);
-        if (!rateLimit.success) {
-          return NextResponse.json(
-            { error: 'Too many attempts. Please try again in 15 minutes.' },
-            { status: 429 }
-          );
+        if (!token && !hasValidCookie) {
+          return NextResponse.json({ error: 'MFA token required for sensitive secret' }, { status: 403 });
         }
 
-        const isValid = await verify({ token, secret: userStatus.mfaSecret });
-        if (!isValid.valid) {
-          return NextResponse.json({ error: 'Invalid MFA token' }, { status: 403 });
+        if (token) {
+          const rateLimit = checkRateLimit(`mfa_sensitive_${session.user.id}`, 5, 15 * 60 * 1000);
+          if (!rateLimit.success) {
+            return NextResponse.json(
+              { error: 'Too many attempts. Please try again in 15 minutes.' },
+              { status: 429 }
+            );
+          }
+
+          const isValid = await verify({ token, secret: userStatus.mfaSecret });
+          if (!isValid.valid) {
+            return NextResponse.json({ error: 'Invalid MFA token' }, { status: 403 });
+          }
         }
       }
 

@@ -18,6 +18,7 @@ import { useSession } from '@/hooks/useSession';
 import { cn } from '@/lib/utils';
 import { MfaSettings } from '@/components/settings/MfaSettings';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useGlobalVault } from '@/components/vault/VaultProvider';
 import { toast } from 'sonner';
 
 function SettingsCard({ title, icon: Icon, children, destructive }: { title: string, icon: React.ElementType, children: React.ReactNode, destructive?: boolean }) {
@@ -47,7 +48,7 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
-  const [mfaEnabled, setMfaEnabled] = useState<boolean | null>(null);
+  const { mfaEnabled, setMfaEnabled } = useGlobalVault();
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
   const [notificationLocale, setNotificationLocale] = useState<'en' | 'ar'>('en');
   const [deleteError, setDeleteError] = useState('');
@@ -63,9 +64,6 @@ export default function SettingsPage() {
     fetch('/api/auth/mfa/status')
       .then((res) => res.json())
       .then((data) => {
-        if (data && typeof data.mfaEnabled === 'boolean') {
-          setMfaEnabled(data.mfaEnabled);
-        }
         if (data && typeof data.notificationsEnabled === 'boolean') {
           setNotificationsEnabled(data.notificationsEnabled);
         }
