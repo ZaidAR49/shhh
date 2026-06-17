@@ -4,6 +4,8 @@ import { authOptions } from '../../[...nextauth]/route';
 import { verify } from 'otplib';
 import { UserService } from '@/lib/services/user.service';
 import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
+import { cookies } from 'next/headers';
+import { signVaultMfaCookie, VAULT_MFA_COOKIE_NAME } from '@/lib/vault-mfa-cookie';
 
 export async function POST(request: Request) {
   try {
@@ -64,6 +66,19 @@ export async function POST(request: Request) {
     }
 
     markTokenUsed(session.user.id, token);
+
+    const cookieStore = await cookies();
+    // Set a 15-minute cookie for viewing sensitive secrets
+    const expiresAt = Date.now() + 15 * 60 * 1000;
+    const cookieVal = signVaultMfaCookie(session.user.id, expiresAt);
+    
+    cookieStore.set(VAULT_MFA_COOKIE_NAME, cookieVal, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      expires: new Date(expiresAt),
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
