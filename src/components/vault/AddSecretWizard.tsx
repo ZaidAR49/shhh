@@ -37,7 +37,7 @@ type WizardStep = 1 | 2 | 3;
 
 export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWizardProps) {
   const t = useTranslations();
-  const { mfaEnabled } = useGlobalVault();
+  const { mfaEnabled, secrets } = useGlobalVault();
   const [step, setStep] = useState<WizardStep>(initialSecret ? 2 : 1);
   const [selectedType, setSelectedType] = useState<SecretType | null>(initialSecret ? initialSecret.secret_type : null);
   const [isSaving, setIsSaving] = useState(false);
@@ -91,6 +91,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
     formState: { errors, isDirty },
     getValues,
     reset,
+    setError,
   } = useForm<Record<string, string>>({
     resolver: schema ? zodResolver(schema as any) : undefined,
     mode: 'onBlur',
@@ -129,6 +130,18 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
   };
 
   const onStep2Submit = handleSubmit((data) => {
+    const name = data.name ?? data.title ?? selectedType;
+    const isDuplicate = secrets.some(
+      (s) => s.name.toLowerCase() === name?.toLowerCase() && s.secret_type === selectedType && s.id !== initialSecret?.id
+    );
+
+    if (isDuplicate) {
+      const errorMessage = t('errors.duplicateSecretName') || 'A secret with this name and type already exists.';
+      toast.error(errorMessage);
+      setError('name', { type: 'manual', message: 'errors.duplicateSecretName' });
+      return;
+    }
+
     setFormData(data as Record<string, string>);
     setStep(3);
   });

@@ -2,7 +2,7 @@
 
 > **Your secrets, locked by who you are — not what you remember.**
 
-🔗 **Live App:** [https://shhh-puce.vercel.app](https://shhh-puce.vercel.app)
+🔗 **Live App:** [https://shhh.episodicstack.com](https://shhh.episodicstack.com) *(previously at https://shhh-puce.vercel.app)*
 
 ---
 
@@ -129,9 +129,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📄 Legal
 
-- [Privacy Policy](https://shhh-puce.vercel.app/en/privacy)
-- [Terms of Service](https://shhh-puce.vercel.app/en/terms)
-- [Security Architecture](https://shhh-puce.vercel.app/en/security)
+- [Privacy Policy](https://shhh.episodicstack.com/en/privacy)
+- [Terms of Service](https://shhh.episodicstack.com/en/terms)
+- [Security Architecture](https://shhh.episodicstack.com/en/security)
 
 ---
 
@@ -143,7 +143,7 @@ Contributions, issues, and feature requests are welcome! Feel free to open an is
 
 ## 📬 Contact
 
-Have a question or need support? Use the [Contact page](https://shhh-puce.vercel.app/en/contact) on the live app.
+Have a question or need support? Use the [Contact page](https://shhh.episodicstack.com/en/contact) on the live app.
 
 ---
 

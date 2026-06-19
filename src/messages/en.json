@@ -180,7 +180,8 @@
     "invalidCurrency": "Enter a 3-letter currency code (e.g. USD)",
     "sessionExpired": "Your session has expired. Please unlock your vault again.",
     "networkError": "Something went wrong. Please try again.",
-    "invalidEnvFile": "Invalid file content. Must be a text file."
+    "invalidEnvFile": "Invalid file content. Must be a text file.",
+    "duplicateSecretName": "A secret with this name and type already exists."
   },
   "wizard": {
     "chooseType": "Choose secret type",
