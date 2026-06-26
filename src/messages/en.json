@@ -183,6 +183,18 @@
     "invalidEnvFile": "Invalid file content. Must be a text file.",
     "duplicateSecretName": "A secret with this name and type already exists."
   },
+  "generator": {
+    "title": "Password Generator",
+    "description": "Generate secure, random passwords to protect your accounts.",
+    "generate": "Generate Password",
+    "length": "Password Length",
+    "uppercase": "Include Uppercase (A-Z)",
+    "lowercase": "Include Lowercase (a-z)",
+    "numbers": "Include Numbers (0-9)",
+    "special": "Include Special Characters (!@#)",
+    "copy": "Copy Password",
+    "apply": "Apply Password"
+  },
   "wizard": {
     "chooseType": "Choose secret type",
     "chooseTypeDescription": "What kind of secret would you like to store?",

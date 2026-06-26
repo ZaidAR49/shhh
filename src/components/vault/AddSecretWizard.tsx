@@ -4,7 +4,9 @@ import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiUploadCloud2Line, RiEyeLine, RiEyeOffLine, RiSearchLine } from 'react-icons/ri';
+import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiUploadCloud2Line, RiEyeLine, RiEyeOffLine, RiSearchLine, RiMagicLine } from 'react-icons/ri';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PasswordGenerator } from '@/components/shared/PasswordGenerator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,6 +48,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [passwordGeneratorOpen, setPasswordGeneratorOpen] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     if (initialSecret) {
       return {
@@ -92,6 +95,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
     getValues,
     reset,
     setError,
+    setValue,
   } = useForm<Record<string, string>>({
     resolver: schema ? zodResolver(schema as any) : undefined,
     mode: 'onBlur',
@@ -282,6 +286,35 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                       )}
                     </div>
                   )}
+                  {field.type === 'password' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setPasswordGeneratorOpen(field.key)}
+                        className="text-xs flex items-center gap-1 text-primary hover:underline font-medium"
+                        title={t('generator.title') || 'Password Generator'}
+                      >
+                        <RiMagicLine size={14} />
+                        {t('generator.generate') || 'Generate'}
+                      </button>
+                      <Dialog 
+                        open={passwordGeneratorOpen === field.key} 
+                        onOpenChange={(open) => setPasswordGeneratorOpen(open ? field.key : null)}
+                      >
+                        <DialogContent className="sm:max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>{t('generator.title') || 'Password Generator'}</DialogTitle>
+                          </DialogHeader>
+                          <PasswordGenerator 
+                            onApply={(pwd) => {
+                              setValue(field.key, pwd, { shouldValidate: true, shouldDirty: true });
+                              setPasswordGeneratorOpen(null);
+                            }} 
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  )}
                 </div>
 
                 {field.type === 'textarea' ? (
@@ -292,6 +325,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                     aria-invalid={!!fieldError}
                     aria-describedby={fieldError ? errorId : undefined}
                     className={cn('mt-1.5', field.monospace && 'font-mono text-sm')}
+                    autoComplete={field.masked ? 'off' : undefined}
                     {...register(field.key)}
                   />
                 ) : field.type === 'select' && field.selectOptions ? (
@@ -328,6 +362,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                     aria-invalid={!!fieldError}
                     aria-describedby={fieldError ? errorId : undefined}
                     className={cn('mt-1.5', field.monospace && 'font-mono text-sm')}
+                    autoComplete={field.masked || field.type === 'password' ? 'off' : undefined}
                     {...register(field.key)}
                   />
                 )}

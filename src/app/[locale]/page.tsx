@@ -77,6 +77,14 @@ export default function LandingPage() {
                 {t('auth.unlockVault')}
               </Button>
             )}
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => router.push(`/${locale}/password-generator`)}
+              className="h-12 px-8 text-sm font-medium"
+            >
+              {t('generator.title')}
+            </Button>
           </div>
 
           {/* Trust signal */}

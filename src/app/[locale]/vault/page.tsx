@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { RiAddLine, RiMenuLine } from 'react-icons/ri';
+import { RiAddLine, RiMenuLine, RiShieldKeyholeLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { SecretGrid } from '@/components/vault/SecretGrid';
@@ -115,15 +115,35 @@ export default function VaultPage() {
               </p>
             </div>
           </div>
-        <Button
-          id="add-secret-button"
-          onClick={() => setWizardOpen(true)}
-          aria-label={t('vault.addSecret')}
-          className="gap-1.5 shrink-0"
-        >
-          <RiAddLine size={16} />
-          <span className="hidden sm:inline">{t('vault.addSecret')}</span>
-        </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/${locale}/password-generator`)}
+              aria-label={t('generator.title')}
+              className="gap-1.5 shrink-0 hidden sm:flex"
+            >
+              <RiShieldKeyholeLine size={16} />
+              <span>{t('generator.title')}</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => router.push(`/${locale}/password-generator`)}
+              aria-label={t('generator.title')}
+              className="shrink-0 sm:hidden"
+            >
+              <RiShieldKeyholeLine size={16} />
+            </Button>
+            <Button
+              id="add-secret-button"
+              onClick={() => setWizardOpen(true)}
+              aria-label={t('vault.addSecret')}
+              className="gap-1.5 shrink-0"
+            >
+              <RiAddLine size={16} />
+              <span className="hidden sm:inline">{t('vault.addSecret')}</span>
+            </Button>
+          </div>
       </div>
 
       {/* Search */}
