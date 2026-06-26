@@ -1,6 +1,26 @@
 import { LandingHeader } from '@/components/layout/LandingHeader';
 import { LandingFooter } from '@/components/layout/LandingFooter';
 import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
+import { Metadata } from 'next';
+import { createMetadata } from '@/lib/metadata';
+
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'privacy' });
+  const seo = await getTranslations({ locale, namespace: 'seo' });
+
+  return createMetadata({
+    title: t('title'),
+    description: seo('privacy.description'),
+    locale,
+    path: '/privacy',
+  });
+}
 
 export default function PrivacyPage() {
   const t = useTranslations('privacy');

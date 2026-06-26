@@ -1,10 +1,11 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Cairo } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { Providers } from '@/components/providers';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from 'sonner';
+import { createMetadata } from '@/lib/metadata';
 import '../globals.css';
 
 const inter = Inter({
@@ -19,12 +20,50 @@ const cairo = Cairo({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'Shhh — The Passwordless Secrets Vault',
-  description:
-    'Your secrets, locked by who you are — not what you remember. 100% passwordless. Access via Google OAuth and 2FA.',
-  keywords: ['password manager', 'secrets vault', 'passwordless', '2fa', 'security'],
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
+  colorScheme: 'light dark',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const seo = await getTranslations({ locale, namespace: 'seo' });
+  
+  const base = createMetadata({
+    title: seo('home.title'),
+    description: seo('home.description'),
+    keywords: seo('home.keywords').split(', '),
+    locale,
+  });
+
+  return {
+    ...base,
+    title: {
+      template: '%s | Shhh',
+      default: base.title as string,
+    },
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    icons: {
+      icon: '/icon.png',
+      apple: '/icon.png',
+    },
+    manifest: '/manifest.json',
+    appleWebApp: {
+      title: 'Shhh',
+      statusBarStyle: 'black-translucent',
+    },
+  };
+}
 
 interface LocaleLayoutProps {
   children: React.ReactNode;

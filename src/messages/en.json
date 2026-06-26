@@ -1,4 +1,32 @@
 {
+  "seo": {
+    "home": {
+      "title": "Shhh — The Passwordless Secrets Vault",
+      "description": "Store passwords, API keys, and sensitive data securely. Zero-knowledge encryption, no master password. Sign in with Google and 2FA.",
+      "keywords": "password manager, secrets vault, passwordless, zero-knowledge, 2fa, encrypted storage, API key manager, secure notes"
+    },
+    "about": {
+      "description": "Learn how Shhh eliminates the master password with zero-knowledge encryption and Google OAuth. Your secrets, locked by who you are."
+    },
+    "contact": {
+      "description": "Get in touch with the Shhh team. We are here to help you with questions, feedback, or support requests."
+    },
+    "security": {
+      "description": "Explore the security architecture behind Shhh: zero-knowledge encryption, OAuth authentication, strict session management, and more."
+    },
+    "privacy": {
+      "description": "Read the Shhh Privacy Policy. Learn how we protect your data with zero-knowledge encryption and minimal data collection."
+    },
+    "terms": {
+      "description": "Read the Terms of Service for Shhh, the passwordless secrets vault. Understand your rights and responsibilities."
+    },
+    "help": {
+      "description": "Find answers to common questions about Shhh: passwordless login, zero-knowledge encryption, session expiry, and account recovery."
+    },
+    "passwordGenerator": {
+      "description": "Generate strong, random passwords instantly. Customize length, characters, and complexity. Free and secure — no data is stored."
+    }
+  },
   "common": {
     "appName": "Shhh",
     "taglines": [
