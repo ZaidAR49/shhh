@@ -92,7 +92,7 @@ export function ConfirmDialog({
         {showText && (
           <div className="my-4">
             <p className="text-sm text-foreground font-medium mb-2">
-              {t('typeToConfirm', { text: confirmTextRequired })}
+              {t('typeToConfirm', { text: confirmTextRequired || '' })}
             </p>
             <Input
               value={textInput}
