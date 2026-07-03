@@ -43,3 +43,30 @@ export function verifyVaultMfaCookie(value: string): string | null {
 }
 
 export { COOKIE_NAME as VAULT_MFA_COOKIE_NAME };
+
+import { cookies } from 'next/headers';
+
+/**
+ * Start a 5-minute vault MFA session by setting the cookie.
+ */
+export async function setVaultMfaSession(userId: string) {
+  const cookieStore = await cookies();
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+  const cookieVal = signVaultMfaCookie(userId, expiresAt);
+  
+  cookieStore.set(COOKIE_NAME, cookieVal, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    expires: new Date(expiresAt),
+  });
+}
+
+/**
+ * Clear the vault MFA session cookie.
+ */
+export async function clearVaultMfaSession() {
+  const cookieStore = await cookies();
+  cookieStore.delete(COOKIE_NAME);
+}

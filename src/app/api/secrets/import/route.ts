@@ -9,7 +9,7 @@ import { SECRET_SCHEMAS } from '@/lib/validations';
 import { verify } from 'otplib';
 import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
 import { cookies } from 'next/headers';
-import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME } from '@/lib/vault-mfa-cookie';
+import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME, setVaultMfaSession } from '@/lib/vault-mfa-cookie';
 import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
@@ -146,6 +146,7 @@ export async function POST(request: Request) {
       }
 
       markTokenUsed(session.user.id, token);
+      await setVaultMfaSession(session.user.id);
     }
 
     // Validate all secrets before touching the DB

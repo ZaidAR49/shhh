@@ -68,8 +68,8 @@ export async function POST(request: Request) {
     markTokenUsed(session.user.id, token);
 
     const cookieStore = await cookies();
-    // Set a 15-minute cookie for viewing sensitive secrets
-    const expiresAt = Date.now() + 15 * 60 * 1000;
+    // Set a 5-minute cookie for viewing sensitive secrets
+    const expiresAt = Date.now() + 5 * 60 * 1000;
     const cookieVal = signVaultMfaCookie(session.user.id, expiresAt);
     
     cookieStore.set(VAULT_MFA_COOKIE_NAME, cookieVal, {

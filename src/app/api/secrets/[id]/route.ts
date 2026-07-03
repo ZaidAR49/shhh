@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { sendNotification } from '@/lib/email';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { cookies } from 'next/headers';
-import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME } from '@/lib/vault-mfa-cookie';
+import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME, setVaultMfaSession } from '@/lib/vault-mfa-cookie';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -58,6 +58,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           if (!isValid.valid) {
             return NextResponse.json({ error: 'Invalid MFA token' }, { status: 403 });
           }
+          await setVaultMfaSession(session.user.id);
         }
       }
 

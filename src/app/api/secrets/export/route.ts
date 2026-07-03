@@ -6,7 +6,7 @@ import { UserService } from '@/lib/services/user.service';
 import { verify } from 'otplib';
 import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
 import { cookies } from 'next/headers';
-import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME } from '@/lib/vault-mfa-cookie';
+import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME, setVaultMfaSession } from '@/lib/vault-mfa-cookie';
 import fs from 'fs';
 import path from 'path';
 import nodemailer from 'nodemailer';
@@ -109,6 +109,7 @@ export async function GET(request: Request) {
       }
 
       markTokenUsed(session.user.id, token);
+      await setVaultMfaSession(session.user.id);
     }
 
     // Fetch all user secrets — including sensitive ones (fully decrypted)

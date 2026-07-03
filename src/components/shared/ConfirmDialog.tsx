@@ -26,6 +26,7 @@ interface ConfirmDialogProps {
   isPending?: boolean;
   confirmTextRequired?: string;
   requireMfa?: boolean;
+  mfaSessionActive?: boolean;
   error?: string;
 }
 
@@ -39,17 +40,41 @@ export function ConfirmDialog({
   isPending = false,
   confirmTextRequired,
   requireMfa,
+  mfaSessionActive,
   error,
 }: ConfirmDialogProps) {
   const t = useTranslations('common');
-  const [confirmInput, setConfirmInput] = useState('');
+  const [textInput, setTextInput] = useState('');
+  const [otpInput, setOtpInput] = useState('');
+  const [currentStep, setCurrentStep] = useState<'text' | 'otp'>('text');
+
+  const bothRequired = confirmTextRequired && requireMfa && !mfaSessionActive;
+  const showText = bothRequired ? currentStep === 'text' : !!confirmTextRequired;
+  const showOtp = bothRequired ? currentStep === 'otp' : !!(requireMfa && !mfaSessionActive);
 
   let isConfirmDisabled = isPending;
-  if (requireMfa) {
-    isConfirmDisabled = isConfirmDisabled || confirmInput.length !== 6;
-  } else if (confirmTextRequired) {
-    isConfirmDisabled = isConfirmDisabled || confirmInput !== confirmTextRequired;
+  if (showText && confirmTextRequired) {
+    isConfirmDisabled = isConfirmDisabled || textInput !== confirmTextRequired;
   }
+  if (showOtp && requireMfa && !mfaSessionActive) {
+    isConfirmDisabled = isConfirmDisabled || otpInput.length !== 6;
+  }
+
+  const handleConfirmClick = () => {
+    if (bothRequired && currentStep === 'text') {
+      setCurrentStep('otp');
+    } else {
+      onConfirm((requireMfa && !mfaSessionActive) ? otpInput : undefined);
+      // We don't reset inputs here in case the request fails and the dialog stays open
+    }
+  };
+
+  const handleCancelClick = () => {
+    setTextInput('');
+    setOtpInput('');
+    setCurrentStep('text');
+    onCancel();
+  };
 
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !o && onCancel()}>
@@ -64,20 +89,19 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         
-        {confirmTextRequired && !requireMfa && (
+        {showText && (
           <div className="my-4">
             <p className="text-sm text-foreground font-medium mb-2">
               {t('typeToConfirm', { text: confirmTextRequired })}
             </p>
             <Input
-              value={confirmInput}
-              onChange={(e) => setConfirmInput(e.target.value)}
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
               placeholder={confirmTextRequired}
               className="font-mono text-sm"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !isConfirmDisabled) {
-                  onConfirm(requireMfa ? confirmInput : undefined);
-                  if (!requireMfa) setConfirmInput('');
+                  handleConfirmClick();
                 }
               }}
               autoFocus
@@ -85,7 +109,7 @@ export function ConfirmDialog({
           </div>
         )}
 
-        {requireMfa && (
+        {showOtp && (
           <div className="my-4">
             <p className="text-sm text-foreground font-medium mb-4 text-center">
               Enter 6-digit Authenticator Code to confirm
@@ -93,15 +117,14 @@ export function ConfirmDialog({
             <div className="flex justify-center mb-2" dir="ltr">
               <InputOTP
                 maxLength={6}
-                value={confirmInput}
+                value={otpInput}
                 onChange={(val) => {
-                  setConfirmInput(val);
+                  setOtpInput(val);
                 }}
                 disabled={isPending}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && confirmInput.length === 6 && !isConfirmDisabled) {
-                    onConfirm(confirmInput);
-                    setConfirmInput('');
+                  if (e.key === 'Enter' && otpInput.length === 6 && !isConfirmDisabled) {
+                    handleConfirmClick();
                   }
                 }}
                 autoFocus
@@ -114,7 +137,7 @@ export function ConfirmDialog({
                       className={`w-10 h-12 text-center text-lg font-bold rounded-xl border-2 transition-all duration-150 ${
                         error
                           ? 'border-destructive/70 text-destructive'
-                          : confirmInput.length > i && !error
+                          : otpInput.length > i && !error
                           ? 'border-primary text-primary shadow-[0_0_0_3px_color-mix(in_srgb,var(--primary)_12%,transparent)]'
                           : 'border-border focus-visible:border-ring'
                       }`}
@@ -128,28 +151,33 @@ export function ConfirmDialog({
         )}
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setConfirmInput('');
-              onCancel();
-            }}
-            disabled={isPending}
-            aria-label={t('cancel')}
-          >
-            {t('cancel')}
-          </Button>
+          {bothRequired && currentStep === 'otp' ? (
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep('text')}
+              disabled={isPending}
+              aria-label={t('back')}
+            >
+              {t('back')}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={handleCancelClick}
+              disabled={isPending}
+              aria-label={t('cancel')}
+            >
+              {t('cancel')}
+            </Button>
+          )}
           <Button
             variant={isDestructive ? 'destructive' : 'default'}
             className={isDestructive ? 'bg-red-600 hover:bg-red-700 text-white border-none' : ''}
-            onClick={() => {
-              onConfirm(requireMfa ? confirmInput : undefined);
-              if (!requireMfa) setConfirmInput('');
-            }}
+            onClick={handleConfirmClick}
             disabled={Boolean(isConfirmDisabled)}
-            aria-label={t('confirm')}
+            aria-label={bothRequired && currentStep === 'text' ? t('next') : t('confirm')}
           >
-            {t('confirm')}
+            {bothRequired && currentStep === 'text' ? t('next') : t('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -5,6 +5,8 @@ import { SecretService } from '@/lib/services/secret.service';
 import { UserService } from '@/lib/services/user.service';
 import { verify } from 'otplib';
 import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
+import { cookies } from 'next/headers';
+import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME, setVaultMfaSession } from '@/lib/vault-mfa-cookie';
 
 export async function DELETE(request: Request) {
   try {
@@ -21,7 +23,20 @@ export async function DELETE(request: Request) {
 
     const userStatus = await UserService.getMfaStatus(session.user.id);
 
-    if (userStatus?.mfaEnabled && userStatus?.mfaSecret) {
+    if (!userStatus?.mfaEnabled || !userStatus?.mfaSecret) {
+      return NextResponse.json(
+        { error: 'You must enable Two-Factor Authentication before clearing your vault.' },
+        { status: 400 }
+      );
+    }
+
+    // Check vault MFA session cookie first
+    const cookieStore = await cookies();
+    const mfaCookie = cookieStore.get(VAULT_MFA_COOKIE_NAME)?.value;
+    const validCookieUserId = mfaCookie ? verifyVaultMfaCookie(mfaCookie) : null;
+    const hasValidCookie = validCookieUserId === session.user.id;
+
+    if (!hasValidCookie) {
       if (!token) {
         return NextResponse.json({ error: 'MFA token is required' }, { status: 400 });
       }
@@ -36,10 +51,7 @@ export async function DELETE(request: Request) {
       }
       
       markTokenUsed(session.user.id, token);
-    } else {
-      if (!body.confirm) {
-        return NextResponse.json({ error: 'Confirmation required to clear vault' }, { status: 400 });
-      }
+      await setVaultMfaSession(session.user.id);
     }
 
     await SecretService.deleteAllUserSecrets(session.user.id);

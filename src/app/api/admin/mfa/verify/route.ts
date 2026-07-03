@@ -7,7 +7,7 @@ import { checkRateLimit, isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
 import { cookies } from 'next/headers';
 import { signAdminMfaCookie, ADMIN_MFA_COOKIE_NAME } from '@/lib/admin-mfa-cookie';
 
-const COOKIE_TTL_SECONDS = 60 * 60 * 4; // 4 hours
+const COOKIE_TTL_SECONDS = 60 * 60 * 2; // 2 hours
 
 export async function POST(request: Request) {
   try {
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
 
     markTokenUsed(session.user.id, token);
 
-    // Issue a signed httpOnly cookie valid for 4 hours
+    // Issue a signed httpOnly cookie valid for 2 hours
     const expiresAt = Date.now() + COOKIE_TTL_SECONDS * 1000;
     const cookieValue = signAdminMfaCookie(session.user.id, expiresAt);
 

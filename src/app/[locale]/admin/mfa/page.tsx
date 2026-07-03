@@ -229,7 +229,7 @@ export default function AdminMfaPage() {
         {/* Footer note */}
         <p className="text-center text-[10px] text-muted-foreground mt-5 leading-relaxed">
           This is a sensitive area. All access attempts are logged. <br />
-          Session expires in 4 hours after verification.
+          Session expires in 2 hours after verification.
         </p>
       </div>
     </div>

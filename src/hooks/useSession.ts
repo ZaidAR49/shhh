@@ -93,7 +93,10 @@ export function useSession(): UseSessionReturn {
     localStorage.removeItem('shhh_remembered_user');
     posthog.reset();
     try {
-      await fetch('/api/admin/mfa/status', { method: 'DELETE' });
+      await Promise.all([
+        fetch('/api/admin/mfa/status', { method: 'DELETE' }).catch(() => {}),
+        fetch('/api/auth/mfa/status', { method: 'DELETE' }).catch(() => {})
+      ]);
     } catch (e) {
       console.error('Failed to clear MFA session', e);
     }

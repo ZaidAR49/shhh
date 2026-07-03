@@ -8,6 +8,8 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendNotification } from '@/lib/email';
 import { isTokenUsed, markTokenUsed } from '@/lib/rate-limit';
+import { cookies } from 'next/headers';
+import { verifyVaultMfaCookie, VAULT_MFA_COOKIE_NAME, setVaultMfaSession } from '@/lib/vault-mfa-cookie';
 
 export async function GET(request: Request) {
   try {
@@ -98,24 +100,33 @@ export async function DELETE(request: Request) {
       );
     }
 
-    if (!token) {
-      return NextResponse.json({ error: 'MFA token is required' }, { status: 400 });
+    // Check vault MFA session cookie first
+    const cookieStore = await cookies();
+    const mfaCookie = cookieStore.get(VAULT_MFA_COOKIE_NAME)?.value;
+    const validCookieUserId = mfaCookie ? verifyVaultMfaCookie(mfaCookie) : null;
+    const hasValidCookie = validCookieUserId === session.user.id;
+
+    if (!hasValidCookie) {
+      if (!token) {
+        return NextResponse.json({ error: 'MFA token is required' }, { status: 400 });
+      }
+
+      if (isTokenUsed(session.user.id, token)) {
+        return NextResponse.json({ error: 'Token already used. Please wait for a new code.' }, { status: 400 });
+      }
+
+      const verificationResult = await verify({
+        token,
+        secret: user.mfaSecret!,
+      });
+
+      if (!verificationResult.valid) {
+        return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
+      }
+
+      markTokenUsed(session.user.id, token);
+      await setVaultMfaSession(session.user.id);
     }
-
-    if (isTokenUsed(session.user.id, token)) {
-      return NextResponse.json({ error: 'Token already used. Please wait for a new code.' }, { status: 400 });
-    }
-
-    const verificationResult = await verify({
-      token,
-      secret: user.mfaSecret!,
-    });
-
-    if (!verificationResult.valid) {
-      return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 });
-    }
-
-    markTokenUsed(session.user.id, token);
 
     // Send notification BEFORE deleting the user (so they still exist in the DB)
     await sendNotification(

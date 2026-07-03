@@ -38,7 +38,9 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${secret.name}.env`;
+    const now = new Date();
+    const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}-${String(now.getHours()).padStart(2, '0')}`;
+    a.download = `${secret.name}-${dateStr}.env`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

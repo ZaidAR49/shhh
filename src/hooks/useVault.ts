@@ -19,6 +19,8 @@ interface UseVaultReturn {
   toggleFavorite: (id: string) => Promise<void>;
   mfaEnabled: boolean;
   setMfaEnabled: (enabled: boolean) => void;
+  vaultMfaSessionActive: boolean;
+  setVaultMfaSessionActive: (active: boolean) => void;
 }
 
 export function useVault(): UseVaultReturn {
@@ -29,6 +31,7 @@ export function useVault(): UseVaultReturn {
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [vaultMfaSessionActive, setVaultMfaSessionActive] = useState(false);
 
   const loadSecrets = useCallback(async () => {
     setIsLoading(true);
@@ -50,6 +53,7 @@ export function useVault(): UseVaultReturn {
       if (mfaRes.ok) {
         const mfaData = await mfaRes.json();
         setMfaEnabled(mfaData.mfaEnabled || false);
+        setVaultMfaSessionActive(mfaData.vaultMfaSessionActive || false);
       }
     } catch (e) {
       setError('errors.networkError');
@@ -175,5 +179,7 @@ export function useVault(): UseVaultReturn {
     toggleFavorite,
     mfaEnabled,
     setMfaEnabled,
+    vaultMfaSessionActive,
+    setVaultMfaSessionActive,
   };
 }

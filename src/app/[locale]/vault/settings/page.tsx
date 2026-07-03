@@ -51,7 +51,7 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
-  const { mfaEnabled, setMfaEnabled, loadSecrets } = useGlobalVault();
+  const { mfaEnabled, setMfaEnabled, loadSecrets, vaultMfaSessionActive } = useGlobalVault();
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
   const [notificationLocale, setNotificationLocale] = useState<'en' | 'ar'>('en');
   const [deleteError, setDeleteError] = useState('');
@@ -64,7 +64,6 @@ export default function SettingsPage() {
   const [exportOtpError, setExportOtpError] = useState('');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importSecrets, setImportSecrets] = useState<any[]>([]);
-  const [importSessionMfaValid, setImportSessionMfaValid] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -145,12 +144,16 @@ export default function SettingsPage() {
   };
 
   const handleClearVaultClick = () => {
+    if (mfaEnabled === false) {
+      toast.error("You must enable Two-Factor Authentication before you can clear your vault.");
+      return;
+    }
     setClearError('');
     setClearOpen(true);
   };
 
   const handleClearVault = async (token?: string) => {
-    if (mfaEnabled && !token) {
+    if (mfaEnabled && !vaultMfaSessionActive && !token) {
       setClearError('Please enter your 6-digit code');
       return;
     }
@@ -189,7 +192,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async (token?: string) => {
-    if (!token) {
+    if (!vaultMfaSessionActive && !token) {
       setDeleteError('Please enter your 6-digit code');
       return;
     }
@@ -260,7 +263,9 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'shhh-secrets.json';
+      const now = new Date();
+      const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}-${String(now.getHours()).padStart(2, '0')}`;
+      a.download = `shhh-secrets-${dateStr}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -316,19 +321,7 @@ export default function SettingsPage() {
         return;
       }
 
-      // Probe the server to see if session cookie is already valid
-      // We do a dry-run POST with no secrets to check cookie status
-      const probeRes = await fetch('/api/secrets/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'merge', secrets: [], token: undefined }),
-      });
-      const probeData = await probeRes.json().catch(() => ({}));
-      // If the error is about empty secrets (not MFA), cookie was accepted
-      const cookieValid = probeRes.status !== 403 || probeData.error !== 'MFA_REQUIRED';
-
       setImportSecrets(parsed.secrets);
-      setImportSessionMfaValid(cookieValid);
       setImportDialogOpen(true);
     } catch {
       toast.error(t('importFileError'));
@@ -642,6 +635,8 @@ export default function SettingsPage() {
         }}
         isPending={clearing}
         requireMfa={!!mfaEnabled}
+        mfaSessionActive={vaultMfaSessionActive}
+        confirmTextRequired="delete"
         error={clearError}
       />
 
@@ -656,6 +651,8 @@ export default function SettingsPage() {
         }}
         isPending={deletingAccount}
         requireMfa={true}
+        mfaSessionActive={vaultMfaSessionActive}
+        confirmTextRequired={session?.user?.email || 'delete'}
         error={deleteError}
       />
 
@@ -664,7 +661,7 @@ export default function SettingsPage() {
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
         secrets={importSecrets}
-        sessionMfaValid={importSessionMfaValid}
+        sessionMfaValid={vaultMfaSessionActive}
         onImportComplete={() => loadSecrets()}
       />
     </div>

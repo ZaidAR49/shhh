@@ -21,7 +21,7 @@ export default function VaultPage() {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { secrets, isLoading, isLoadingMore, hasMore, loadSecrets, loadMoreSecrets, createSecret, deleteSecret, searchSecrets, mfaEnabled } = useGlobalVault();
+  const { secrets, isLoading, isLoadingMore, hasMore, loadSecrets, loadMoreSecrets, createSecret, deleteSecret, searchSecrets, mfaEnabled, vaultMfaSessionActive, setVaultMfaSessionActive } = useGlobalVault();
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export default function VaultPage() {
 
   const interceptAction = (id: string, actionType: 'view' | 'edit' | 'delete') => {
     const target = secrets.find(s => s.id === id);
-    if (target?.is_sensitive && mfaEnabled) {
+    if (target?.is_sensitive && mfaEnabled && !vaultMfaSessionActive) {
       setMfaPrompt({ open: true, actionType, targetId: id });
     } else {
       executeAction(id, actionType);
@@ -214,6 +214,7 @@ export default function VaultPage() {
         open={mfaPrompt.open}
         onOpenChange={(open) => setMfaPrompt(prev => ({ ...prev, open }))}
         onSuccess={() => {
+          setVaultMfaSessionActive(true);
           if (mfaPrompt.targetId) {
             executeAction(mfaPrompt.targetId, mfaPrompt.actionType);
           }
