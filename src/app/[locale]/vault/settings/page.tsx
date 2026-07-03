@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { signOut } from 'next-auth/react';
-import { RiSunLine, RiMoonLine, RiComputerLine, RiGlobalLine, RiDeleteBinLine, RiShieldLine, RiEditLine, RiCheckLine, RiCloseLine, RiLogoutBoxRLine, RiUser3Line, RiSettings3Line, RiAlertLine, RiMailSendLine } from 'react-icons/ri';
+import { RiSunLine, RiMoonLine, RiComputerLine, RiGlobalLine, RiDeleteBinLine, RiShieldLine, RiEditLine, RiCheckLine, RiCloseLine, RiLogoutBoxRLine, RiUser3Line, RiSettings3Line, RiAlertLine, RiMailSendLine, RiDownload2Line, RiUpload2Line, RiLockLine } from 'react-icons/ri';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -18,8 +18,10 @@ import { useSession } from '@/hooks/useSession';
 import { cn } from '@/lib/utils';
 import { MfaSettings } from '@/components/settings/MfaSettings';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useGlobalVault } from '@/components/vault/VaultProvider';
 import { toast } from 'sonner';
+import { ImportSecretsDialog } from '@/components/settings/ImportSecretsDialog';
 
 function SettingsCard({ title, icon: Icon, children, destructive }: { title: string, icon: React.ElementType, children: React.ReactNode, destructive?: boolean }) {
   return (
@@ -37,6 +39,7 @@ function SettingsCard({ title, icon: Icon, children, destructive }: { title: str
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
+  const tc = useTranslations('common');
   const { theme, setTheme } = useTheme();
   const locale = useLocale();
   const router = useRouter();
@@ -48,11 +51,21 @@ export default function SettingsPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
-  const { mfaEnabled, setMfaEnabled } = useGlobalVault();
+  const { mfaEnabled, setMfaEnabled, loadSecrets } = useGlobalVault();
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
   const [notificationLocale, setNotificationLocale] = useState<'en' | 'ar'>('en');
   const [deleteError, setDeleteError] = useState('');
   const [clearError, setClearError] = useState('');
+
+  // Import / Export state
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportMfaOpen, setExportMfaOpen] = useState(false);
+  const [exportOtp, setExportOtp] = useState('');
+  const [exportOtpError, setExportOtpError] = useState('');
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importSecrets, setImportSecrets] = useState<any[]>([]);
+  const [importSessionMfaValid, setImportSessionMfaValid] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (session?.user?.name) {
@@ -213,11 +226,123 @@ export default function SettingsPage() {
     }
   };
 
+  // ── Export handler ──────────────────────────────────────────────────────────
+  const doExport = async (mfaToken?: string) => {
+    setExportLoading(true);
+    try {
+      const headers: Record<string, string> = {};
+      if (mfaToken) headers['x-mfa-token'] = mfaToken;
+
+      const res = await fetch('/api/secrets/export', { headers });
+
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        if (data.error === 'MFA_REQUIRED') {
+          // Need OTP — show inline OTP inside a simple flow
+          setExportMfaOpen(true);
+          setExportLoading(false);
+          return;
+        }
+        toast.error(data.error || t('exportError'));
+        setExportLoading(false);
+        return;
+      }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || t('exportError'));
+        setExportLoading(false);
+        return;
+      }
+
+      // Download the file
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'shhh-secrets.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setExportMfaOpen(false);
+      setExportOtp('');
+      toast.success(t('exportSuccess'));
+    } catch (err) {
+      toast.error(t('exportError'));
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleExportClick = () => {
+    if (!mfaEnabled) {
+      toast.error(t('requires2faHint'));
+      return;
+    }
+    doExport();
+  };
+
+  const handleExportOtpSubmit = () => {
+    if (exportOtp.length !== 6) {
+      setExportOtpError('Please enter a 6-digit code');
+      return;
+    }
+    setExportOtpError('');
+    doExport(exportOtp);
+  };
+
+  // ── Import handler ──────────────────────────────────────────────────────────
+  const handleImportClick = () => {
+    if (!mfaEnabled) {
+      toast.error(t('requires2faHint'));
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset so same file can be selected again
+    e.target.value = '';
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+
+      if (!parsed.secrets || !Array.isArray(parsed.secrets)) {
+        toast.error(t('importFileError'));
+        return;
+      }
+
+      // Probe the server to see if session cookie is already valid
+      // We do a dry-run POST with no secrets to check cookie status
+      const probeRes = await fetch('/api/secrets/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'merge', secrets: [], token: undefined }),
+      });
+      const probeData = await probeRes.json().catch(() => ({}));
+      // If the error is about empty secrets (not MFA), cookie was accepted
+      const cookieValid = probeRes.status !== 403 || probeData.error !== 'MFA_REQUIRED';
+
+      setImportSecrets(parsed.secrets);
+      setImportSessionMfaValid(cookieValid);
+      setImportDialogOpen(true);
+    } catch {
+      toast.error(t('importFileError'));
+    }
+  };
+
   const themeOptions = [
     { key: 'light' as const, label: t('themeLight'), Icon: RiSunLine },
     { key: 'dark'  as const, label: t('themeDark'),  Icon: RiMoonLine },
     { key: 'system'as const, label: t('themeSystem'),Icon: RiComputerLine },
   ];
+
+  // Export OTP inline state (shown inside the existing export flow)
+  const [, forceRender] = useState(0);
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 max-w-[1400px] mx-auto">
@@ -354,6 +479,118 @@ export default function SettingsPage() {
           </div>
         </SettingsCard>
 
+        {/* Import & Export Card */}
+        <SettingsCard title={t('dataTitle')} icon={RiDownload2Line}>
+          <div className="space-y-4">
+            {/* Export row */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-medium leading-none">{t('exportSecrets')}</p>
+                  {mfaEnabled === false && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                      <RiLockLine size={10} />{t('requires2fa')}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{t('exportSecretsDesc')}</p>
+              </div>
+              <Button
+                id="export-secrets-btn"
+                variant="outline"
+                size="sm"
+                onClick={handleExportClick}
+                disabled={exportLoading || mfaEnabled === false}
+                className="shrink-0"
+              >
+                <RiDownload2Line size={14} className="ltr:mr-1.5 rtl:ml-1.5" />
+                {exportLoading ? '...' : t('exportSecrets')}
+              </Button>
+            </div>
+
+            {/* Export MFA OTP inline (shown when cookie is missing) */}
+            {exportMfaOpen && (
+              <div className="p-4 rounded-lg border bg-muted/30 animate-in fade-in zoom-in-95 space-y-3">
+                <p className="text-sm font-medium text-center">{t('importMfaPrompt')}</p>
+                <div className="flex justify-center" dir="ltr">
+                  <InputOTP
+                    maxLength={6}
+                    value={exportOtp}
+                    onChange={(val: string) => { setExportOtp(val); setExportOtpError(''); }}
+                    disabled={exportLoading}
+                    onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' && exportOtp.length === 6) handleExportOtpSubmit(); }}
+                    autoFocus
+                  >
+                    <InputOTPGroup className="gap-2">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <InputOTPSlot
+                          key={i}
+                          index={i}
+                          className={`w-10 h-12 text-center text-lg font-bold rounded-xl border-2 transition-all duration-150 ${
+                            exportOtpError
+                              ? 'border-destructive/70 text-destructive'
+                              : exportOtp.length > i
+                              ? 'border-primary text-primary'
+                              : 'border-border'
+                          }`}
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                {exportOtpError && <p className="text-xs text-destructive text-center">{exportOtpError}</p>}
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={() => { setExportMfaOpen(false); setExportOtp(''); }}>
+                    {tc('cancel')}
+                  </Button>
+                  <Button size="sm" onClick={handleExportOtpSubmit} disabled={exportLoading || exportOtp.length !== 6}>
+                    {t('exportSecrets')}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Divider */}
+            <div className="border-t pt-4">
+              {/* Import row */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-medium leading-none">{t('importSecrets')}</p>
+                    {mfaEnabled === false && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        <RiLockLine size={10} />{t('requires2fa')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t('importSecretsDesc')}</p>
+                </div>
+                <Button
+                  id="import-secrets-btn"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleImportClick}
+                  disabled={mfaEnabled === false}
+                  className="shrink-0"
+                >
+                  <RiUpload2Line size={14} className="ltr:mr-1.5 rtl:ml-1.5" />
+                  {t('importSecrets')}
+                </Button>
+              </div>
+            </div>
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={handleFileChange}
+              aria-hidden="true"
+            />
+          </div>
+        </SettingsCard>
+
         {/* Danger Zone Card */}
         <SettingsCard title={t('dangerZone')} icon={RiAlertLine} destructive>
           <div className="space-y-3">
@@ -420,6 +657,15 @@ export default function SettingsPage() {
         isPending={deletingAccount}
         requireMfa={true}
         error={deleteError}
+      />
+
+      {/* Import Secrets Dialog */}
+      <ImportSecretsDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        secrets={importSecrets}
+        sessionMfaValid={importSessionMfaValid}
+        onImportComplete={() => loadSecrets()}
       />
     </div>
   );

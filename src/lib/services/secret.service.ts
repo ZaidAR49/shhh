@@ -22,8 +22,9 @@ export class SecretService {
    * @param userId The user's ID
    * @param limit The maximum number of records to return
    * @param offset The number of records to skip
+   * @param decryptSensitive If true, also decrypt sensitive secrets (default: false)
    */
-  static async findAllByUserId(userId: string, limit: number = 50, offset: number = 0) {
+  static async findAllByUserId(userId: string, limit: number = 50, offset: number = 0, decryptSensitive: boolean = false) {
     const userSecrets = await db.query.secrets.findMany({
       where: eq(secrets.userId, userId),
       orderBy: (secrets, { desc }) => [desc(secrets.createdAt)],
@@ -46,7 +47,7 @@ export class SecretService {
         }
       }
 
-      if (!secret.isSensitive) {
+      if (!secret.isSensitive || decryptSensitive) {
         try {
           data = decryptPayload(secret.encryptedData, secret.encryptedDek);
         } catch (e) {

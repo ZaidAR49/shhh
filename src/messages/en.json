@@ -193,7 +193,29 @@
     "saveName": "Save Name",
     "cancelEdit": "Cancel",
     "deleteAccount": "Delete Account",
-    "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone."
+    "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+    "dataTitle": "Import & Export",
+    "exportSecrets": "Export Secrets",
+    "exportSecretsDesc": "Download all your secrets as a JSON backup file.",
+    "importSecrets": "Import Secrets",
+    "importSecretsDesc": "Restore secrets from a previously exported JSON file.",
+    "requires2fa": "Requires 2FA",
+    "requires2faHint": "Enable Two-Factor Authentication to use import & export.",
+    "importModeTitle": "Choose Import Mode",
+    "importModeDesc": "How should the imported secrets be added to your vault?",
+    "importModeReplace": "Replace All",
+    "importModeReplaceDesc": "Delete all existing secrets and replace with the imported file. This cannot be undone.",
+    "importModeMerge": "Add & Merge",
+    "importModeMergeDesc": "Add new secrets and overwrite existing ones matched by ID. Existing unmatched secrets are kept.",
+    "importReplaceConfirmTitle": "Delete All Secrets?",
+    "importReplaceConfirmDesc": "This will permanently delete all your existing secrets before importing. This cannot be undone. Are you sure you want to continue?",
+    "importMfaPrompt": "Enter your 6-digit authenticator code to confirm",
+    "importSuccess": "{imported} secret(s) imported successfully.",
+    "exportSuccess": "Vault exported successfully.",
+    "exportError": "Export failed. Please try again.",
+    "importError": "Import failed. Please check the file format and try again.",
+    "importFileError": "Invalid file. Please select a valid Shhh JSON export file.",
+    "importLimitError": "Import would exceed the 50-secret limit. Please remove some secrets first."
   },
   "errors": {
     "required": "This field is required",
@@ -522,6 +544,10 @@
     "mfaDisabledMessage": "Two-Factor Authentication has been disabled on your account. Your account is now less secure.",
     "accountDeletedTitle": "Account Deleted",
     "accountDeletedMessage": "Your Shhh account has been successfully deleted. All your secrets have been permanently removed.",
+    "secretsExportedTitle": "Vault Exported",
+    "secretsExportedMessage": "Your vault secrets were exported on {date} at {time}. If you did not perform this action, please secure your account immediately.",
+    "secretsImportedTitle": "Vault Imported",
+    "secretsImportedMessage": "A vault import ({mode}) was performed on {date} at {time}. {count} secret(s) were imported. If you did not perform this action, please secure your account immediately.",
     "welcomeSubject": "Welcome to Shhh - Secure your vault"
   }
 }
