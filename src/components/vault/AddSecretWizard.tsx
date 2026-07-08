@@ -208,7 +208,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
             </button>
           ))}
         </div>
-        <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-6 flex justify-end z-10">
+        <div className="pt-6 mt-6 flex justify-end">
           <Button
             onClick={goToStep2}
             disabled={!selectedType}
@@ -405,7 +405,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-6 flex items-center justify-between z-10">
+        <div className="pt-6 mt-6 flex items-center justify-between">
           <Button
             type="button"
             variant="outline"
@@ -449,7 +449,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
               </div>
             ))}
         </div>
-        <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-6 flex items-center justify-between z-10">
+        <div className="pt-6 mt-6 flex items-center justify-between">
           <Button variant="outline" onClick={() => setStep(2)} aria-label={t('common.back')}>
             <RiArrowLeftLine size={16} className="ltr:mr-1.5 rtl:ml-1.5 rtl:rotate-180" />
             {t('common.back')}
