@@ -433,7 +433,7 @@ export default function SettingsPage() {
               </div>
               <Select value={notificationLocale} onValueChange={handleNotificationLocaleChange}>
                 <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="Select..." />
+                  <SelectValue placeholder="Select... | اختر..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">{t('languageEnglish')}</SelectItem>

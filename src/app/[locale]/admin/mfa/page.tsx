@@ -96,7 +96,7 @@ export default function AdminMfaPage() {
           <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 60%, var(--vault-unlocked)))' }} />
 
           {/* Header */}
-          <div className="px-8 pt-8 pb-6 flex flex-col items-center text-center">
+          <div className="px-4 sm:px-8 pt-8 pb-6 flex flex-col items-center text-center">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8 self-start">
               <Image src="/icon.png" alt="Shhh" width={32} height={32} className="object-contain" />
@@ -121,7 +121,7 @@ export default function AdminMfaPage() {
           </div>
 
           {/* Body */}
-          <div className="px-8 pb-8 flex flex-col gap-6">
+          <div className="px-4 sm:px-8 pb-8 flex flex-col gap-6">
 
             {mfaNotEnabled ? (
               /* MFA not enabled warning */

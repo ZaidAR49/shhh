@@ -123,7 +123,7 @@ export function AddUserModal({
               </label>
               <input
                 className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
-                placeholder="e.g. John Doe"
+                placeholder="e.g. John Doe | مثلاً جون دو"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 id="add-user-name"
@@ -139,7 +139,7 @@ export function AddUserModal({
                 <input
                   type="email"
                   className="w-full ps-9 pe-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-colors"
-                  placeholder="user@example.com"
+                  placeholder="user@example.com | مستخدم@مثال.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   id="add-user-email"

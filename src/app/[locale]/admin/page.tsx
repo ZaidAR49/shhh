@@ -454,10 +454,10 @@ export default function AdminDashboard() {
       )}
 
       {/* Main Layout ensures font inheritance from layout.tsx variables */}
-      <div className="flex min-h-screen bg-background text-foreground">
+      <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
 
         {/* Sidebar */}
-        <aside className="w-72 shrink-0 sticky top-0 h-screen flex flex-col bg-card border-e border-border overflow-y-auto">
+        <aside className="w-full md:w-72 shrink-0 md:sticky md:top-0 h-auto md:h-screen flex flex-col bg-card border-b md:border-b-0 md:border-e border-border md:overflow-y-auto z-20">
           {/* Logo matches main application */}
           <Link href={`/${locale}`} className="flex items-center gap-4 px-8 py-6 border-b border-border min-h-[96px] hover:opacity-80 transition-opacity">
             <Image
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
           
           {/* Top Header with App Toggles */}
-          <header className="flex items-center justify-between px-10 border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-10 min-h-[96px] shrink-0">
+          <header className="flex items-center justify-between px-4 sm:px-6 lg:px-10 border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-10 min-h-[96px] shrink-0">
             <div>
               <h1 className="text-2xl font-bold text-foreground tracking-tight">
                 {activeTab === 'overview' ? t('header.overview') : t('header.users')}
@@ -566,7 +566,7 @@ export default function AdminDashboard() {
           </header>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-10 py-8 bg-muted/5">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-10 py-4 sm:py-8 bg-muted/5">
 
             {/* ── OVERVIEW TAB ────────────────────────────────────────────── */}
             {activeTab === 'overview' && (

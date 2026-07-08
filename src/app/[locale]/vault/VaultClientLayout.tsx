@@ -62,7 +62,7 @@ export default function VaultLayout({ children }: VaultLayoutProps) {
         {/* Page content wrapper */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-y-auto h-full scrollbar-thin relative">
           <main
-            className="flex-1 min-w-0 pt-4 mt-5"
+            className="flex-1 min-w-0 pt-4 pb-8 px-4 sm:px-6 lg:px-8 mt-2 sm:mt-5 w-full mx-auto"
             id="main-content"
           >
           {children}

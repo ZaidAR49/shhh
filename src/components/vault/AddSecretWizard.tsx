@@ -175,7 +175,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
           <div className="relative">
             <RiSearchLine className="absolute ltr:left-3 rtl:right-3 top-2.5 text-muted-foreground" size={18} />
             <Input 
-              placeholder={t('common.search') || 'Search...'} 
+              placeholder={t('common.search') || 'Search... | بحث...'} 
               value={searchQuery} 
               onChange={e => setSearchQuery(e.target.value)} 
               className="ltr:pl-10 rtl:pr-10 bg-muted/50" 
@@ -342,7 +342,7 @@ export function AddSecretWizard({ onSave, onCancel, initialSecret }: AddSecretWi
                           className="mt-1.5"
                           aria-invalid={!!fieldError}
                         >
-                          <SelectValue placeholder="Select…" />
+                          <SelectValue placeholder="Select... | اختر..." />
                         </SelectTrigger>
                         <SelectContent>
                           {field.selectOptions!.map((opt) => (

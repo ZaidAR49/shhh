@@ -65,7 +65,7 @@ export function SecretDetail({ secret, onDelete, onEdit }: SecretDetailProps) {
       </button>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
             <SecretTypeIcon type={secret.secret_type} size={20} />

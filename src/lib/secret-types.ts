@@ -62,7 +62,7 @@ export const SECRET_TYPE_CONFIGS: SecretTypeConfig[] = [
     fields: [
       { key: 'card_holder',     labelKey: 'fields.cardHolder',     type: 'text',     masked: false, copyable: false, monospace: false, required: true  },
       { key: 'card_number',     labelKey: 'fields.cardNumber',     type: 'text',     masked: true,  copyable: true,  monospace: true,  required: true, placeholder: '4111 1111 1111 1111' },
-      { key: 'expiry_date',     labelKey: 'fields.expiryDate',     type: 'text',     masked: false, copyable: false, monospace: true,  required: true, placeholder: 'MM/YY' },
+      { key: 'expiry_date',     labelKey: 'fields.expiryDate',     type: 'text',     masked: false, copyable: false, monospace: true,  required: true, placeholder: 'MM/YY | شهر/سنة' },
       { key: 'cvv',             labelKey: 'fields.cvv',            type: 'password', masked: true,  copyable: false, monospace: true,  required: true  },
       { key: 'billing_address', labelKey: 'fields.billingAddress', type: 'textarea', masked: false, copyable: false, monospace: false, required: false },
     ],
@@ -146,7 +146,7 @@ export const SECRET_TYPE_CONFIGS: SecretTypeConfig[] = [
       { key: 'account_number', labelKey: 'fields.accountNumber', type: 'text', masked: true,  copyable: true,  monospace: true,  required: true  },
       { key: 'iban',           labelKey: 'fields.iban',          type: 'text', masked: true,  copyable: true,  monospace: true,  required: false, placeholder: 'GB29 NWBK 6016 1331 9268 19' },
       { key: 'swift_bic',      labelKey: 'fields.swiftBic',      type: 'text', masked: false, copyable: true,  monospace: true,  required: false },
-      { key: 'currency',       labelKey: 'fields.currency',      type: 'text', masked: false, copyable: false, monospace: true,  required: false, placeholder: 'USD' },
+      { key: 'currency',       labelKey: 'fields.currency',      type: 'text', masked: false, copyable: false, monospace: true,  required: false, placeholder: 'USD | دولار أمريكي' },
     ],
   },
   {
