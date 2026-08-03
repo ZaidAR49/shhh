@@ -35,7 +35,8 @@ CREATE TYPE public.secret_type AS ENUM (
   'identity',
   'bank_account',
   'secure_note',
-  'wifi'
+  'wifi',
+  'oauth2'
 );
 
 CREATE TYPE public.lang AS ENUM (
@@ -209,6 +210,7 @@ secret_stats AS (
     COUNT(*) FILTER (WHERE type = 'bank_account')                    AS secrets_bank_account,
     COUNT(*) FILTER (WHERE type = 'secure_note')                     AS secrets_secure_note,
     COUNT(*) FILTER (WHERE type = 'wifi')                            AS secrets_wifi,
+    COUNT(*) FILTER (WHERE type = 'oauth2')                          AS secrets_oauth2,
     MIN(created_at)                                                   AS oldest_secret_created_at,
     MAX(created_at)                                                   AS newest_secret_created_at,
     MIN(updated_at)                                                   AS oldest_secret_updated_at,
@@ -275,6 +277,7 @@ SELECT
   s.secrets_bank_account,
   s.secrets_secure_note,
   s.secrets_wifi,
+  s.secrets_oauth2,
   s.oldest_secret_created_at,
   s.newest_secret_created_at,
   s.oldest_secret_updated_at,

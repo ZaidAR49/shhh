@@ -10,6 +10,7 @@ import {
   RiBankLine,
   RiStickyNoteLine,
   RiWifiLine,
+  RiShieldKeyholeLine,
 } from 'react-icons/ri';
 import type { SecretType } from '@/types';
 
@@ -29,6 +30,7 @@ const ICON_MAP: Record<SecretType, React.ComponentType<{ className?: string; siz
   bank_account:RiBankLine,
   secure_note: RiStickyNoteLine,
   wifi:        RiWifiLine,
+  oauth2:      RiShieldKeyholeLine,
 };
 
 export function SecretTypeIcon({ type, className, size = 18 }: SecretTypeIconProps) {

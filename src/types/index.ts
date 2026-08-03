@@ -12,7 +12,8 @@ export type SecretType =
   | 'identity'
   | 'bank_account'
   | 'secure_note'
-  | 'wifi';
+  | 'wifi'
+  | 'oauth2';
 
 // Types aligned exactly with Postgres `schema.sql`
 export interface DbSecret {

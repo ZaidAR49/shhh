@@ -16,6 +16,7 @@ import {
   RiBankLine,
   RiStickyNoteLine,
   RiWifiLine,
+  RiShieldKeyholeLine,
   RiSettings3Line,
   RiStarLine,
   RiLock2Line,
@@ -40,11 +41,12 @@ const TYPE_ICONS: Record<SecretType, React.ComponentType<{ size?: number; classN
   bank_account: RiBankLine,
   secure_note:  RiStickyNoteLine,
   wifi:         RiWifiLine,
+  oauth2:       RiShieldKeyholeLine,
 };
 
 const SECRET_TYPES: SecretType[] = [
   'password', 'visa', 'env_variable', 'api_key', 'license',
-  'identity', 'bank_account', 'secure_note', 'wifi',
+  'identity', 'bank_account', 'secure_note', 'wifi', 'oauth2',
 ];
 
 export function Sidebar({ onNavClick }: SidebarProps) {

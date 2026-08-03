@@ -19,7 +19,8 @@ export const secretTypeEnum = pgEnum('secret_type', [
   'identity',
   'bank_account',
   'secure_note',
-  'wifi'
+  'wifi',
+  'oauth2',
 ]);
 
 export const langEnum = pgEnum('lang', ['en', 'ar']);

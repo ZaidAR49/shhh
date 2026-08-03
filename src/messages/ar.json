@@ -80,6 +80,7 @@
     "sessionWarning": "الجلسة على وشك الانتهاء"
   },
   "vault": {
+    "secretNotFound": "السر غير موجود",
     "myVault": "خزنتي",
     "addSecret": "إضافة سر",
     "allSecrets": "جميع الأسرار",
@@ -120,7 +121,9 @@
     "secure_note": "ملاحظة آمنة",
     "secureNoteDesc": "ملاحظات خاصة مشفرة",
     "wifi": "بيانات Wi-Fi",
-    "wifiDesc": "أسماء الشبكات وكلمات المرور اللاسلكية"
+    "wifiDesc": "أسماء الشبكات وكلمات المرور اللاسلكية",
+    "oauth2": "بيانات OAuth2",
+    "oauth2Desc": "بيانات اعتماد عميل OAuth2 ونقاط نهاية الرمز المميز"
   },
   "fields": {
     "name": "اسم السر",
@@ -166,7 +169,14 @@
     "secWPA3": "WPA3",
     "secWPA2": "WPA2",
     "secWEP": "WEP (قديم)",
-    "secOpen": "مفتوح (بلا حماية)"
+    "secOpen": "مفتوح (بلا حماية)",
+    "providerName": "اسم المزود",
+    "clientId": "معرّف العميل",
+    "clientSecret": "سر العميل",
+    "tokenEndpoint": "رابط نقطة نهاية الرمز المميز",
+    "authorizationEndpoint": "رابط نقطة نهاية التفويض",
+    "scopes": "النطاقات",
+    "redirectUri": "رابط إعادة التوجيه"
   },
   "settings": {
     "title": "الإعدادات",

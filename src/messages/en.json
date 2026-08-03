@@ -80,6 +80,7 @@
     "sessionWarning": "Session expiring soon"
   },
   "vault": {
+    "secretNotFound": "Secret not found",
     "myVault": "My Vault",
     "addSecret": "Add Secret",
     "allSecrets": "All Secrets",
@@ -120,7 +121,9 @@
     "secure_note": "Secure Note",
     "secureNoteDesc": "Encrypted private notes and text",
     "wifi": "Wi-Fi Credential",
-    "wifiDesc": "Network names and wireless passwords"
+    "wifiDesc": "Network names and wireless passwords",
+    "oauth2": "OAuth2 Credential",
+    "oauth2Desc": "OAuth2 client credentials and token endpoints"
   },
   "fields": {
     "name": "Secret Name",
@@ -166,7 +169,14 @@
     "secWPA3": "WPA3",
     "secWPA2": "WPA2",
     "secWEP": "WEP (Legacy)",
-    "secOpen": "Open (No Security)"
+    "secOpen": "Open (No Security)",
+    "providerName": "Provider Name",
+    "clientId": "Client ID",
+    "clientSecret": "Client Secret",
+    "tokenEndpoint": "Token Endpoint URL",
+    "authorizationEndpoint": "Authorization Endpoint URL",
+    "scopes": "Scopes",
+    "redirectUri": "Redirect URI"
   },
   "settings": {
     "title": "Settings",

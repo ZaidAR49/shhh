@@ -110,6 +110,30 @@ export const wifiSchema = z.object({
   notes:         opt(),
 });
 
+// URL helper — accepts a valid https/http URL or an empty string for optional endpoint fields
+const url = () =>
+  z.string()
+    .url({ message: 'errors.invalidUrl' })
+    .startsWith('https://', { message: 'errors.invalidUrl' });
+
+const optUrl = () =>
+  z.union([
+    z.string().url({ message: 'errors.invalidUrl' }),
+    z.literal(''),
+  ]);
+
+export const oauth2Schema = z.object({
+  name:                    req(),
+  provider_name:           opt(200),
+  client_id:               z.string().min(1, { message: 'errors.required' }).max(500, { message: 'errors.fieldTooLong' }),
+  client_secret:           z.string().min(8, { message: 'errors.required' }).max(500, { message: 'errors.fieldTooLong' }),
+  token_endpoint:          optUrl().optional(),
+  authorization_endpoint:  optUrl().optional(),
+  scopes:                  opt(500),
+  redirect_uri:            optUrl().optional(),
+  notes:                   opt(),
+});
+
 // ── Schema map (resolves by secret_type) ─────────────────────
 export const SECRET_SCHEMAS = {
   password:     passwordSchema,
@@ -121,6 +145,7 @@ export const SECRET_SCHEMAS = {
   bank_account: bankAccountSchema,
   secure_note:  secureNoteSchema,
   wifi:         wifiSchema,
+  oauth2:       oauth2Schema,
 } as const;
 
 // ── Inferred TypeScript types ─────────────────────────────────
@@ -133,3 +158,4 @@ export type IdentityFormData    = z.infer<typeof identitySchema>;
 export type BankAccountFormData = z.infer<typeof bankAccountSchema>;
 export type SecureNoteFormData  = z.infer<typeof secureNoteSchema>;
 export type WifiFormData        = z.infer<typeof wifiSchema>;
+export type OAuth2FormData      = z.infer<typeof oauth2Schema>;

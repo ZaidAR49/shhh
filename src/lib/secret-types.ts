@@ -13,7 +13,8 @@ export type SecretType =
   | 'identity'
   | 'bank_account'
   | 'secure_note'
-  | 'wifi';
+  | 'wifi'
+  | 'oauth2';
 
 export interface SecretField {
   key: string;
@@ -181,6 +182,24 @@ export const SECRET_TYPE_CONFIGS: SecretTypeConfig[] = [
         ],
       },
       { key: 'notes', labelKey: 'fields.notes', type: 'textarea', masked: false, copyable: false, monospace: false, required: false },
+    ],
+  },
+  {
+    type: 'oauth2',
+    labelKey: 'secretTypes.oauth2',
+    descriptionKey: 'secretTypes.oauth2Desc',
+    iconName: 'RiShieldKeyholeLine',
+    badgeColor: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+    primaryField: 'client_id',
+    fields: [
+      { key: 'provider_name',            labelKey: 'fields.providerName',           type: 'text',     masked: false, copyable: false, monospace: false, required: false },
+      { key: 'client_id',                labelKey: 'fields.clientId',               type: 'text',     masked: false, copyable: true,  monospace: true,  required: true  },
+      { key: 'client_secret',            labelKey: 'fields.clientSecret',           type: 'password', masked: true,  copyable: true,  monospace: true,  required: true  },
+      { key: 'token_endpoint',           labelKey: 'fields.tokenEndpoint',          type: 'text',     masked: false, copyable: true,  monospace: true,  required: false, placeholder: 'https://provider.com/oauth/token' },
+      { key: 'authorization_endpoint',   labelKey: 'fields.authorizationEndpoint',  type: 'text',     masked: false, copyable: true,  monospace: true,  required: false, placeholder: 'https://provider.com/oauth/authorize' },
+      { key: 'scopes',                   labelKey: 'fields.scopes',                 type: 'text',     masked: false, copyable: true,  monospace: true,  required: false, placeholder: 'read write openid' },
+      { key: 'redirect_uri',             labelKey: 'fields.redirectUri',            type: 'text',     masked: false, copyable: true,  monospace: true,  required: false, placeholder: 'https://yourapp.com/callback' },
+      { key: 'notes',                    labelKey: 'fields.notes',                  type: 'textarea', masked: false, copyable: false, monospace: false, required: false },
     ],
   },
 ];

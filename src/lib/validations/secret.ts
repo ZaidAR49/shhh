@@ -9,7 +9,8 @@ export const secretTypeSchema = z.enum([
   'identity',
   'bank_account',
   'secure_note',
-  'wifi'
+  'wifi',
+  'oauth2',
 ]);
 
 export const createSecretSchema = z.object({
