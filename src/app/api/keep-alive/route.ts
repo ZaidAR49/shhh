@@ -1,99 +1,110 @@
 import { NextResponse } from 'next/server';
-
-// Vercel Hobby crons fire once per day at most.
-// We compensate by firing PING_COUNT sequential Supabase Data API (PostgREST)
-// requests in a single execution so the rolling 7-day activity volume stays
-// well above Supabase's low-activity threshold (~6-10 REST hits/day).
-const PING_COUNT = 8;
+import { db } from '@/db';
+import { users, secrets, sessions, accounts } from '@/db/schema';
+import { count, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  // 1. Verify Authorization Header (Vercel Cron or External Scheduler)
   const authHeader = request.headers.get('authorization');
 
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const results: Record<string, unknown> = {};
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.error('[keep-alive] Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  try {
+    // -------------------------------------------------------------------------
+    // 1. Direct DB Write Activity (Works 100% with current DATABASE_URL)
+    // -------------------------------------------------------------------------
+    // Ensures _keepalive table exists and performs an UPSERT.
+    // This writes real WAL entries and triggers Postgres write I/O metrics,
+    // avoiding the synthetic "SELECT 1" zero-activity filter.
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS public._keepalive (
+        id INT PRIMARY KEY,
+        last_ping TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      INSERT INTO public._keepalive (id, last_ping)
+      VALUES (1, NOW())
+      ON CONFLICT (id) DO UPDATE SET last_ping = EXCLUDED.last_ping;
+    `);
+
+    // -------------------------------------------------------------------------
+    // 2. Direct DB Read Activity (8 distinct table-level queries)
+    // -------------------------------------------------------------------------
+    // Queries actual schema tables to generate multi-table query volume.
+    const [r1, r2, r3, r4, r5, r6, r7, r8] = await Promise.all([
+      db.select({ total: count() }).from(users),
+      db.select({ total: count() }).from(secrets),
+      db.select({ total: count() }).from(sessions),
+      db.select({ total: count() }).from(accounts),
+      db.select({ newest: sql<string>`MAX(created_at)` }).from(users),
+      db.select({ newest: sql<string>`MAX(created_at)` }).from(secrets),
+      db.select({ oldest: sql<string>`MIN(created_at)` }).from(users),
+      db.select({ oldest: sql<string>`MIN(created_at)` }).from(secrets),
+    ]);
+
+    results.directDb = {
+      pingsSent: 8,
+      upsertKeepalive: true,
+      stats: {
+        users: r1[0]?.total ?? 0,
+        secrets: r2[0]?.total ?? 0,
+        sessions: r3[0]?.total ?? 0,
+        accounts: r4[0]?.total ?? 0,
+        newestUser: r5[0]?.newest ?? null,
+        newestSecret: r6[0]?.newest ?? null,
+        oldestUser: r7[0]?.oldest ?? null,
+        oldestSecret: r8[0]?.oldest ?? null,
+      },
+    };
+
+    // -------------------------------------------------------------------------
+    // 3. Optional PostgREST Data API Pings (if API key is configured)
+    // -------------------------------------------------------------------------
+    // If you later add SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY to .env,
+    // this will automatically send additional HTTP REST hits through Supabase's API Gateway.
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qtzockghmthzsdjjpceg.supabase.co';
+    const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+    if (apiKey) {
+      const restPings: string[] = [];
+      const restBaseUrl = `${supabaseUrl}/rest/v1/_keepalive`;
+      const restHeaders = {
+        apikey: apiKey,
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      };
+
+      try {
+        const restRes = await fetch(`${restBaseUrl}?id=eq.1&select=id,last_ping`, {
+          method: 'GET',
+          headers: restHeaders,
+        });
+        restPings.push(`GET PostgREST: ${restRes.status}`);
+      } catch (e) {
+        restPings.push(`GET PostgREST error: ${(e as Error).message}`);
+      }
+
+      results.restApi = { executed: true, log: restPings };
+    } else {
+      results.restApi = {
+        executed: false,
+        note: 'Using direct DB credentials (DATABASE_URL). To enable REST API gateway hits, add SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY.',
+      };
+    }
+
+    return NextResponse.json({ ok: true, timestamp: new Date().toISOString(), ...results });
+  } catch (error) {
+    console.error('[keep-alive] Failed:', error);
     return NextResponse.json(
-      { ok: false, error: 'Supabase env vars not configured' },
-      { status: 500 },
+      { ok: false, error: (error as Error).message },
+      { status: 500 }
     );
   }
-
-  const baseUrl = `${supabaseUrl}/rest/v1/_keepalive`;
-  const headers = {
-    apikey: serviceRoleKey,
-    Authorization: `Bearer ${serviceRoleKey}`,
-    'Content-Type': 'application/json',
-    Prefer: 'return=representation',
-  };
-
-  const errors: string[] = [];
-  let lastPing: string | null = null;
-  let count: number | null = null;
-
-  for (let i = 0; i < PING_COUNT; i++) {
-    try {
-      if (i % 4 === 0) {
-        // Request type A: UPSERT — write activity (counts as a distinct REST hit)
-        const res = await fetch(`${baseUrl}?on_conflict=id`, {
-          method: 'POST',
-          headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=representation' },
-          body: JSON.stringify({ id: 1, last_ping: new Date().toISOString() }),
-        });
-        if (!res.ok) errors.push(`upsert[${i}]: ${res.status}`);
-        else {
-          const data = await res.json() as Array<{ last_ping: string }>;
-          lastPing = data?.[0]?.last_ping ?? lastPing;
-        }
-      } else if (i % 4 === 1) {
-        // Request type B: SELECT — read activity
-        const res = await fetch(`${baseUrl}?id=eq.1&select=id,last_ping`, {
-          method: 'GET',
-          headers,
-        });
-        if (!res.ok) errors.push(`select[${i}]: ${res.status}`);
-        else {
-          const data = await res.json() as Array<{ last_ping: string }>;
-          lastPing = data?.[0]?.last_ping ?? lastPing;
-        }
-      } else if (i % 4 === 2) {
-        // Request type C: HEAD/COUNT — lightweight extra PostgREST hit
-        const res = await fetch(`${baseUrl}?select=*`, {
-          method: 'HEAD',
-          headers: { ...headers, Prefer: 'count=exact' },
-        });
-        if (!res.ok) errors.push(`count[${i}]: ${res.status}`);
-        else {
-          const raw = res.headers.get('content-range');
-          count = raw ? parseInt(raw.split('/')[1] ?? '0', 10) : count;
-        }
-      } else {
-        // Request type D: UPDATE timestamp — another write hit
-        const res = await fetch(`${baseUrl}?id=eq.1`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({ last_ping: new Date().toISOString() }),
-        });
-        if (!res.ok) errors.push(`patch[${i}]: ${res.status}`);
-      }
-    } catch (err) {
-      errors.push(`request[${i}]: ${(err as Error).message}`);
-    }
-  }
-
-  if (errors.length > 0) {
-    console.error('[keep-alive] Some pings failed:', errors);
-    return NextResponse.json({ ok: false, errors }, { status: 500 });
-  }
-
-  console.log(`[keep-alive] ${PING_COUNT} Supabase REST pings sent. Last ping: ${lastPing}`);
-  return NextResponse.json({ ok: true, pingsSent: PING_COUNT, lastPing, rowCount: count });
 }
+
 
