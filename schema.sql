@@ -336,3 +336,22 @@ CREATE POLICY secrets_own_row ON public.secrets
   FOR ALL
   USING      (user_id = (SELECT auth.uid())::text)
   WITH CHECK (user_id = (SELECT auth.uid())::text);
+
+-- ------------------------------------------------------------
+-- Keep-Alive (Supabase Free Tier heartbeat)
+-- ------------------------------------------------------------
+-- This table is queried exclusively via the Supabase Data API (PostgREST)
+-- by /api/keep-alive so that every cron execution registers multiple REST
+-- hits against the Supabase API gateway counter, keeping the project active.
+
+CREATE TABLE IF NOT EXISTS public._keepalive (
+  id        INT         PRIMARY KEY,
+  last_ping TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO public._keepalive (id, last_ping)
+VALUES (1, NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- service_role bypasses RLS; explicit grants ensure PostgREST can reach it.
+GRANT SELECT, INSERT, UPDATE ON TABLE public._keepalive TO service_role;
